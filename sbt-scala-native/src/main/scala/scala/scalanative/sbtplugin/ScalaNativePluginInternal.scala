@@ -120,7 +120,9 @@ object ScalaNativePluginInternal {
     nativeOptimizerReporter := tools.OptimizerReporter.empty,
     nativeOptimizerReporter in NativeTest := (nativeOptimizerReporter in Test).value,
     nativeGC := "boehm",
-    nativeGC in NativeTest := (nativeGC in Test).value
+    nativeGC in NativeTest := (nativeGC in Test).value,
+    nativeEnableProfiling := false,
+    nativeProfilingLocation := file("/dev/null")
   )
 
   lazy val scalaNativeGlobalSettings: Seq[Setting[_]] = Seq(
@@ -183,12 +185,17 @@ object ScalaNativePluginInternal {
       val entry     = nir.Global.Top(mainClass.toString + "$")
       val cwd       = nativeWorkdir.value
 
+      val enableProfiling   = nativeEnableProfiling.value
+      val profilingLocation = nativeProfilingLocation.value
+
       tools.Config.empty
         .withEntry(entry)
         .withPaths(classpath)
         .withWorkdir(cwd)
         .withTarget(nativeTarget.value)
         .withMode(mode(nativeMode.value))
+        .withEnableProfiling(enableProfiling)
+        .withProfilingLocation(profilingLocation)
     },
     nativeUnpackLib := {
       val cwd       = nativeWorkdir.value
@@ -376,7 +383,8 @@ object ScalaNativePluginInternal {
           case "Mac OS X" => Seq.empty
           case _          => Seq("unwind", "unwind-" + arch)
         }
-        librt ++ libunwind ++ linked.links
+        val zlib = Seq("z")
+        zlib ++ librt ++ libunwind ++ linked.links
           .map(_.name) ++ garbageCollector(gc).links
       }
       val linkopts  = links.map("-l" + _) ++ linkingOpts
