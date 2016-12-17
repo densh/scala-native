@@ -9,11 +9,12 @@ import nir._
 /** Introduces `main` function that sets up
  *  the runtime and calls the given entry point.
  */
-class Main(entry: Global) extends Inject {
+class Main(config: tools.Config) extends Inject {
   import Main._
 
   override def apply(buf: Buffer[Defn]): Unit = {
     implicit val fresh = Fresh()
+    val entry          = config.entry
     val entryMainTy =
       Type.Function(Seq(Type.Module(entry.top), ObjectArray), Type.Void)
     val entryMainName =
@@ -30,12 +31,28 @@ class Main(entry: Global) extends Inject {
     val exc    = Val.Local(fresh(), nir.Rt.Object)
     val unwind = Next.Unwind(fresh())
 
+    val profilingInit =
+      if (config.enableProfiling)
+        Inst.Let(
+          Op.Call(profiling_initSig,
+                  profiling_init,
+                  Seq(Val.String(config.profilingLocation.getAbsolutePath)),
+                  Next.None))
+      else
+        Inst.None
+    val profilingDump =
+      if (config.enableProfiling)
+        Inst.Let(Op.Call(block_dumpSig, block_dump, Seq.empty, Next.None))
+      else
+        Inst.None
+
     buf += Defn.Define(
       Attrs.None,
       MainName,
       MainSig,
       Seq(
         Inst.Label(fresh(), Seq(argc, argv)),
+        profilingInit,
         Inst.Let(stackBottom.name, Op.Stackalloc(Type.Ptr, Val.Long(0))),
         Inst.Let(
           Op.Store(Type.Ptr,
@@ -48,10 +65,12 @@ class Main(entry: Global) extends Inject {
         Inst.Let(module.name, Op.Module(entry.top, unwind)),
         Inst.Let(Op.Call(entryMainTy, entryMain, Seq(module, arr), unwind)),
         Inst.Let(Op.Call(RtLoopSig, RtLoop, Seq(module), unwind)),
+        profilingDump,
         Inst.Ret(Val.Int(0)),
         Inst.Label(unwind.name, Seq(exc)),
         Inst.Let(
           Op.Call(PrintStackTraceSig, PrintStackTrace, Seq(exc), Next.None)),
+        profilingDump,
         Inst.Ret(Val.Int(1))
       )
     )
@@ -97,6 +116,15 @@ object Main extends InjectCompanion {
 
   val stackBottomName = Global.Top("__stack_bottom")
 
+  val profiling_initSig = Type.Function(Seq(nir.Rt.String), Type.Void)
+  val profiling_init    = Val.Global(Global.Top("profiling_init"), Type.Ptr)
+  val profiling_initDecl =
+    Defn.Declare(Attrs.None, profiling_init.name, profiling_initSig)
+
+  val block_dumpSig  = Type.Function(Seq.empty, Type.Void)
+  val block_dump     = Val.Global(Global.Top("block_dump"), Type.Ptr)
+  val block_dumpDecl = Defn.Declare(Attrs.None, block_dump.name, block_dumpSig)
+
   override val depends =
     Seq(ObjectArray.name,
         Rt.name,
@@ -105,8 +133,8 @@ object Main extends InjectCompanion {
         PrintStackTraceName)
 
   override val injects =
-    Seq(InitDecl)
+    Seq(InitDecl, block_dumpDecl, profiling_initDecl)
 
   override def apply(config: tools.Config, top: Top) =
-    new Main(config.entry)
+    new Main(config)
 }

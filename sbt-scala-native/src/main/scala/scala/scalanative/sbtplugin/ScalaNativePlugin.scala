@@ -48,6 +48,12 @@ object ScalaNativePlugin extends AutoPlugin {
 
     val nativeGC =
       settingKey[String]("GC choice, either \"none\", \"boehm\" or \"immix\".")
+
+    val nativeEnableProfiling =
+      settingKey[Boolean]("Whether to enable profiling of the produced binary.")
+
+    val nativeProfilingLocation =
+      settingKey[File]("Directory where to write the results of profiling.")
   }
 
   override def globalSettings: Seq[Setting[_]] =
