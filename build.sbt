@@ -9,7 +9,8 @@ val libCrossScalaVersions = Seq("2.11.8", "2.11.11")
 
 lazy val baseSettings = Seq(
   organization := "org.scala-native",
-  version := nativeVersion
+  version := nativeVersion,
+  nativeGC := "markandsweep"
 )
 
 addCommandAlias(
@@ -182,7 +183,8 @@ lazy val libSettings =
 lazy val projectSettings =
   ScalaNativePlugin.projectSettings ++ Seq(
     scalaVersion := libScalaVersion,
-    resolvers := Nil
+    resolvers := Nil,
+    nativeGC := "markandsweep"
   )
 
 lazy val util =
@@ -419,8 +421,8 @@ lazy val sandbox =
     .settings(projectSettings)
     .settings(noPublishSettings)
     .settings(
-      // nativeOptimizerReporter := OptimizerReporter.toDirectory(
-      //   crossTarget.value)
+      nativeOptimizerReporter := OptimizerReporter.toDirectory(
+        crossTarget.value)
     )
     .enablePlugins(ScalaNativePlugin)
 
@@ -430,6 +432,8 @@ lazy val benchmarks =
     .settings(projectSettings)
     .settings(noPublishSettings)
     .settings(
+      nativeOptimizerReporter := OptimizerReporter.toDirectory(
+        crossTarget.value),
       nativeMode := "release",
       sourceGenerators in Compile += Def.task {
         val dir    = sourceDirectory.value

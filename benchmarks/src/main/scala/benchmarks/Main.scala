@@ -1,5 +1,6 @@
 package benchmarks
 
+import json.JsonBenchmark
 import java.lang.System.exit
 
 object Main {
