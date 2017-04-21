@@ -1,0 +1,19 @@
+.. _0.2:
+
+0.2 (April 25, 2017)
+====================
+
+0.2 is a second release of Scala Native toolchain that focuses mostly
+on improving coverage and quality of the library code.
+
+File I/O
+--------
+
+Regular expressions
+-------------------
+
+Concurrency via futures
+-----------------------
+
+Contributors
+------------
