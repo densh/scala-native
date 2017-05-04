@@ -1,12 +1,9 @@
-//
-// Created by Lukas Kellenberger on 29.04.17.
-//
-
 #ifndef MARKANDSWEEP_OBJECTHEADER_H
 #define MARKANDSWEEP_OBJECTHEADER_H
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "../Log.h"
 #include "../GCTypes.h"
 
 typedef enum {

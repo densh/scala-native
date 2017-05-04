@@ -1,34 +1,29 @@
-//
-// Created by Lukas Kellenberger on 29.04.17.
-//
-
 #include "LargeAllocator.h"
-#include <stdlib.h>
 #include <memory.h>
 #include "utils/MathUtils.h"
 #include "Object.h"
-#include <stdio.h>
+#include "Log.h"
 
-inline static int size_to_linked_list(uint32_t size) {
+
+inline int size_to_linked_list(uint32_t size) {
     assert(size >= LARGE_OBJECT_MIN_SIZE);
     return log2_floor(size) - LARGE_OBJECT_MIN_SIZE_BITS;
 }
 
-void print(LargeAllocator* alloc);
-
+// Adds a chunk to the allocator. The chunk is split in chunk of powers of 2.
 void addChunk(LargeAllocator* allocator, word_t* chunk, size_t size) {
     assert(size >= LARGE_OBJECT_MIN_SIZE);
     assert(size % LARGE_OBJECT_MIN_SIZE == 0);
     assert((word_t)chunk % (LARGE_OBJECT_MIN_SIZE * WORD_SIZE) == 0);
     memset(chunk + 1, 0, (size - 1) * WORD_SIZE);
 
-    size_t remaining_size = size;
+    size_t remainingSize = size;
     word_t* current = chunk;
-    while(remaining_size > 0) {
+    while(remainingSize > 0) {
         assert((word_t)current % (LARGE_OBJECT_MIN_SIZE * WORD_SIZE) == 0);
-        int log2_f = log2_floor(remaining_size);
-        log2_f = log2_f > LARGE_OBJECT_MAX_SIZE_BITS ? LARGE_OBJECT_MAX_SIZE_BITS : log2_f;
-        uint32_t chunkSize = 1U << log2_f;
+        int log2 = log2_floor(remainingSize);
+        log2 = log2 > LARGE_OBJECT_MAX_SIZE_BITS ? LARGE_OBJECT_MAX_SIZE_BITS : log2;
+        uint32_t chunkSize = 1U << log2;
         assert(chunkSize >= LARGE_OBJECT_MIN_SIZE && chunkSize <= LARGE_OBJECT_MAX_SIZE);
         int listIndex = size_to_linked_list(chunkSize);
 
@@ -40,10 +35,11 @@ void addChunk(LargeAllocator* allocator, word_t* chunk, size_t size) {
         bitmap_setBit(allocator->bitmap, current);
 
         current += chunkSize;
-        remaining_size -= chunkSize;
+        remainingSize -= chunkSize;
     }
 }
 
+// Allocates the LargeAllocator and creates the bitmap need for it.
 LargeAllocator* largeAllocator_create(word_t* offset, size_t size) {
 
     assert((word_t)offset % (LARGE_OBJECT_MIN_SIZE * WORD_SIZE) == 0);
@@ -64,24 +60,28 @@ LargeAllocator* largeAllocator_create(word_t* offset, size_t size) {
     return allocator;
 }
 
+// Allocates a large block
 Object* largeAllocator_alloc(LargeAllocator* allocator, uint32_t requestedBlockSize) {
     uint32_t actualBlockSize = (requestedBlockSize + LARGE_OBJECT_MIN_SIZE - 1) / LARGE_OBJECT_MIN_SIZE * LARGE_OBJECT_MIN_SIZE;
     uint32_t requiredChunkSize = 1U << log2_ceil(actualBlockSize);
-    //printf("alloc large: %u %u ", requestedBlockSize, actualBlockSize);
 
+    // Start with the smallest fitting block size
     int listIndex = size_to_linked_list(requiredChunkSize);
+    // While there is no block, try with a larger block
     while(listIndex <= CHUNK_LIST_COUNT - 1 && freeList_isEmpty(&allocator->freeLists[listIndex])) {
         ++listIndex;
     }
-    //print(allocator);
+    // No block available
     if(listIndex == CHUNK_LIST_COUNT) {
         return NULL;
     }
+    //Remove the first block of the linkedlist found.
     Object* object = freeList_removeFirst(&allocator->freeLists[listIndex]);
 
     uint32_t objectSize = object_getSize(object);
     assert(objectSize >= LARGE_OBJECT_MIN_SIZE);
 
+    // If the block is large enough, split it and add the remaining part back to the allocator.
     if(objectSize - LARGE_OBJECT_MIN_SIZE >= actualBlockSize) {
         word_t* remainingChunk = (word_t*)object + actualBlockSize;
         size_t remainingChunkSize = objectSize - actualBlockSize;
@@ -89,8 +89,6 @@ Object* largeAllocator_alloc(LargeAllocator* allocator, uint32_t requestedBlockS
     }
 
     assert(bitmap_getBit(allocator->bitmap, (word_t*)object));
-
-    //printf("%p \n", object);
     return object;
 
 }
@@ -102,10 +100,11 @@ void clearFreeLists(LargeAllocator* allocator) {
     }
 }
 
+// Sweeps through the whole large heap.
 void largeAllocator_sweep(LargeAllocator* allocator) {
-    printf("Largeblock: %ld\n", allocator->allocCount);
     allocator->allocCount = 0;
 
+    // Clears all linkedlists
     clearFreeLists(allocator);
 
     Object* current = (Object*) allocator->offset;
@@ -113,11 +112,13 @@ void largeAllocator_sweep(LargeAllocator* allocator) {
 
     while(current != heapEnd) {
         assert(bitmap_getBit(allocator->bitmap, (word_t*)current));
+        // If the block is marked, unmark it and move to the next block
         if(object_isMarked(current)) {
             object_unmark(current);
 
             current = object_nextLargeObject(current);
         } else {
+            // If the block is not marked, try to merge blocks while they are not marked.
             size_t currentSize = object_getLargeObjectSize(current);
             Object* next = object_nextLargeObject(current);
             while(next != heapEnd && !object_isMarked(next)) {
@@ -126,19 +127,9 @@ void largeAllocator_sweep(LargeAllocator* allocator) {
                 bitmap_clearBit(allocator->bitmap, (word_t*)next);
                 next = object_nextLargeObject(next);
             }
+            // If the next block is the end of the heap or if it is marked, add the current block to the allocator.
             addChunk(allocator, (word_t*)current, currentSize);
             current = next;
-        }
-    }
-    //print(allocator);
-}
-
-
-void print(LargeAllocator* alloc) {
-    for(int i = 0; i < LIST_COUNT; i++) {
-        if(alloc->freeLists[i].first != NULL) {
-            printf("list %d: ", i);
-            freeList_print(&alloc->freeLists[i]);
         }
     }
 }

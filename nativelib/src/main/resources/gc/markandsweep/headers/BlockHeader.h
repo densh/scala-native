@@ -1,20 +1,22 @@
-//
-// Created by Lukas Kellenberger on 29.04.17.
-//
-
 #ifndef MARKANDSWEEP_BLOCKHEADER_H
 #define MARKANDSWEEP_BLOCKHEADER_H
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "../Log.h"
 #include "../Constants.h"
 #include "../GCTypes.h"
 
+
+// Represents the headerline of an block.
+// It contains the size of the objects that the block will contain in number of words
+// and a mark bit
 
 typedef struct {
     uint32_t objectSize;
     uint32_t mark;
 } BlockHeader;
+
 
 typedef struct FreeBlockHeader FreeBlockHeader;
 
