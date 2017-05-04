@@ -6,13 +6,6 @@
 #include "types.h"
 #include "bitmap.h"
 
-typedef struct {
-    Block *first;
-    Block *last;
-} LinkedList;
-
-#define LIST_END NULL
-
 /**
  *
  * Allocates a new linked_list struct and set all fields to NULL

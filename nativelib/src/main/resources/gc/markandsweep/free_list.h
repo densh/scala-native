@@ -6,21 +6,6 @@
 #include "linked_list.h"
 #include "chunk_allocator.h"
 
-#define SMALLEST_BLOCK_SIZE 2
-#define LARGEST_CONST 16
-#define LOG_LARGEST_CONST 4
-#define LINKED_LIST_NUMBER 19
-
-typedef struct {
-    word_t *chunk[LINKED_LIST_NUMBER];
-    LinkedList *list[LINKED_LIST_NUMBER];
-    ChunkAllocator *chunk_allocator;
-    Bitmap *bitmap;
-    word_t *start;
-    size_t size;
-    size_t free;
-} FreeList;
-
 /**
  * Allocates a FreeList struct, creates the linked lists and
  * adds a block of size `size` starting at `heap_start` to the free_list.

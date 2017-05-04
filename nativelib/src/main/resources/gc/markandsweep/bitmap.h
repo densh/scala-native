@@ -7,12 +7,6 @@
 #include <stdlib.h>
 #include "types.h"
 
-typedef struct {
-    size_t size;
-    word_t *words;
-    word_t *offset;
-} Bitmap;
-
 #define BITS_PER_WORD (sizeof(word_t) * CHAR_BIT)
 #define WORD_OFFSET(b) (b / BITS_PER_WORD)
 #define BIT_OFFSET(b) (b % BITS_PER_WORD)

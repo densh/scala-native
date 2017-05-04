@@ -24,15 +24,15 @@ void scalanative_init() {
     free_list = heap->free_list;
 }
 
-void *scalanative_alloc_raw(size_t size) { return alloc(size); }
-
-void *scalanative_alloc_raw_atomic(size_t size) { return alloc(size); }
-
 void *scalanative_alloc(void *info, size_t size) {
     void **alloc = (void **)scalanative_alloc_raw(size);
     *alloc = info;
     return (void *)alloc;
 }
+
+void *scalanative_alloc_raw(size_t size) { return alloc(size); }
+
+void *scalanative_alloc_raw_atomic(size_t size) { return alloc(size); }
 
 void scalanative_collect() {
     mark_roots(heap);

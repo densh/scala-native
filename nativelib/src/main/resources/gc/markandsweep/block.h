@@ -5,22 +5,6 @@
 #include <stdint.h>
 #include "types.h"
 
-typedef enum { tag_allocated = 12, tag_free = 13 } tag_t;
-
-#define BITS_FOR_TAG 8
-#define TAG_MASK 0xFF
-
-typedef struct {
-    uint32_t size;
-    tag_t tag;
-} Header;
-
-typedef struct Block Block;
-struct Block {
-    Header header;
-    Block *next;
-};
-
 inline int log2_floor(size_t v) {
     static const int MultiplyDeBruijnBitPosition[32] = {
         0, 9,  1,  10, 13, 21, 2,  29, 11, 14, 16, 18, 22, 25, 3, 30,

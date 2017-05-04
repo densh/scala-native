@@ -1,9 +1,6 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include "free_list.h"
-#include "heap.h"
-#include "stack.h"
 #include "types.h"
 
 extern FreeList *free_list;
