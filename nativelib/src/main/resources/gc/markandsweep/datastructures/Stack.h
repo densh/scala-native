@@ -1,14 +1,9 @@
-//
-// Created by Lukas Kellenberger on 29.04.17.
-//
-
 #ifndef MARKANDSWEEP_STACK_H
 #define MARKANDSWEEP_STACK_H
 
 #include <stddef.h>
+#include "../Log.h"
 #include "../headers/ObjectHeader.h"
-
-#define PRINT_STACK_OVERFLOW
 
 #define INITIAL_STACK_SIZE (256*1024)
 
@@ -20,14 +15,43 @@ typedef struct {
     int current;
 } Stack;
 
-Stack* stack_alloc(size_t size);
+inline Stack* stack_alloc(size_t size) {
+    assert(size % sizeof(Stack_Type) == 0);
+    Stack* stack = malloc(sizeof(Stack));
+    stack->current = 0;
+    stack->bottom = malloc(size);
+    stack->nbWords = size / sizeof(Stack_Type);
+    return stack;
+}
 
-bool stack_push(Stack* stack, Stack_Type word);
+inline bool stack_push(Stack* stack, Stack_Type word) {
+    if(stack->current < stack->nbWords) {
+        stack->bottom[stack->current++] = word;
+        return false;
+    } else {
+#ifdef PRINT_STACK_OVERFLOW
+        printf("Overflow !\n");
+#endif
+        return true;
+    }
+}
 
-Stack_Type stack_pop(Stack* stack);
+inline Stack_Type stack_pop(Stack* stack) {
+    assert(stack->current > 0);
+    return stack->bottom[--stack->current];
+}
 
-bool stack_isEmpty(Stack* stack);
+inline bool stack_isEmpty(Stack* stack) {
+    return stack->current == 0;
+}
 
-void stack_doubleSize(Stack* stack);
+
+inline void stack_doubleSize(Stack* stack) {
+    assert(stack->current == 0);
+    size_t nb_words = stack->nbWords * 2;
+    stack->nbWords = nb_words;
+    free(stack->bottom);
+    stack->bottom = malloc(nb_words * sizeof(Stack_Type));
+}
 
 #endif //MARKANDSWEEP_STACK_H

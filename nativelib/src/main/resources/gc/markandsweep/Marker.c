@@ -1,25 +1,23 @@
-//
-// Created by Lukas Kellenberger on 29.04.17.
-//
-
-#include <printf.h>
+#include <stdio.h>
+#include <libunwind.h>
+#include <setjmp.h>
 #include "Marker.h"
 #include "Block.h"
-#include "Heap.h"
-#include "datastructures/Stack.h"
+#include "Log.h"
+
 
 extern int __object_array_id;
 extern word_t* __modules;
 extern int __modules_size;
 
 bool overflow = false;
-word_t* currentOverflowAddess = NULL;
+word_t* currentOverflowAddress = NULL;
 
 void largeHeapOverflowHeapScan(Heap* heap, Stack* stack);
 bool smallHeapOverflowHeapScan(Heap* heap, Stack* stack);
 
 
-// Marks an obeject and adds it to the stack
+// Marks an object and adds it to the stack
 void markObject(Stack* stack, Object* object) {
     assert(!object_isMarked(object));
     assert(object_isAllocated(object));
@@ -46,33 +44,7 @@ void mark(Heap* heap, Stack* stack, word_t* address) {
     }
 }
 
-void markModules(Heap* heap, Stack* stack, word_t** modules, int moduleCount) {
-    for(int i = 0; i < moduleCount; i++) {
-        word_t* module = modules[i] - 1;
-        if(heap_isWordInHeap(heap, module)) {
-            mark(heap, stack, module);
-        }
-    }
-}
-
-void markStack(Heap* heap, Stack* stack, word_t* stackTop, word_t* stackBottom) {
-    word_t* current = stackTop;
-    while(current < stackBottom) {
-
-        word_t* object = (*(word_t**)current) - 1;
-        if(heap_isWordInHeap(heap, object)) {
-            mark(heap, stack, object);
-        }
-        current++;
-    }
-}
-
-void marker_markRoots(Heap* heap, Roots* roots, Stack* stack) {
-    assert(stack_isEmpty(stack));
-    markStack(heap, stack, roots->stackTop, roots->stackBottom);
-    markModules(heap, stack, roots->moduleStart, roots->moduleCount);
-}
-
+// Marks all objects in the stack
 void marker_mark(Heap* heap, Stack* stack) {
     while(!stack_isEmpty(stack)) {
         Object* object = stack_pop(stack);
@@ -93,7 +65,6 @@ void marker_mark(Heap* heap, Stack* stack) {
             while(ptr_map[i] != -1) {
                 word_t* field = object->fields[ptr_map[i]/sizeof(word_t) - 1];
                 Object* fieldObject = (Object*)(field - 1);
-                //printf("\tfield: %p\n", fieldObject);
                 if(heap_isObjectInHeap(heap, fieldObject) && !object_isMarked(fieldObject)) {
                     markObject(stack, fieldObject);
                 }
@@ -101,9 +72,8 @@ void marker_mark(Heap* heap, Stack* stack) {
             }
         }
     }
-
     if(overflow) {
-        currentOverflowAddess = heap->heapStart;
+        currentOverflowAddress = heap->heapStart;
         overflow = false;
         stack_doubleSize(stack);
 
@@ -112,10 +82,10 @@ void marker_mark(Heap* heap, Stack* stack) {
 #endif
 
         word_t* largeHeapEnd = heap->largeHeapEnd;
-        while(currentOverflowAddess != largeHeapEnd) {
-            if(heap_isWordInSmallHeap(heap, currentOverflowAddess)) {
+        while(currentOverflowAddress != largeHeapEnd) {
+            if(heap_isWordInSmallHeap(heap, currentOverflowAddress)) {
                 if(!smallHeapOverflowHeapScan(heap, stack)) {
-                    currentOverflowAddess = heap->largeHeapStart;
+                    currentOverflowAddress = heap->largeHeapStart;
                 }
             } else {
                 largeHeapOverflowHeapScan(heap, stack);
@@ -182,27 +152,28 @@ void mark_roots(Heap* heap, Stack* stack) {
 }
 
 bool smallHeapOverflowHeapScan(Heap* heap, Stack* stack) {
-    assert(heap_isWordInSmallHeap(heap, currentOverflowAddess));
-    BlockHeader* currentBlock = block_getBlockHeader(currentOverflowAddess);
+    assert(heap_isWordInSmallHeap(heap, currentOverflowAddress));
+    BlockHeader* currentBlock = block_getBlockHeader(currentOverflowAddress);
     word_t* heapEnd = heap->heapEnd;
-    bool found = false;
 
     while((word_t*)currentBlock != heapEnd) {
-        if(block_overflowHeapScan(currentBlock, heap, stack, &currentOverflowAddess)) {
+        if(block_overflowHeapScan(currentBlock, heap, stack, &currentOverflowAddress)) {
             return true;
         }
         currentBlock = (BlockHeader*)((word_t*)currentBlock + BLOCK_SIZE);
-        currentOverflowAddess = (word_t*)currentBlock;
+        currentOverflowAddress = (word_t*)currentBlock;
     }
     return false;
 }
 
+// Scans through the large heap to find marked blocks with unmarked children.
+// Updates `currentOverflowAddress` while doing so.
 void largeHeapOverflowHeapScan(Heap* heap, Stack* stack) {
-    assert(heap_isWordInLargeHeap(heap, currentOverflowAddess));
+    assert(heap_isWordInLargeHeap(heap, currentOverflowAddress));
     void* heapEnd = heap->largeHeapEnd;
 
-    while(currentOverflowAddess != heapEnd) {
-        Object* object = (Object*) currentOverflowAddess;
+    while(currentOverflowAddress != heapEnd) {
+        Object* object = (Object*) currentOverflowAddress;
         if(object_isAllocated(object) && object_isMarked(object)) {
             if(object->rtti->rt.id == __object_array_id) {
                 uint32_t nbWords = object_getSize(object) - 2;
@@ -228,6 +199,6 @@ void largeHeapOverflowHeapScan(Heap* heap, Stack* stack) {
                 }
             }
         }
-        currentOverflowAddess = (word_t*) object_nextLargeObject(object);
+        currentOverflowAddress = (word_t*) object_nextLargeObject(object);
     }
 }

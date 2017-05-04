@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <memory.h>
 #include "Heap.h"
-#include "Constants.h"
-#include "headers/ObjectHeader.h"
 #include "Marker.h"
+#include "Log.h"
+
 
 Heap* heap = NULL;
 Stack* stack = NULL;
@@ -15,17 +15,17 @@ void scalanative_init() {
     stack = stack_alloc(INITIAL_STACK_SIZE);
 }
 
-//bool a = false;
-
 void scalanative_collect() {
+#ifdef DEBUG_PRINT
     printf("Collect\n");
     fflush(stdout);
-
+#endif
     mark_roots(heap, stack);
     heap_collect(heap);
-
+#ifdef DEBUG_PRINT
     printf("End collect\n");
     fflush(stdout);
+#endif
 }
 
 void* allocate(size_t byteSize) {
@@ -55,7 +55,6 @@ void* allocate(size_t byteSize) {
 void* scalanative_alloc(void* info, size_t size) {
     void** alloc = (void**) allocate(size);
     *alloc = info;
-
     return (void*) alloc;
 }
 

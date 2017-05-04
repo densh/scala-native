@@ -419,7 +419,6 @@ lazy val sandbox =
     .settings(projectSettings)
     .settings(noPublishSettings)
     .settings(
-      nativeGC := "markandsweep"
       // nativeOptimizerReporter := OptimizerReporter.toDirectory(
       //   crossTarget.value)
     )
@@ -432,7 +431,6 @@ lazy val benchmarks =
     .settings(noPublishSettings)
     .settings(
       nativeMode := "release",
-      nativeGC := "markandsweep",
       nativeOptimizerReporter := OptimizerReporter.toDirectory(
         crossTarget.value),
       sourceGenerators in Compile += Def.task {

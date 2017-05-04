@@ -1,7 +1,3 @@
-//
-// Created by Lukas Kellenberger on 29.04.17.
-//
-
 #ifndef MARKANDSWEEP_ALLOCATOR_H
 #define MARKANDSWEEP_ALLOCATOR_H
 
@@ -28,11 +24,11 @@ typedef struct {
     long fromChunk;
 } Allocator;
 
-Allocator* allocator_init(word_t* offset, size_t size);
+Allocator* allocator_create(word_t* offset, size_t size);
 Object* allocator_alloc(Allocator* allocator, uint32_t size);
 void allocator_sweep(Allocator* allocator);
 
-static int sizeToIndex(uint32_t object_size) {
+inline int sizeToIndex(uint32_t object_size) {
     assert(object_size > 0 && object_size <= LARGE_OBJECT_MIN_SIZE);
     if(object_size <= OBJECT_MIN_SIZE) {
         return 0;

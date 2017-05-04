@@ -1,7 +1,3 @@
-//
-// Created by Lukas Kellenberger on 01.05.17.
-//
-
 #ifndef MARKANDSWEEP_OBJECT_H
 #define MARKANDSWEEP_OBJECT_H
 

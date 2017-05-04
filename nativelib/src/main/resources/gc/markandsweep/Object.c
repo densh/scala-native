@@ -1,10 +1,7 @@
-//
-// Created by Lukas Kellenberger on 01.05.17.
-//
-
-#include <printf.h>
+#include <stdio.h>
 #include "Object.h"
-#include "Heap.h"
+#include "Log.h"
+
 
 
 Object* object_getObjectConservative(Heap* heap, word_t* word) {
@@ -21,9 +18,12 @@ Object* object_getObjectConservative(Heap* heap, word_t* word) {
     Object* object = (Object*)(addressAsInteger - (diff % (size * WORD_SIZE)) + WORD_SIZE);
     if((word_t*)object + size <= block_getBlockEnd(word) && object_isAllocated(object)) {
         return object;
-    } else {
+    }
+#ifdef DEBUG_PRINT
+    else {
         printf("Not allocated (Small) %p %p\n", word, object);
     }
+#endif
     return NULL;
 }
 
@@ -48,7 +48,9 @@ Object* object_getLargeObjectConservative(Heap* heap, word_t* word) {
         if(object_isAllocated(object)) {
             return object;
         } else {
+#ifdef DEBUG_PRINT
             printf("Not allocated (Large) %p\n", word);
+#endif
             return NULL;
         }
     } else {
@@ -56,7 +58,9 @@ Object* object_getLargeObjectConservative(Heap* heap, word_t* word) {
         if(object != NULL && object_isAllocated(object)) {
             return object;
         } else {
+#ifdef DEBUG_PRINT
             printf("Not allocated (Large) %p %p\n", word, object);
+#endif
             return NULL;
         }
     }
