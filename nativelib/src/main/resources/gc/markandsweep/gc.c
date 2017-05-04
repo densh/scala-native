@@ -6,7 +6,6 @@
 #include "free_list.h"
 #include "bitmap.h"
 #include "linked_list.h"
-#include "timer.h"
 #include "alloc.h"
 #include "mark.h"
 #include "sweep.h"
