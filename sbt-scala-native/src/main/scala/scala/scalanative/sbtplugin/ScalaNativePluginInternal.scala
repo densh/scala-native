@@ -226,7 +226,7 @@ object ScalaNativePluginInternal {
             val isCppSource = path.endsWith(".cpp")
 
             val compiler = abs(if (isCppSource) clangpp else clang)
-            val flags    = (if (isCppSource) Seq("-std=c++11") else Seq()) ++ opts
+            val flags    = (if (isCppSource) Seq("-std=c++11") else Seq("-std=c11")) ++ opts
             val compilec = Seq(compiler) ++ flags ++ Seq("-c",
                                                          path,
                                                          "-o",
