@@ -9,7 +9,7 @@
 #include "../types.h"
 #include "../heap.h"
 
-void heap_sanity_full_check(Heap* heap);
-void memory_check(FreeList* free_list, int print);
+void heap_sanity_full_check(Heap *heap);
+void memory_check(FreeList *free_list, int print);
 
-#endif //HEAP_SANITY_H
+#endif // HEAP_SANITY_H

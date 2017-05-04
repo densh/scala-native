@@ -14,10 +14,9 @@ typedef struct {
     int nb_intervals;
 } Timer;
 
-Timer* gc_timer_create();
-void gc_timer_start(Timer* timer);
-void gc_timer_stop(Timer* timer);
-void gc_timer_reset(Timer* timer);
+Timer *gc_timer_create();
+void gc_timer_start(Timer *timer);
+void gc_timer_stop(Timer *timer);
+void gc_timer_reset(Timer *timer);
 
-
-#endif //TIMER_H
+#endif // TIMER_H

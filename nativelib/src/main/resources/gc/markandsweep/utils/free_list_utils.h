@@ -11,8 +11,8 @@ typedef struct {
     size_t total;
 } MemoryStats;
 
-void free_list_print_stats(FreeList* list);
-void free_list_print(FreeList* free_list);
-void check_chunk_allocator(ChunkAllocator* chunk_allocator);
+void free_list_print_stats(FreeList *list);
+void free_list_print(FreeList *free_list);
+void check_chunk_allocator(ChunkAllocator *chunk_allocator);
 
-#endif //FREE_LIST_UTILS_H
+#endif // FREE_LIST_UTILS_H

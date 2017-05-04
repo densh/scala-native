@@ -5,9 +5,9 @@
 #include <stdint.h>
 #include "types.h"
 
-void* scalanative_alloc(void* info, size_t size);
-void* scalanative_alloc_raw(size_t size);
+void *scalanative_alloc(void *info, size_t size);
+void *scalanative_alloc_raw(size_t size);
 void scalanative_collect();
-void* scalanative_alloc_raw_atomic(size_t size);
+void *scalanative_alloc_raw_atomic(size_t size);
 
-#endif //UNTITLED_GC_H
+#endif // UNTITLED_GC_H

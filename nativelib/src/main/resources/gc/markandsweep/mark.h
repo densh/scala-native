@@ -15,11 +15,11 @@
 
 #define UNW_LOCAL_ONLY
 
-extern word_t* __modules;
+extern word_t *__modules;
 extern int __modules_size;
 extern int __object_array_id;
 
 void mark_roots();
-void mark_init(FreeList* free_list);
+void mark_init(FreeList *free_list);
 
 #endif // MARK_H

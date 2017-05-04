@@ -5,6 +5,6 @@
 #include "../stack.h"
 #include "../heap.h"
 
-void print_stack(Stack* stack, Heap* heap);
+void print_stack(Stack *stack, Heap *heap);
 
-#endif //STACK_UTILS_H
+#endif // STACK_UTILS_H

@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Format C/C++ code.
+#
+# Usage: $0 [--test]
+
+set -euo pipefail
+IFS=$'\n\t'
+
+die() {
+  echo -e >&2 "$1"
+  exit 1
+}
+
+test_mode=
+
+while [ "$#" -gt 0 ]; do
+  arg="$1"; shift
+  case "$arg" in
+    --test) test_mode=true ;;
+    *) die "Unknown argument: $arg\nUsage: $0 [--test]" ;;
+  esac
+done
+
+find  nativelib/src/main/resources/gc/ -name "*.[ch]" -or -name "*.cpp" | xargs clang-format -i
+
+if [ -n "$test_mode" ]; then
+  git diff --quiet --exit-code || die "C/C++ code formatting changes detected\nRun \`$0\` to reformat."
+fi
