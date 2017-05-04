@@ -24,4 +24,8 @@ word_t *heap_next_block(Heap *heap, word_t *block);
 
 void heap_grow(Heap *heap, size_t nb_words);
 
+extern Heap *heap_;
+
+void grow_heap(size_t nb_words);
+
 #endif // HEAP_H

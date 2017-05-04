@@ -1,6 +1,8 @@
 #include "log.h"
 #include "free_list.h"
 
+FreeList *free_list = NULL;
+
 int object_size_to_index(size_t object_size) {
     if (object_size <= SMALLEST_BLOCK_SIZE) {
         return 0;

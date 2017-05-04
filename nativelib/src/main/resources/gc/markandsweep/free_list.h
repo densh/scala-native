@@ -54,4 +54,6 @@ size_t index_to_block_size(int index);
 
 int object_size_to_index(size_t object_size);
 
+extern FreeList *free_list;
+
 #endif // MARKANDSWEEP_FREE_LIST_H
