@@ -1,3 +1,4 @@
+#include "log.h"
 #include "free_list.h"
 
 int object_size_to_index(size_t object_size) {

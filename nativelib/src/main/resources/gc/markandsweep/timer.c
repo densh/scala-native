@@ -1,3 +1,4 @@
+#include "log.h"
 #include "timer.h"
 
 Timer* gc_timer_create() {

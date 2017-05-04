@@ -1,3 +1,4 @@
+#include "log.h"
 #include "stack.h"
 
 Stack* stack_alloc(size_t size) {

@@ -1,3 +1,4 @@
+#include "log.h"
 #include "block.h"
 #include "free_list.h"
 

@@ -1,3 +1,4 @@
+#include "log.h"
 #include "bitmap.h"
 
 Bitmap* bitmap_alloc(size_t size, word_t* offset) {

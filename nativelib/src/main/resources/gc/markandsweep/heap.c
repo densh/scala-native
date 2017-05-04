@@ -1,3 +1,4 @@
+#include "log.h"
 #include "heap.h"
 #include <sys/mman.h>
 

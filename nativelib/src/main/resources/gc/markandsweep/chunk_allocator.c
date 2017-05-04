@@ -1,3 +1,4 @@
+#include "log.h"
 #include "chunk_allocator.h"
 #include "free_list.h"
 #include <stdio.h>

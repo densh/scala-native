@@ -1,3 +1,4 @@
+#include "log.h"
 #include "mark.h"
 
 #define INITIAL_STACK_SIZE 512*1024
