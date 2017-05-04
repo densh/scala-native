@@ -1,7 +1,3 @@
-//
-// Created by Lukas Kellenberger on 01.03.17.
-//
-
 #ifndef BLOCK_H
 #define BLOCK_H
 

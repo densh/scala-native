@@ -1,8 +1,6 @@
 #include "bitmap_utils.h"
 
-
 void bitmap_print(Bitmap* bitmap) {
-
     size_t nb_words = bitmap->size / sizeof(word_t);
     word_t* current = bitmap->offset;
     printf("bitmap: ");

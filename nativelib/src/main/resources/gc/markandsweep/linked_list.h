@@ -1,16 +1,10 @@
-//
-// Created by Lukas Kellenberger on 01.03.17.
-//
-
 #include <stddef.h>
 #include "block.h"
 #include "types.h"
 #include "bitmap.h"
 
-
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
-
 
 typedef struct {
     Block* first;
@@ -18,7 +12,6 @@ typedef struct {
 } LinkedList;
 
 #define LIST_END NULL
-
 
 /**
  *
@@ -39,8 +32,5 @@ void linked_list_add_block(LinkedList* list, Block* block, size_t block_size);
  * If previous is NULL, block is expected to be the first block of the linked_list.
  */
 void linked_list_remove_block(LinkedList* list, Block* block, size_t size);
-
-
-
 
 #endif //LINKED_LIST_H

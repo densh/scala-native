@@ -1,16 +1,11 @@
 #include "chunk_allocator.h"
-
-
 #include "free_list.h"
 #include <stdio.h>
-
 
 inline static int size_to_linked_list(size_t size) {
     assert(size >= SMALLEST_CHUNK_SIZE);
     return log2_floor(size) - MIN_POWER;
 }
-
-
 
 ChunkAllocator* chunk_allocator_create(Bitmap* bitmap) {
     ChunkAllocator* chunk_allocator = malloc(sizeof(ChunkAllocator));

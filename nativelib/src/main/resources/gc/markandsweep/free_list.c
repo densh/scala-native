@@ -1,9 +1,4 @@
-//
-// Created by Lukas Kellenberger on 01.03.17.
-//
-
 #include "free_list.h"
-
 
 int object_size_to_index(size_t object_size) {
     if(object_size <= SMALLEST_BLOCK_SIZE) {

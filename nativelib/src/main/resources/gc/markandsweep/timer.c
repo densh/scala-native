@@ -1,6 +1,5 @@
 #include "timer.h"
 
-
 Timer* gc_timer_create() {
     Timer* timer = malloc(sizeof(Timer));
     timer->time = 0;

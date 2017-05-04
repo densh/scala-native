@@ -1,7 +1,3 @@
-//
-// Created by Lukas Kellenberger on 01.03.17.
-//
-
 #ifndef MARK_H
 #define MARK_H
 
@@ -18,7 +14,6 @@
 #include "heap.h"
 
 #define UNW_LOCAL_ONLY
-
 
 extern word_t* __modules;
 extern int __modules_size;

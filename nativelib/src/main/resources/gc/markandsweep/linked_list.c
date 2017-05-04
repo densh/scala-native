@@ -1,7 +1,3 @@
-//
-// Created by Lukas Kellenberger on 01.03.17.
-//
-
 #include <stdlib.h>
 #include <printf.h>
 #include "linked_list.h"

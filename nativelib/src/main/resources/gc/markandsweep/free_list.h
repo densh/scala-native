@@ -1,7 +1,3 @@
-//
-// Created by Lukas Kellenberger on 01.03.17.
-//
-
 #include "bitmap.h"
 #include "types.h"
 #include "linked_list.h"
@@ -14,8 +10,6 @@
 #define LARGEST_CONST 16
 #define LOG_LARGEST_CONST 4
 #define LINKED_LIST_NUMBER 19
-
-
 
 typedef struct {
     word_t* chunk[LINKED_LIST_NUMBER];
@@ -59,7 +53,5 @@ size_t object_size_to_block_size(size_t object_size);
 size_t index_to_block_size(int index);
 
 int object_size_to_index(size_t object_size);
-
-
 
 #endif //MARKANDSWEEP_FREE_LIST_H

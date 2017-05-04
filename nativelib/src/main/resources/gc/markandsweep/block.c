@@ -1,7 +1,3 @@
-//
-// Created by Lukas Kellenberger on 01.03.17.
-//
-
 #include "block.h"
 #include "free_list.h"
 

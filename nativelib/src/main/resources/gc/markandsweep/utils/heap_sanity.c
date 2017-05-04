@@ -1,6 +1,5 @@
 #include "heap_sanity.h"
 
-
 int check_is_header_in_linked_list(LinkedList* list, word_t* block) {
     Block* current = list->first;
     int found = 0;
@@ -123,9 +122,6 @@ void heap_sanity_full_check(Heap* heap) {
         current += size;
     }
 }
-
-
-
 
 void memory_check(FreeList* free_list, int print) {
     Bitmap* bitmap = free_list->bitmap;

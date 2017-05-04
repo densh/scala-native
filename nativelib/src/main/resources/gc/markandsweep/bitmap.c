@@ -1,9 +1,4 @@
-//
-// Created by Lukas Kellenberger on 01.03.17.
-//
-
 #include "bitmap.h"
-
 
 Bitmap* bitmap_alloc(size_t size, word_t* offset) {
     assert(size % sizeof(word_t) == 0);

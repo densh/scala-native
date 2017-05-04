@@ -1,7 +1,3 @@
-//
-// Created by Lukas Kellenberger on 01.03.17.
-//
-
 #include "gc.h"
 #include "free_list.h"
 #include <stdio.h>
@@ -14,7 +10,6 @@
 #include "timer.h"
 #include "utils/heap_sanity.h"
 #include "utils/heap_printer.h"
-
 
 #define UNW_LOCAL_ONLY
 

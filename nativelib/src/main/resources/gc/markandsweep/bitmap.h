@@ -1,7 +1,3 @@
-//
-// Created by Lukas Kellenberger on 01.03.17.
-//
-
 #include <limits.h>
 #include <memory.h>
 #include <stdlib.h>
