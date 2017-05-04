@@ -1,10 +1,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#define NDEBUG
-
 #include <stdint.h>
-#include <assert.h>
 
 typedef uint64_t word_t;
 
