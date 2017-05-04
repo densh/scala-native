@@ -42,7 +42,6 @@ void chunk_allocator_add_chunk(ChunkAllocator *chunk_allocator, Chunk *block,
         linked_list_add_block(chunk_allocator->chunk_lists[list_index],
                               (Block *)current, chunk_size);
         bitmap_set_bit(chunk_allocator->bitmap, current);
-        // check_blockk(chunk_allocator->bitmap, current, chunk_size);
         current += chunk_size;
         remaining_size -= chunk_size;
     }

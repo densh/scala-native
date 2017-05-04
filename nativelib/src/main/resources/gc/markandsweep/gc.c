@@ -16,6 +16,7 @@
 #include <libunwind.h>
 #include <setjmp.h>
 #include "sweep.h"
+#include "state.h"
 
 #define CHUNK 256 * 1024
 

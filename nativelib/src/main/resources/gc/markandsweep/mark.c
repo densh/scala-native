@@ -1,14 +1,10 @@
 #include "log.h"
 #include "mark.h"
+#include "state.h"
 
 #define INITIAL_STACK_SIZE 512 * 1024
 
 void mark(word_t *block);
-
-Heap *heap = NULL;
-Stack *stack = NULL;
-word_t *overflow_current_addr = NULL;
-int overflow = 0;
 
 /*
  * Used to find the header of an inner pointer. Returns the block header if
@@ -37,7 +33,6 @@ word_t *inner_get_header(word_t *inner_ptr) {
 }
 
 void scan_heap_after_overflow(Stack *stack) {
-
     word_t *block = overflow_current_addr;
 
     int found = 0;
@@ -211,7 +206,6 @@ void mark_roots_stack() {
     unw_word_t p = top;
 
     while (p < bottom) {
-
         word_t *pp = (*(word_t **)p) - 1;
         if (heap_in_heap(heap, pp)) {
             mark(pp);

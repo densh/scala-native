@@ -2,6 +2,8 @@
 #include "chunk_allocator.h"
 #include "free_list.h"
 #include "heap.h"
+#include "sweep.h"
+#include "state.h"
 
 // Sweeps one chunk.
 // Return the size of memory swept if it's one contiguous block, 0 otherwise.

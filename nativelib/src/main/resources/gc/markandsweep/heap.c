@@ -1,6 +1,7 @@
+#include <sys/mman.h>
 #include "log.h"
 #include "heap.h"
-#include <sys/mman.h>
+#include "state.h"
 
 #define MAX_SIZE 64 * 1024 * 1024 * 1024L
 // Allow read and write
@@ -10,8 +11,6 @@
 // Map anonymous memory (not a file)
 #define HEAP_MEM_FD -1
 #define HEAP_MEM_FD_OFFSET 0
-
-Heap *heap_ = NULL;
 
 Heap *heap_alloc(size_t size) {
     Heap *heap = malloc(sizeof(Heap));

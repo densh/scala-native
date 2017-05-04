@@ -2,6 +2,7 @@
 #include "free_list.h"
 #include "gc.h"
 #include "heap.h"
+#include "state.h"
 
 void *alloc(size_t size) {
     size = (size + sizeof(word_t) - 1) / sizeof(word_t) * sizeof(word_t);
