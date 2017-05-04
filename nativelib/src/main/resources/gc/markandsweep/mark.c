@@ -139,10 +139,6 @@ void _mark() {
         overflow = 0;
         stack_double_size(stack);
 
-        #ifdef STACK_OVERFLOW_PRINT
-            printf("Stack grew to %zu bytes\n", stack->nb_words * sizeof(Stack_Type));
-        #endif
-
         while(overflow_current_addr != NULL) {
             scan_heap_after_overflow(stack);
             _mark();

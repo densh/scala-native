@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <printf.h>
 #include "linked_list.h"
 
 LinkedList* linked_list_alloc() {
@@ -8,7 +7,6 @@ LinkedList* linked_list_alloc() {
     list->last = NULL;
     return list;
 }
-
 
 void linked_list_add_block(LinkedList* list, Block* block, size_t block_size_with_header) {
     // Set the header fields

@@ -85,7 +85,6 @@ word_t* free_list_get_block(FreeList* list, size_t object_size) {
     Block* block = NULL;
     if(object_size > SMALLEST_CHUNK_SIZE / 2) {
         size_t block_size = object_size_to_block_size(object_size);
-        //printf("Large chunk! %lu %lu\n", object_size, block_size);
         block = (Block*)chunk_allocator_get_chunk(list->chunk_allocator, block_size);
         if (block == NULL) {
             return NULL;

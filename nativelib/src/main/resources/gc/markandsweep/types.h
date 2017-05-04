@@ -6,9 +6,6 @@
 #include <stdint.h>
 #include <assert.h>
 
-#define TIMING_PRINT
-#define STACK_OVERFLOW_PRINT
-
 typedef uint64_t word_t;
 
 typedef struct {

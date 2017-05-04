@@ -24,9 +24,6 @@ void bitmap_clear_bit(Bitmap* bitmap, word_t* addr);
 
 int bitmap_get_bit(Bitmap* bitmap, word_t* addr);
 
-void bitmap_print(Bitmap* bitmap);
-void bitmap_print_with_rtti(Bitmap* bitmap);
-
 void bitmap_clone(Bitmap* bitmap, Bitmap* clone);
 
 void bitmap_grow(Bitmap* bitmap, size_t nb_words);

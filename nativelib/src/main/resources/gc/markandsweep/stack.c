@@ -14,10 +14,6 @@ int stack_push(Stack* stack, Stack_Type word) {
         stack->bottom[stack->current++] = word;
         return 0;
     } else {
-        #ifdef STACK_OVERFLOW_PRINT
-            printf("Overflow !\n");
-        #endif
-
         return 1;
     }
 }
@@ -30,7 +26,6 @@ Stack_Type stack_pop(Stack* stack) {
 int stack_is_empty(Stack* stack) {
     return stack->current == 0;
 }
-
 
 void stack_double_size(Stack* stack) {
     assert(stack->current == 0);
