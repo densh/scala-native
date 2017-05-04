@@ -69,11 +69,11 @@ void heap_grow(Heap *heap, size_t nb_words) {
 }
 
 void grow_heap(size_t nb_words) {
-    size_t current_size = heap_->nb_words;
+    size_t current_size = heap->nb_words;
     size_t increment = current_size / 4;
     size_t chunk_size = 1L << log2_ceil(nb_words);
     if (nb_words > 0 && chunk_size > increment) {
         increment = chunk_size;
     }
-    heap_grow(heap_, increment);
+    heap_grow(heap, increment);
 }

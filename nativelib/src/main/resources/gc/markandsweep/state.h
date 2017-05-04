@@ -7,7 +7,6 @@
 #include "types.h"
 
 extern FreeList *free_list;
-extern Heap *heap_;
 extern Heap *heap;
 extern Stack *stack;
 extern word_t *overflow_current_addr;

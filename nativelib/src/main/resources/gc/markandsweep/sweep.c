@@ -35,9 +35,9 @@ int sweep_chunk(word_t *chunk) {
         current_size = block_size;
         // Current block is alive, set bit to 1 and go to next block
         // !!! DIFF BETWEEN UNALLOCATED CHUNK SPACE AND MARKED DATA
-        if (!bitmap_get_bit(heap_->bitmap, current) &&
+        if (!bitmap_get_bit(heap->bitmap, current) &&
             header_unpack_tag(current) == tag_allocated) {
-            bitmap_set_bit(heap_->bitmap, current);
+            bitmap_set_bit(heap->bitmap, current);
             current += block_size;
             full_chunk = 0;
         } else {
@@ -47,7 +47,7 @@ int sweep_chunk(word_t *chunk) {
             while (next <= chunk + (SMALLEST_CHUNK_SIZE - block_size) &&
                    header_unpack_tag(next) != tag_allocated) {
                 current_size = current_size + block_size;
-                bitmap_clear_bit(heap_->bitmap, next);
+                bitmap_clear_bit(heap->bitmap, next);
                 next = next + block_size;
             }
             // If accumulated size is smaller than a full chunk, add all block
@@ -68,21 +68,21 @@ int sweep_chunk(word_t *chunk) {
 
 // FIX THIS, SWEEP_CHUNK RETURN
 void sweep() {
-    word_t *current = heap_->heap_start;
+    word_t *current = heap->heap_start;
     size_t current_size = 0;
     size_t chunk_size;
 
     free_list_clear_lists(free_list);
 
     // While we dont hit the end of the heap
-    while (current != heap_->heap_end &&
-           current != heap_->heap_end + SMALLEST_CHUNK_SIZE) {
+    while (current != heap->heap_end &&
+           current != heap->heap_end + SMALLEST_CHUNK_SIZE) {
         current_size = SMALLEST_CHUNK_SIZE;
 
         if ((chunk_size = sweep_chunk(current))) {
             word_t *next = current + chunk_size;
             current_size = chunk_size;
-            while (next < heap_->heap_end && (chunk_size = sweep_chunk(next))) {
+            while (next < heap->heap_end && (chunk_size = sweep_chunk(next))) {
                 current_size += chunk_size;
                 bitmap_clear_bit(free_list->bitmap, next);
                 next += chunk_size;

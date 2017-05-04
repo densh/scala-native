@@ -1,7 +1,6 @@
 #include "state.h"
 
 FreeList *free_list = NULL;
-Heap *heap_ = NULL;
 Heap *heap = NULL;
 Stack *stack = NULL;
 word_t *overflow_current_addr = NULL;
