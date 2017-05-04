@@ -81,9 +81,6 @@ void free_list_add_block(FreeList *list, word_t *block,
                           block_size_with_header);
     list->free += block_size_with_header;
     bitmap_set_bit(list->bitmap, block);
-    /*for(int i=1; i < block_size_with_header; i++) {
-        assert(!bitmap_get_bit(list->bitmap, block + i));
-    }*/
 }
 
 word_t *free_list_get_block(FreeList *list, size_t object_size) {
@@ -98,7 +95,6 @@ word_t *free_list_get_block(FreeList *list, size_t object_size) {
         block->header.size = object_size;
         block->header.tag = tag_allocated;
         bitmap_set_bit(list->bitmap, (word_t *)block);
-        // check_block(list, (word_t*) block, object_size);
         return (word_t *)block;
     }
 
@@ -120,7 +116,6 @@ word_t *free_list_get_block(FreeList *list, size_t object_size) {
             remaining < block_size || remaining == SMALLEST_CHUNK_SIZE
                 ? NULL
                 : list->chunk[list_index];
-        // check_block(list, (word_t*) block, object_size);
         return (word_t *)block;
     }
 
@@ -128,7 +123,6 @@ word_t *free_list_get_block(FreeList *list, size_t object_size) {
     if (block != NULL) {
         linked_list_remove_block(list->list[list_index], block, object_size);
         bitmap_set_bit(list->bitmap, (word_t *)block);
-        // check_block(list, (word_t*) block, object_size);
         return (word_t *)block;
     }
 
@@ -151,7 +145,6 @@ word_t *free_list_get_block(FreeList *list, size_t object_size) {
         remaining < block_size || remaining == SMALLEST_CHUNK_SIZE
             ? NULL
             : list->chunk[list_index];
-    // check_block(list, (word_t*) block, object_size);
     return (word_t *)block;
 }
 
