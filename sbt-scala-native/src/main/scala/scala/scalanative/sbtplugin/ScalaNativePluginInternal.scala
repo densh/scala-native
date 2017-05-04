@@ -483,8 +483,9 @@ object ScalaNativePluginInternal {
   }
 
   private def garbageCollector(gc: String) = gc match {
-    case "none"  => GarbageCollector.None
-    case "boehm" => GarbageCollector.Boehm
+    case "none"         => GarbageCollector.None
+    case "boehm"        => GarbageCollector.Boehm
+    case "markandsweep" => GarbageCollector.MarkAndSweep
     case value =>
       throw new MessageOnlyException(
         "nativeGC can be either \"none\" or \"boehm\", not: " + value)
