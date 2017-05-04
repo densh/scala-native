@@ -1,10 +1,10 @@
+#ifndef MARKANDSWEEP_BITMAP_H
+#define MARKANDSWEEP_BITMAP_H
+
 #include <limits.h>
 #include <memory.h>
 #include <stdlib.h>
 #include "types.h"
-
-#ifndef MARKANDSWEEP_BITMAP_H
-#define MARKANDSWEEP_BITMAP_H
 
 typedef struct {
     size_t size;

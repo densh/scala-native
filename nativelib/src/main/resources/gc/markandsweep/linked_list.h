@@ -1,10 +1,10 @@
+#ifndef LINKED_LIST_H
+#define LINKED_LIST_H
+
 #include <stddef.h>
 #include "block.h"
 #include "types.h"
 #include "bitmap.h"
-
-#ifndef LINKED_LIST_H
-#define LINKED_LIST_H
 
 typedef struct {
     Block* first;

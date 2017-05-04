@@ -1,10 +1,10 @@
+#ifndef MARKANDSWEEP_FREE_LIST_H
+#define MARKANDSWEEP_FREE_LIST_H
+
 #include "bitmap.h"
 #include "types.h"
 #include "linked_list.h"
 #include "chunk_allocator.h"
-
-#ifndef MARKANDSWEEP_FREE_LIST_H
-#define MARKANDSWEEP_FREE_LIST_H
 
 #define SMALLEST_BLOCK_SIZE 2
 #define LARGEST_CONST 16
