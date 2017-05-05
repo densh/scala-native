@@ -4,6 +4,7 @@
 #include "Marker.h"
 #include "Block.h"
 #include "Log.h"
+#include "Time.h"
 
 extern int __object_array_id;
 extern word_t *__modules;
@@ -99,6 +100,9 @@ void marker_mark(Heap *heap, Stack *stack) {
 }
 
 void mark_roots_stack(Heap *heap, Stack *stack) {
+#ifdef DEBUG_PRINT
+    long long start = nano_time();
+#endif
     unw_cursor_t cursor;
     unw_context_t context;
     unw_getcontext(&context);
@@ -125,6 +129,10 @@ void mark_roots_stack(Heap *heap, Stack *stack) {
         }
         p += 8;
     }
+#ifdef DEBUG_PRINT
+    long long end = nano_time();
+    printf("mark_roots: %lld ns\n", end - start);
+#endif
 }
 
 void mark_roots_modules(Heap *heap, Stack *stack) {

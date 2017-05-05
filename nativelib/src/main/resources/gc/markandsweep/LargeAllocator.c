@@ -3,6 +3,7 @@
 #include "utils/MathUtils.h"
 #include "Object.h"
 #include "Log.h"
+#include "Time.h"
 
 inline int size_to_linked_list(uint32_t size) {
     assert(size >= LARGE_OBJECT_MIN_SIZE);
@@ -106,6 +107,10 @@ void clearFreeLists(LargeAllocator *allocator) {
 
 // Sweeps through the whole large heap.
 void largeAllocator_sweep(LargeAllocator *allocator) {
+#ifdef DEBUG_PRINT
+    long long start = nano_time();
+#endif
+
     allocator->allocCount = 0;
 
     // Clears all linkedlists
@@ -138,4 +143,8 @@ void largeAllocator_sweep(LargeAllocator *allocator) {
             current = next;
         }
     }
+#ifdef DEBUG_PRINT
+    long long end = nano_time();
+    printf("largeAllocator_sweep: %lld ns\n", end - start);
+#endif
 }

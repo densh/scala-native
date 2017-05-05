@@ -2,6 +2,7 @@
 #include "Allocator.h"
 #include "Block.h"
 #include "Log.h"
+#include "Time.h"
 
 inline uint32_t sizeToAllocatableSize(uint32_t size) {
     assert(size < LARGE_OBJECT_MIN_SIZE);
@@ -94,6 +95,7 @@ void allocator_sweep(Allocator *allocator) {
     printf("from free list: %ld\nfrom chunk: %ld\n", allocator->fromFreeList,
            allocator->fromChunk);
     fflush(stdout);
+    long long start = nano_time();
 #endif
 
     allocator->fromFreeList = 0;
@@ -114,4 +116,8 @@ void allocator_sweep(Allocator *allocator) {
         block_sweep(allocator, (BlockHeader *)current);
         current += BLOCK_SIZE;
     }
+#ifdef DEBUG_PRINT
+    long long end = nano_time();
+    printf("allocator_sweep: %lld ns\n", end - start);
+#endif
 }

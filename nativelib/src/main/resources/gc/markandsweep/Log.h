@@ -5,8 +5,7 @@
 #define NDEBUG
 #include <assert.h>
 
-//#define DEBUG_PRINT
-
+#define DEBUG_PRINT
 //#define PRINT_STACK_OVERFLOW
 
 #endif // MARKANDSWEEP_LOG_H
