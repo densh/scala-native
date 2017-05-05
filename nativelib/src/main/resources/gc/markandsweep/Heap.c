@@ -70,19 +70,6 @@ Object* heap_alloc(Heap* heap, uint32_t size) {
     }
 }
 
-inline bool heap_isWordInHeap(Heap* heap, word_t* word) {
-    return word != NULL && (heap_isWordInSmallHeap(heap, word) || heap_isWordInLargeHeap(heap, word));
-}
-inline bool heap_isWordInSmallHeap(Heap* heap, word_t* word) {
-    return word != NULL && word >= heap->heapStart && word < heap->heapEnd;
-}
-inline bool heap_isWordInLargeHeap(Heap* heap, word_t* word) {
-    return word != NULL && word >= heap->largeHeapStart && word < heap->largeHeapEnd;
-}
-inline bool heap_isObjectInHeap(Heap* heap, Object* object) {
-    return heap_isWordInHeap(heap, (word_t*)object);
-}
-
 void heap_collect(Heap* heap) {
     allocator_sweep(heap->allocator);
     largeAllocator_sweep(heap->largeAllocator);

@@ -2,12 +2,11 @@
 #define MARKANDSWEEP_LOG_H
 
 // Used to enable/disable asserts
-//#define NDEBUG
+#define NDEBUG
 #include <assert.h>
 
+//#define DEBUG_PRINT
 
-#define DEBUG_PRINT
-
-#define PRINT_STACK_OVERFLOW
+//#define PRINT_STACK_OVERFLOW
 
 #endif //MARKANDSWEEP_LOG_H
