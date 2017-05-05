@@ -8,17 +8,16 @@
 
 #define BLOCK_MASK (~((unsigned long long)(BLOCK_SIZE * WORD_SIZE) - 1))
 
-
 #define OBJECT_MIN_SIZE_BITS 1
 #define OBJECT_MIN_SIZE (1 << OBJECT_MIN_SIZE_BITS)
 
 #define LARGE_OBJECT_MIN_SIZE_BITS 7
 #define LARGE_OBJECT_MIN_SIZE (1 << LARGE_OBJECT_MIN_SIZE_BITS)
 
-#define LARGE_OBJECT_MIN_SIZE_MASK (~((unsigned long long)(LARGE_OBJECT_MIN_SIZE * WORD_SIZE) - 1))
+#define LARGE_OBJECT_MIN_SIZE_MASK                                             \
+    (~((unsigned long long)(LARGE_OBJECT_MIN_SIZE * WORD_SIZE) - 1))
 
 #define LARGE_OBJECT_MAX_SIZE_BITS 31
 #define LARGE_OBJECT_MAX_SIZE (1UL << LARGE_OBJECT_MAX_SIZE_BITS)
 
-
-#endif //MARKANDSWEEP_CONSTANTS_H
+#endif // MARKANDSWEEP_CONSTANTS_H

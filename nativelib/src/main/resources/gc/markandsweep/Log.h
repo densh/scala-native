@@ -9,4 +9,4 @@
 
 //#define PRINT_STACK_OVERFLOW
 
-#endif //MARKANDSWEEP_LOG_H
+#endif // MARKANDSWEEP_LOG_H

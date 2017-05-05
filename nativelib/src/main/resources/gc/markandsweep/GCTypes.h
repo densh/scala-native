@@ -5,4 +5,4 @@
 
 typedef uintptr_t word_t;
 
-#endif //MARKANDSWEEP_GCTYPES_H
+#endif // MARKANDSWEEP_GCTYPES_H

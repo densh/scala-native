@@ -6,7 +6,7 @@
 #include "datastructures/Stack.h"
 #include "Object.h"
 
-void marker_mark(Heap* heap, Stack*);
-void mark_roots(Heap* heap, Stack* stack);
+void marker_mark(Heap *heap, Stack *);
+void mark_roots(Heap *heap, Stack *stack);
 
-#endif //MARKANDSWEEP_MARKER_H
+#endif // MARKANDSWEEP_MARKER_H

@@ -6,10 +6,11 @@
 #include "Heap.h"
 #include "datastructures/Stack.h"
 
-#define LAST_BLOCK_PTR ((FreeBlockHeader*)-1)
+#define LAST_BLOCK_PTR ((FreeBlockHeader *)-1)
 
-FreeBlockHeader* block_getNextFreeBlock(FreeBlockHeader* freeBlock);
-void block_sweep(Allocator* allocator, BlockHeader* block);
-bool block_overflowHeapScan(BlockHeader* block, Heap* heap, Stack* stack, word_t** currentOverflowAddress);
+FreeBlockHeader *block_getNextFreeBlock(FreeBlockHeader *freeBlock);
+void block_sweep(Allocator *allocator, BlockHeader *block);
+bool block_overflowHeapScan(BlockHeader *block, Heap *heap, Stack *stack,
+                            word_t **currentOverflowAddress);
 
-#endif //MARKANDSWEEP_BLOCK_H
+#endif // MARKANDSWEEP_BLOCK_H

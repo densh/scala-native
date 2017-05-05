@@ -26,7 +26,7 @@ typedef struct {
 typedef struct {
     struct {
         int32_t id;
-        word_t* name;
+        word_t *name;
         int8_t kind;
     } rt;
     int64_t size;
@@ -36,11 +36,11 @@ typedef struct {
     } range;
     struct {
         int32_t dyn_method_count;
-        word_t* dyn_method_salt;
-        word_t* dyn_method_keys;
-        word_t* dyn_methods;
+        word_t *dyn_method_salt;
+        word_t *dyn_method_keys;
+        word_t *dyn_methods;
     } dynDispatchTable;
-    int64_t* refMapStruct;
+    int64_t *refMapStruct;
 } Rtti;
 
 typedef struct Object Object;
@@ -49,52 +49,50 @@ struct Object {
     ObjectHeader header;
     union {
         Rtti *rtti;
-        Object* next;
+        Object *next;
     };
-    word_t* fields[];
+    word_t *fields[];
 };
 
-static inline void object_mark(Object* object) {
-    object->header.marked = 0x1;
-}
+static inline void object_mark(Object *object) { object->header.marked = 0x1; }
 
-static inline void object_unmark(Object* object) {
+static inline void object_unmark(Object *object) {
     object->header.marked = 0x0;
 }
 
-static inline bool object_isMarked(Object* object) {
+static inline bool object_isMarked(Object *object) {
     return object->header.marked == 0x1;
 }
 
-static inline void object_setType(Object* object, ObjectType_t type) {
+static inline void object_setType(Object *object, ObjectType_t type) {
     object->header.type = type;
 }
 
-static inline bool object_isLarge(Object* object) {
+static inline bool object_isLarge(Object *object) {
     return object->header.type == object_large;
 }
 
-static inline bool object_isStandard(Object* object) {
+static inline bool object_isStandard(Object *object) {
     return object->header.type == object_standard;
 }
 
-static inline void object_setTag(Object* object, ObjectTag_t objectTag) {
+static inline void object_setTag(Object *object, ObjectTag_t objectTag) {
     object->header.tag = objectTag;
 }
 
-static inline bool object_isFree(Object* object) {
+static inline bool object_isFree(Object *object) {
     return object->header.tag == object_free;
 }
-static inline bool object_isAllocated(Object* object) {
+static inline bool object_isAllocated(Object *object) {
     return object->header.tag == object_allocated;
 }
 
-static inline uint32_t object_getSize(Object* object) {
+static inline uint32_t object_getSize(Object *object) {
     return object->header.size;
 }
 
-static inline void object_setSize(Object* object, uint32_t size) {
+static inline void object_setSize(Object *object, uint32_t size) {
     object->header.size = size;
 }
 
-#endif //MARKANDSWEEP_OBJECTHEADER_H
+#endif // MARKANDSWEEP_OBJECTHEADER_H

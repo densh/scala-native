@@ -21,13 +21,10 @@
 void *current = 0;
 void *end = 0;
 
-void scalanative_safepoint_init();
-
 void scalanative_init() {
     current = mmap(NULL, CHUNK, DUMMY_GC_PROT, DUMMY_GC_FLAGS, DUMMY_GC_FD,
                    DUMMY_GC_FD_OFFSET);
     end = current + CHUNK;
-    scalanative_safepoint_init();
 }
 
 void *scalanative_alloc_raw(size_t size) {

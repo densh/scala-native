@@ -11,26 +11,28 @@
 
 #define LARGEST_CONST_BITS 4
 #define LARGEST_CONST (1 << LARGEST_CONST_BITS)
-#define LIST_COUNT ((LARGEST_CONST - OBJECT_MIN_SIZE + 1) + (LARGE_OBJECT_MIN_SIZE_BITS - LARGEST_CONST_BITS))
+#define LIST_COUNT                                                             \
+    ((LARGEST_CONST - OBJECT_MIN_SIZE + 1) +                                   \
+     (LARGE_OBJECT_MIN_SIZE_BITS - LARGEST_CONST_BITS))
 
 typedef struct {
-    word_t* offset;
+    word_t *offset;
     size_t size;
-    word_t* blocks[LIST_COUNT];
+    word_t *blocks[LIST_COUNT];
     FreeList freeLists[LIST_COUNT];
-    FreeBlockHeader* freeBlocks;
-    FreeBlockHeader* lastFreeBlock; // Used to rebuild the freelist
+    FreeBlockHeader *freeBlocks;
+    FreeBlockHeader *lastFreeBlock; // Used to rebuild the freelist
     long fromFreeList;
     long fromChunk;
 } Allocator;
 
-Allocator* allocator_create(word_t* offset, size_t size);
-Object* allocator_alloc(Allocator* allocator, uint32_t size);
-void allocator_sweep(Allocator* allocator);
+Allocator *allocator_create(word_t *offset, size_t size);
+Object *allocator_alloc(Allocator *allocator, uint32_t size);
+void allocator_sweep(Allocator *allocator);
 
 inline int sizeToIndex(uint32_t object_size) {
     assert(object_size > 0 && object_size <= LARGE_OBJECT_MIN_SIZE);
-    if(object_size <= OBJECT_MIN_SIZE) {
+    if (object_size <= OBJECT_MIN_SIZE) {
         return 0;
     } else if (object_size <= LARGEST_CONST) {
         return object_size - OBJECT_MIN_SIZE;
@@ -40,4 +42,4 @@ inline int sizeToIndex(uint32_t object_size) {
     }
 }
 
-#endif //MARKANDSWEEP_ALLOCATOR_H
+#endif // MARKANDSWEEP_ALLOCATOR_H

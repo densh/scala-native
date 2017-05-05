@@ -6,9 +6,8 @@
 #include "Marker.h"
 #include "Log.h"
 
-
-Heap* heap = NULL;
-Stack* stack = NULL;
+Heap *heap = NULL;
+Stack *stack = NULL;
 
 void scalanative_init() {
     heap = heap_create();
@@ -28,17 +27,18 @@ void scalanative_collect() {
 #endif
 }
 
-void* allocate(size_t byteSize) {
+void *allocate(size_t byteSize) {
     assert(heap != NULL);
 
-    // Divide size by WORD_SIZE, round up and add 1 (for the header) to get the number of words
+    // Divide size by WORD_SIZE, round up and add 1 (for the header) to get the
+    // number of words
     uint32_t wordSize = (uint32_t)((byteSize + WORD_SIZE - 1) / WORD_SIZE) + 1;
-    word_t* alloc = (word_t*)heap_alloc(heap, wordSize);
-    if(alloc == NULL) {
+    word_t *alloc = (word_t *)heap_alloc(heap, wordSize);
+    if (alloc == NULL) {
         scalanative_collect();
 
-        alloc = (word_t*)heap_alloc(heap, wordSize);
-        if(alloc == NULL) {
+        alloc = (word_t *)heap_alloc(heap, wordSize);
+        if (alloc == NULL) {
             printf("Failed to alloc: %zu\n", byteSize);
             printf("Out of memory\n");
             fflush(stdout);
@@ -52,19 +52,12 @@ void* allocate(size_t byteSize) {
     return alloc + 1;
 }
 
-void* scalanative_alloc(void* info, size_t size) {
-    void** alloc = (void**) allocate(size);
+void *scalanative_alloc(void *info, size_t size) {
+    void **alloc = (void **)allocate(size);
     *alloc = info;
-    return (void*) alloc;
+    return (void *)alloc;
 }
 
-void* scalanative_alloc_raw(size_t size) {
-    return allocate(size);
-}
+void *scalanative_alloc_raw(size_t size) { return allocate(size); }
 
-void* scalanative_alloc_raw_atomic(size_t size) {
-    return allocate(size);
-}
-
-
-
+void *scalanative_alloc_raw_atomic(size_t size) { return allocate(size); }
