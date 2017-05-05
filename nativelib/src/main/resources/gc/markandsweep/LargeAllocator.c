@@ -4,7 +4,6 @@
 #include "Object.h"
 #include "Log.h"
 
-
 inline int size_to_linked_list(uint32_t size) {
     assert(size >= LARGE_OBJECT_MIN_SIZE);
     return log2_floor(size) - LARGE_OBJECT_MIN_SIZE_BITS;
