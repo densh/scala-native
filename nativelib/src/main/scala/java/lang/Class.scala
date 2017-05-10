@@ -1,7 +1,7 @@
 package java.lang
 
 import scalanative.native._
-import scalanative.runtime.{Array => _, _}
+import scalanative.runtime._
 
 // These two methods are generated at link-time by the toolchain
 // using current closed-world knowledge of classes and traits in
@@ -20,14 +20,14 @@ final class _Class[A](val ty: Ptr[Type]) {
     obj.asInstanceOf[A]
 
   def getComponentType(): _Class[_] = {
-    if (ty == typeof[BooleanArray]) classOf[scala.Boolean]
-    else if (ty == typeof[CharArray]) classOf[scala.Char]
-    else if (ty == typeof[ByteArray]) classOf[scala.Byte]
-    else if (ty == typeof[ShortArray]) classOf[scala.Short]
-    else if (ty == typeof[IntArray]) classOf[scala.Int]
-    else if (ty == typeof[LongArray]) classOf[scala.Long]
-    else if (ty == typeof[FloatArray]) classOf[scala.Float]
-    else if (ty == typeof[DoubleArray]) classOf[scala.Double]
+    if (ty == typeof[Array[scala.Boolean]]) classOf[scala.Boolean]
+    else if (ty == typeof[Array[scala.Char]]) classOf[scala.Char]
+    else if (ty == typeof[Array[scala.Byte]]) classOf[scala.Byte]
+    else if (ty == typeof[Array[scala.Short]]) classOf[scala.Short]
+    else if (ty == typeof[Array[scala.Int]]) classOf[scala.Int]
+    else if (ty == typeof[Array[scala.Long]]) classOf[scala.Long]
+    else if (ty == typeof[Array[scala.Float]]) classOf[scala.Float]
+    else if (ty == typeof[Array[scala.Double]]) classOf[scala.Double]
     else classOf[java.lang.Object]
   }
 
@@ -44,15 +44,15 @@ final class _Class[A](val ty: Ptr[Type]) {
     ???
 
   def isArray(): scala.Boolean =
-    (ty == typeof[BooleanArray] ||
-      ty == typeof[CharArray] ||
-      ty == typeof[ByteArray] ||
-      ty == typeof[ShortArray] ||
-      ty == typeof[IntArray] ||
-      ty == typeof[LongArray] ||
-      ty == typeof[FloatArray] ||
-      ty == typeof[DoubleArray] ||
-      ty == typeof[ObjectArray])
+    (ty == typeof[Array[scala.Boolean]] ||
+      ty == typeof[Array[scala.Char]] ||
+      ty == typeof[Array[scala.Byte]] ||
+      ty == typeof[Array[scala.Short]] ||
+      ty == typeof[Array[scala.Int]] ||
+      ty == typeof[Array[scala.Long]] ||
+      ty == typeof[Array[scala.Float]] ||
+      ty == typeof[Array[scala.Double]] ||
+      ty == typeof[Array[Object]])
 
   def isAssignableFrom(that: Class[_]): scala.Boolean =
     is(that.asInstanceOf[_Class[_]].ty, ty)

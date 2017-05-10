@@ -63,6 +63,37 @@ package object runtime {
   /** Intrinsified int to unsigned long conversion. */
   def intToULong(v: Int): Long = undefined
 
+  /** Point to n-th element of the char array. */
+  def arrayAt(arr: Array[Char], n: Int): Ptr[Char] = undefined
+
+  /** Point to n-th element of the boolean array. */
+  def arrayAt(arr: Array[Boolean], n: Int): Ptr[Byte] = undefined
+
+  /** Point to n-th element of the byte array. */
+  def arrayAt(arr: Array[Byte], n: Int): Ptr[Byte] = undefined
+
+  /** Point to n-th element of the short array. */
+  def arrayAt(arr: Array[Short], n: Int): Ptr[Short] = undefined
+
+  /** Point to n-th element of the int array. */
+  def arrayAt(arr: Array[Int], n: Int): Ptr[Int] = undefined
+
+  /** Point to n-th element of the long array. */
+  def arrayAt(arr: Array[Long], n: Int): Ptr[Long] = undefined
+
+  /** Point to n-th element of the long array. */
+  def arrayAt(arr: Array[Float], n: Int): Ptr[Float] = undefined
+
+  /** Point to n-th element of the long array. */
+  def arrayAt(arr: Array[Double], n: Int): Ptr[Double] = undefined
+
+  /** Copy from one array to another. */
+  def arrayCopy(from: AnyRef,
+                fromPos: Int,
+                to: AnyRef,
+                toPos: Int,
+                len: Int): Unit = undefined
+
   /** Select value without branching. */
   def select[T](cond: Boolean, thenp: T, elsep: T)(implicit tag: Tag[T]): T =
     undefined
@@ -95,8 +126,8 @@ package object runtime {
   /** Initialize runtime with given arguments and return the
    *  rest as Java-style array.
    */
-  def init(argc: Int, argv: Ptr[Ptr[Byte]]): ObjectArray = {
-    val args = new scala.Array[String](argc - 1)
+  def init(argc: Int, argv: Ptr[Ptr[Byte]]): Array[String] = {
+    val args = new Array[String](argc - 1)
 
     // skip the executable name in argv(0)
     var c = 0
@@ -106,7 +137,7 @@ package object runtime {
       c += 1
     }
 
-    args.asInstanceOf[ObjectArray]
+    args
   }
 
   /** Run the runtime's event loop. The method is called from the

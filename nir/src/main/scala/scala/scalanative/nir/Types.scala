@@ -73,6 +73,7 @@ object Type {
   final case class Class(name: Global)  extends RefKind with Named
   final case class Trait(name: Global)  extends RefKind with Named
   final case class Module(name: Global) extends RefKind with Named
+  final case class ArrayClass(of: Type) extends RefKind
 
   val unbox = Map[Type, Type](
     Type.Class(Global.Top("java.lang.Boolean"))               -> Type.Bool,

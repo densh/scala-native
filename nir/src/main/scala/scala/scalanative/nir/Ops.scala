@@ -18,18 +18,24 @@ sealed abstract class Op {
     case Op.Conv(_, ty, _)                       => ty
     case Op.Select(_, v, _)                      => v.ty
 
-    case Op.Classalloc(n)     => Type.Class(n)
-    case Op.Field(_, _)       => Type.Ptr
-    case Op.Method(_, _)      => Type.Ptr
-    case Op.Dynmethod(_, _)   => Type.Ptr
-    case Op.Module(n, _)      => Type.Module(n)
-    case Op.As(ty, _)         => ty
-    case Op.Is(_, _)          => Type.Bool
-    case Op.Copy(v)           => v.ty
-    case Op.Sizeof(_)         => Type.Long
-    case Op.Closure(ty, _, _) => ty
-    case Op.Box(ty, _)        => ty
-    case Op.Unbox(ty, _)      => Type.unbox(ty)
+    case Op.Classalloc(n)           => Type.Class(n)
+    case Op.Fieldload(ty, _, _)     => ty
+    case Op.Fieldstore(ty, _, _, _) => Type.Unit
+    case Op.Method(_, _)            => Type.Ptr
+    case Op.Dynmethod(_, _)         => Type.Ptr
+    case Op.Module(n, _)            => Type.Module(n)
+    case Op.As(ty, _)               => ty
+    case Op.Is(_, _)                => Type.Bool
+    case Op.Copy(v)                 => v.ty
+    case Op.Sizeof(_)               => Type.Long
+    case Op.Closure(ty, _, _)       => ty
+    case Op.Box(ty, _)              => ty
+    case Op.Unbox(ty, _)            => Type.unbox(ty)
+    case Op.Arrayalloc(ty, _)       => Type.ArrayClass(ty)
+    case Op.Arraylength(arr)        => Type.Int
+    case Op.Arrayat(_, _, _)        => Type.Ptr
+    case Op.Arrayload(ty, _, _)     => ty
+    case Op.Arraystore(_, _, _, _)  => Type.Unit
   }
 
   final def show: String = nir.Show(this)
@@ -62,8 +68,10 @@ object Op {
     Store(ty, ptr, value, isVolatile = false)
 
   // high-level
-  final case class Classalloc(name: Global)                        extends Op
-  final case class Field(obj: Val, name: Global)                   extends Op
+  final case class Classalloc(name: Global)                    extends Op
+  final case class Fieldload(ty: Type, obj: Val, name: Global) extends Op
+  final case class Fieldstore(ty: Type, obj: Val, name: Global, value: Val)
+      extends Op
   final case class Method(obj: Val, name: Global)                  extends Op
   final case class Dynmethod(obj: Val, signature: String)          extends Op
   final case class Module(name: Global, unwind: Next)              extends Unwind
@@ -74,4 +82,10 @@ object Op {
   final case class Closure(ty: Type, fun: Val, captures: Seq[Val]) extends Op
   final case class Box(ty: Type, obj: Val)                         extends Op
   final case class Unbox(ty: Type, obj: Val)                       extends Op
+  final case class Arrayalloc(ty: Type, length: Val)               extends Op
+  final case class Arraylength(arr: Val)                           extends Op
+  final case class Arrayat(ty: Type, arr: Val, index: Val)         extends Op
+  final case class Arrayload(ty: Type, arr: Val, index: Val)       extends Op
+  final case class Arraystore(ty: Type, arr: Val, index: Val, value: Val)
+      extends Op
 }

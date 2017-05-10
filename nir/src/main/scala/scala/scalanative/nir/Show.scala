@@ -6,45 +6,42 @@ import scala.util.matching.Regex
 import util.{unreachable, ShowBuilder}
 
 object Show {
-  def newBuilder: NirShowBuilder = new NirShowBuilder(new ShowBuilder)
-  def debug[T](msg: String)(f: => T): T = {
-    val value = f
-    println("$msg: " + value)
-    value
+  def withBuilder(f: NirShowBuilder => Unit): String = {
+    val builder = new NirShowBuilder(new ShowBuilder)
+    f(builder)
+    builder.toString
   }
-
-  def apply(v: Attr): String  = { val b = newBuilder; b.attr_(v); b.toString }
-  def apply(v: Attrs): String = { val b = newBuilder; b.attrs_(v); b.toString }
-  def apply(v: Bin): String   = { val b = newBuilder; b.bin_(v); b.toString }
-  def apply(v: Comp): String  = { val b = newBuilder; b.comp_(v); b.toString }
-  def apply(v: Conv): String  = { val b = newBuilder; b.conv_(v); b.toString }
-  def apply(v: Defn): String  = { val b = newBuilder; b.defn_(v); b.toString }
-  def apply(v: Global): String = {
-    val b = newBuilder; b.global_(v); b.toString
-  }
-  def apply(v: Inst): String  = { val b = newBuilder; b.inst_(v); b.toString }
-  def apply(v: Local): String = { val b = newBuilder; b.local_(v); b.toString }
-  def apply(v: Next): String  = { val b = newBuilder; b.next_(v); b.toString }
-  def apply(v: Op): String    = { val b = newBuilder; b.op_(v); b.toString }
-  def apply(v: Type): String  = { val b = newBuilder; b.type_(v); b.toString }
-  def apply(v: Val): String   = { val b = newBuilder; b.val_(v); b.toString }
+  def apply(v: Attr): String      = withBuilder(_.showAttr(v))
+  def apply(v: Attrs): String     = withBuilder(_.showAttrs(v))
+  def apply(v: Bin): String       = withBuilder(_.showBin(v))
+  def apply(v: Comp): String      = withBuilder(_.showComp(v))
+  def apply(v: Conv): String      = withBuilder(_.showConv(v))
+  def apply(v: Defn): String      = withBuilder(_.showDefn(v))
+  def apply(v: Seq[Defn]): String = withBuilder(_.showDefns(v))
+  def apply(v: Global): String    = withBuilder(_.showGlobal(v))
+  def apply(v: Inst): String      = withBuilder(_.showInst(v))
+  def apply(v: Local): String     = withBuilder(_.showLocal(v))
+  def apply(v: Next): String      = withBuilder(_.showNext(v))
+  def apply(v: Op): String        = withBuilder(_.showOp(v))
+  def apply(v: Type): String      = withBuilder(_.showType(v))
+  def apply(v: Val): String       = withBuilder(_.showVal(v))
 
   final class NirShowBuilder(val builder: ShowBuilder) extends AnyVal {
     import builder._
 
-    def attrs_(attrs: Attrs): Unit =
+    def showAttrs(attrs: Attrs): Unit =
       if (attrs == Attrs.None) {
         ()
       } else {
-        attrs_(attrs.toSeq)
+        showAttrs(attrs.toSeq)
       }
 
-    def attrs_(attrs: Seq[Attr]): Unit = {
-      rep(attrs, sep = " ")(attr_)
+    def showAttrs(attrs: Seq[Attr]): Unit = {
+      rep(attrs, sep = " ")(showAttr)
       str(" ")
     }
 
-    def attr_(attr: Attr): Unit = attr match {
+    def showAttr(attr: Attr): Unit = attr match {
       case Attr.MayInline =>
         str("mayinline")
       case Attr.InlineHint =>
@@ -65,7 +62,7 @@ object Show {
         str("extern")
       case Attr.Override(name) =>
         str("override(")
-        global_(name)
+        showGlobal(name)
         str(")")
       case Attr.Link(name) =>
         str("link(")
@@ -73,244 +70,286 @@ object Show {
         str(")")
       case Attr.PinAlways(name) =>
         str("pin(")
-        global_(name)
+        showGlobal(name)
         str(")")
       case Attr.PinIf(name, cond) =>
         str("pin-if(")
-        global_(name)
+        showGlobal(name)
         str(", ")
-        global_(cond)
+        showGlobal(cond)
         str(")")
       case Attr.PinWeak(name) =>
         str("pin-weak(")
-        global_(name)
+        showGlobal(name)
         str(")")
     }
 
-    def next_(next: Next): Unit = next match {
+    def showNext(next: Next): Unit = next match {
       case Next.Label(name, Seq()) =>
-        local_(name)
+        showLocal(name)
       case Next.Label(name, args) =>
-        local_(name)
+        showLocal(name)
         str("(")
-        rep(args, sep = ", ")(val_)
+        rep(args, sep = ", ")(showVal)
         str(")")
       case Next.Unwind(name) =>
         str("unwind ")
-        local_(name)
+        showLocal(name)
       case Next.Case(v, name) =>
         str("case ")
-        val_(v)
+        showVal(v)
         str(" => ")
-        local_(name)
+        showLocal(name)
     }
 
-    def inst_(inst: Inst): Unit = inst match {
+    def showInst(inst: Inst): Unit = inst match {
       case Inst.None =>
         str("none")
       case Inst.Label(name, params) =>
-        local_(name)
+        showLocal(name)
         if (params.isEmpty) {
           ()
         } else {
           str("(")
           rep(params, sep = ", ") {
             case Val.Local(n, ty) =>
-              local_(n)
+              showLocal(n)
               str(" : ")
-              type_(ty)
+              showType(ty)
           }
           str(")")
         }
         str(":")
       case Inst.Let(name, op) =>
-        local_(name)
+        showLocal(name)
         str(" = ")
-        op_(op)
+        showOp(op)
       case Inst.Unreachable =>
         str("unreachable")
       case Inst.Ret(Val.None) =>
         str("ret")
       case Inst.Ret(value) =>
         str("ret ")
-        val_(value)
+        showVal(value)
       case Inst.Jump(next) =>
         str("jump ")
-        next_(next)
+        showNext(next)
       case Inst.If(cond, thenp, elsep) =>
         str("if ")
-        val_(cond)
+        showVal(cond)
         str(" then ")
-        next_(thenp)
+        showNext(thenp)
         str(" else ")
-        next_(elsep)
+        showNext(elsep)
       case Inst.Switch(scrut, default, cases) =>
         str("switch ")
-        val_(scrut)
+        showVal(scrut)
         str(" {")
         indent()
         rep(cases) { next =>
           newline()
-          next_(next)
+          showNext(next)
         }
         newline()
         str("default => ")
-        next_(default)
+        showNext(default)
         unindent()
         newline()
         str("}")
       case Inst.Throw(v, unwind) =>
         str("throw ")
-        val_(v)
+        showVal(v)
         if (unwind ne Next.None) {
           str(" ")
-          next_(unwind)
+          showNext(unwind)
         }
     }
 
-    def op_(op: Op): Unit = op match {
+    def showOp(op: Op): Unit = op match {
       case Op.Call(ty, f, args, unwind) =>
         str("call[")
-        type_(ty)
+        showType(ty)
         str("] ")
-        val_(f)
+        showVal(f)
         str("(")
-        rep(args, sep = ", ")(val_)
+        rep(args, sep = ", ")(showVal)
         str(")")
         if (unwind ne Next.None) {
           str(" ")
-          next_(unwind)
+          showNext(unwind)
         }
       case Op.Load(ty, ptr, isVolatile) =>
         str(if (isVolatile) "volatile load[" else "load[")
-        type_(ty)
+        showType(ty)
         str("] ")
-        val_(ptr)
+        showVal(ptr)
       case Op.Store(ty, ptr, value, isVolatile) =>
         str(if (isVolatile) "volatile store[" else "store[")
-        type_(ty)
+        showType(ty)
         str("] ")
-        val_(ptr)
+        showVal(ptr)
         str(", ")
-        val_(value)
+        showVal(value)
       case Op.Elem(ty, ptr, indexes) =>
         str("elem[")
-        type_(ty)
+        showType(ty)
         str("] ")
-        val_(ptr)
+        showVal(ptr)
         str(", ")
-        rep(indexes, sep = ", ")(str)
+        rep(indexes, sep = ", ")(showVal)
       case Op.Extract(aggr, indexes) =>
         str("extract ")
-        val_(aggr)
+        showVal(aggr)
         str(", ")
         rep(indexes, sep = ", ")(str)
       case Op.Insert(aggr, value, indexes) =>
         str("insert ")
-        val_(aggr)
+        showVal(aggr)
         str(", ")
-        val_(value)
+        showVal(value)
         str(", ")
         rep(indexes, sep = ", ")(str)
       case Op.Stackalloc(ty, n) =>
         str("stackalloc[")
-        type_(ty)
+        showType(ty)
         str("]")
         if (n ne Val.None) {
           str(" ")
-          val_(n)
+          showVal(n)
         }
       case Op.Bin(bin, ty, l, r) =>
-        bin_(bin)
+        showBin(bin)
         str("[")
-        type_(ty)
+        showType(ty)
         str("] ")
-        val_(l)
+        showVal(l)
         str(", ")
-        val_(r)
+        showVal(r)
       case Op.Comp(comp, ty, l, r) =>
-        comp_(comp)
+        showComp(comp)
         str("[")
-        type_(ty)
+        showType(ty)
         str("] ")
-        val_(l)
+        showVal(l)
         str(", ")
-        val_(r)
+        showVal(r)
       case Op.Conv(conv, ty, v) =>
-        conv_(conv)
+        showConv(conv)
         str("[")
-        type_(ty)
+        showType(ty)
         str("] ")
-        val_(v)
+        showVal(v)
       case Op.Select(cond, thenv, elsev) =>
         str("select ")
-        val_(cond)
+        showVal(cond)
         str(", ")
-        val_(thenv)
+        showVal(thenv)
         str(", ")
-        val_(elsev)
+        showVal(elsev)
 
       case Op.Classalloc(name) =>
         str("classalloc ")
-        global_(name)
-      case Op.Field(value, name) =>
-        str("field ")
-        val_(value)
+        showGlobal(name)
+      case Op.Fieldload(ty, obj, name) =>
+        str("fieldload[")
+        showType(ty)
+        str("]")
+        showVal(obj)
         str(", ")
-        global_(name)
+        showGlobal(name)
+      case Op.Fieldstore(ty, obj, name, value) =>
+        str("fieldstore[")
+        showType(ty)
+        str("]")
+        showVal(obj)
+        str(", ")
+        showGlobal(name)
+        str(", ")
+        showVal(value)
       case Op.Method(value, name) =>
         str("method ")
-        val_(value)
+        showVal(value)
         str(", ")
-        global_(name)
+        showGlobal(name)
       case Op.Dynmethod(value, signature) =>
         str("dynmethod ")
-        val_(value)
+        showVal(value)
         str(", \"")
         str(escapeQuotes(signature))
         str("\"")
       case Op.Module(name, unwind) =>
         str("module ")
-        global_(name)
+        showGlobal(name)
         if (unwind ne Next.None) {
           str(" ")
-          next_(unwind)
+          showNext(unwind)
         }
       case Op.As(ty, v) =>
         str("as[")
-        type_(ty)
+        showType(ty)
         str("] ")
-        val_(v)
+        showVal(v)
       case Op.Is(ty, v) =>
         str("is[")
-        type_(ty)
+        showType(ty)
         str("] ")
-        val_(v)
+        showVal(v)
       case Op.Copy(value) =>
         str("copy ")
-        val_(value)
+        showVal(value)
       case Op.Sizeof(ty) =>
         str("sizeof[")
-        type_(ty)
+        showType(ty)
         str("] ")
       case Op.Closure(ty, fun, captures) =>
         str("closure[")
-        type_(ty)
+        showType(ty)
         str("] ")
-        rep(fun +: captures, sep = ", ")(val_)
+        rep(fun +: captures, sep = ", ")(showVal)
       case Op.Box(ty, v) =>
         str("box[")
-        type_(ty)
+        showType(ty)
         str("] ")
-        val_(v)
+        showVal(v)
       case Op.Unbox(ty, v) =>
         str("unbox[")
-        type_(ty)
+        showType(ty)
         str("] ")
-        val_(v)
+        showVal(v)
+      case Op.Arrayalloc(ty, n) =>
+        str("arrayalloc[")
+        showType(ty)
+        str("] ")
+        showVal(n)
+      case Op.Arraylength(obj) =>
+        str("arraylength ")
+        showVal(obj)
+      case Op.Arrayat(ty, obj, index) =>
+        str("arrayat[")
+        showType(ty)
+        str("] ")
+        showVal(obj)
+        str(", ")
+        showVal(index)
+      case Op.Arrayload(ty, obj, index) =>
+        str("arrayload[")
+        showType(ty)
+        str("] ")
+        showVal(obj)
+        str(", ")
+        showVal(index)
+      case Op.Arraystore(ty, obj, index, value) =>
+        str("arraystore[")
+        showType(ty)
+        str("] ")
+        showVal(obj)
+        str(", ")
+        showVal(index)
+        str(", ")
+        showVal(value)
     }
 
-    def bin_(bin: Bin): Unit = bin match {
+    def showBin(bin: Bin): Unit = bin match {
       case Bin.Iadd => str("iadd")
       case Bin.Fadd => str("fadd")
       case Bin.Isub => str("isub")
@@ -331,7 +370,7 @@ object Show {
       case Bin.Xor  => str("xor")
     }
 
-    def comp_(comp: Comp): Unit = comp match {
+    def showComp(comp: Comp): Unit = comp match {
       case Comp.Ieq => str("ieq")
       case Comp.Ine => str("ine")
       case Comp.Ugt => str("ugt")
@@ -350,7 +389,7 @@ object Show {
       case Comp.Fle => str("fle")
     }
 
-    def conv_(conv: Conv): Unit = conv match {
+    def showConv(conv: Conv): Unit = conv match {
       case Conv.Trunc    => str("trunc")
       case Conv.Zext     => str("zext")
       case Conv.Sext     => str("sext")
@@ -365,7 +404,7 @@ object Show {
       case Conv.Bitcast  => str("bitcast")
     }
 
-    def val_(value: Val): Unit = value match {
+    def showVal(value: Val): Unit = value match {
       case Val.None =>
         str("none")
       case Val.True =>
@@ -376,11 +415,11 @@ object Show {
         str("null")
       case Val.Zero(ty) =>
         str("zero[")
-        type_(ty)
+        showType(ty)
         str("]")
       case Val.Undef(ty) =>
         str("undef[")
-        type_(ty)
+        showType(ty)
         str("]")
       case Val.Byte(value) =>
         str("byte ")
@@ -403,129 +442,129 @@ object Show {
       case Val.Struct(n, values) =>
         str("struct ")
         if (n ne Global.None) {
-          global_(n)
+          showGlobal(n)
           str(" ")
         }
         str("{")
-        rep(values, sep = ", ")(val_)
+        rep(values, sep = ", ")(showVal)
         str("}")
       case Val.Array(ty, values) =>
         str("array ")
-        type_(ty)
-        str(" {")
-        rep(values, sep = ", ")(val_)
+        showType(ty)
+        str("{")
+        rep(values, sep = ", ")(showVal)
         str("}")
       case Val.Chars(v) =>
         str("c\"")
         str(escapeNewLine(escapeQuotes(v)))
         str("\"")
       case Val.Local(name, ty) =>
-        local_(name)
+        showLocal(name)
         str(" : ")
-        type_(ty)
+        showType(ty)
       case Val.Global(name, ty) =>
-        global_(name)
+        showGlobal(name)
         str(" : ")
-        type_(ty)
+        showType(ty)
       case Val.Unit =>
         str("unit")
       case Val.Const(v) =>
         str("const ")
-        val_(v)
+        showVal(v)
       case Val.String(v) =>
         str("\"")
         str(escapeNewLine(escapeQuotes(v)))
         str("\"")
     }
 
-    def defns_(defns: Seq[Defn]): Unit =
+    def showDefns(defns: Seq[Defn]): Unit =
       rep(defns) { defn =>
         newline()
-        defn_(defn)
+        showDefn(defn)
       }
 
-    def defn_(defn: Defn): Unit = defn match {
+    def showDefn(defn: Defn): Unit = defn match {
       case Defn.Var(attrs, name, ty, v) =>
-        attrs_(attrs)
+        showAttrs(attrs)
         str("var ")
-        global_(name)
+        showGlobal(name)
         str(" : ")
-        type_(ty)
+        showType(ty)
         if (v ne Val.None) {
           str(" = ")
-          val_(v)
+          showVal(v)
         }
       case Defn.Const(attrs, name, ty, v) =>
-        attrs_(attrs)
+        showAttrs(attrs)
         str("const ")
-        global_(name)
+        showGlobal(name)
         str(" : ")
-        type_(ty)
+        showType(ty)
         if (v ne Val.None) {
           str(" = ")
-          val_(v)
+          showVal(v)
         }
       case Defn.Declare(attrs, name, ty) =>
-        attrs_(attrs)
+        showAttrs(attrs)
         str("def ")
-        global_(name)
+        showGlobal(name)
         str(" : ")
-        type_(ty)
+        showType(ty)
       case Defn.Define(attrs, name, ty, insts) =>
-        attrs_(attrs)
+        showAttrs(attrs)
         str("def ")
-        global_(name)
+        showGlobal(name)
         str(" : ")
-        type_(ty)
+        showType(ty)
         str(" {")
         rep(insts) {
           case inst: Inst.Label =>
             newline()
-            inst_(inst)
+            showInst(inst)
           case inst =>
             indent()
             newline()
-            inst_(inst)
+            showInst(inst)
             unindent()
         }
         newline()
         str("}")
       case Defn.Struct(attrs, name, tys) =>
-        attrs_(attrs)
+        showAttrs(attrs)
         str("struct ")
-        global_(name)
+        showGlobal(name)
         str(" {")
-        rep(tys, sep = ", ")(type_)
+        rep(tys, sep = ", ")(showType)
         str("}")
       case Defn.Trait(attrs, name, ifaces) =>
-        attrs_(attrs)
+        showAttrs(attrs)
         str("trait ")
-        global_(name)
+        showGlobal(name)
         if (ifaces.nonEmpty) {
           str(" : ")
-          rep(ifaces, sep = ", ")(global_)
+          rep(ifaces, sep = ", ")(showGlobal)
         }
       case Defn.Class(attrs, name, parent, ifaces) =>
         val parents = parent ++: ifaces
-        attrs_(attrs)
+        showAttrs(attrs)
         str("class ")
-        global_(name)
+        showGlobal(name)
         if (parents.nonEmpty) {
           str(" : ")
-          rep(parents, sep = ", ")(global_)
+          rep(parents, sep = ", ")(showGlobal)
         }
       case Defn.Module(attrs, name, parent, ifaces) =>
         val parents = parent ++: ifaces
-        attrs_(attrs)
+        showAttrs(attrs)
         str("module ")
-        global_(name)
+        showGlobal(name)
         if (parents.nonEmpty) {
           str(" : ")
-          rep(parents, sep = ", ")(global_)
+          rep(parents, sep = ", ")(showGlobal)
         }
     }
 
-    def type_(ty: Type): Unit = ty match {
+    def showType(ty: Type): Unit = ty match {
       case Type.None   => str("none")
       case Type.Void   => str("void")
       case Type.Vararg => str("...")
@@ -545,49 +584,52 @@ object Show {
 
       case Type.Array(ty, n) =>
         str("[")
-        type_(ty)
+        showType(ty)
         str(" x ")
         str(n)
         str("]")
       case Type.Function(args, ret) =>
         str("(")
-        rep(args, sep = ", ")(type_)
+        rep(args, sep = ", ")(showType)
         str(") => ")
-        type_(ret)
+        showType(ret)
       case Type.Struct(Global.None, tys) =>
         str("{")
-        rep(tys, sep = ", ")(type_)
+        rep(tys, sep = ", ")(showType)
         str("}")
       case Type.Struct(name, _) =>
         str("struct ")
-        global_(name)
+        showGlobal(name)
 
       case Type.Unit    => str("unit")
       case Type.Nothing => str("nothing")
       case Type.Class(name) =>
         str("class ")
-        global_(name)
+        showGlobal(name)
       case Type.Trait(name) =>
         str("trait ")
-        global_(name)
+        showGlobal(name)
       case Type.Module(name) =>
         str("module ")
-        global_(name)
+        showGlobal(name)
+      case Type.ArrayClass(ty) =>
+        str("array-class ")
+        str(ty)
     }
 
-    def global_(global: Global): Unit = global match {
+    def showGlobal(global: Global): Unit = global match {
       case Global.None =>
         unreachable
       case Global.Top(id) =>
         str("@")
         str(id)
       case Global.Member(n, id) =>
-        global_(n)
+        showGlobal(n)
         str("::")
         str(id)
     }
 
-    def local_(local: Local): Unit = local match {
+    def showLocal(local: Local): Unit = local match {
       case Local(scope, id) =>
         str("%")
         str(scope)

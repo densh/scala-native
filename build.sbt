@@ -9,7 +9,16 @@ val libCrossScalaVersions = Seq("2.11.8", "2.11.11")
 
 lazy val baseSettings = Seq(
   organization := "org.scala-native",
-  version := nativeVersion
+  version := nativeVersion,
+  scalacOptions ++= Seq(
+    "-deprecation",
+    "-unchecked",
+    "-feature",
+    "-encoding",
+    "utf8"
+  ),
+  javacOptions ++= Seq("-encoding", "utf8"),
+  resolvers := Nil
 )
 
 addCommandAlias(
@@ -158,31 +167,17 @@ lazy val noPublishSettings = Seq(
 lazy val toolSettings =
   baseSettings ++
     Seq(
-      scalaVersion := toolScalaVersion,
-      scalacOptions ++= Seq(
-        "-deprecation",
-        "-unchecked",
-        "-feature",
-        "-encoding",
-        "utf8"
-      ),
-      javacOptions ++= Seq("-encoding", "utf8")
+      scalaVersion := toolScalaVersion
     )
 
 lazy val libSettings =
   (baseSettings ++ ScalaNativePlugin.projectSettings.tail) ++ Seq(
-    scalaVersion := libScalaVersion,
-    resolvers := Nil,
-    scalacOptions ++= Seq(
-      "-encoding",
-      "utf8"
-    )
+    scalaVersion := libScalaVersion
   )
 
 lazy val projectSettings =
   ScalaNativePlugin.projectSettings ++ Seq(
-    scalaVersion := libScalaVersion,
-    resolvers := Nil
+    scalaVersion := libScalaVersion
   )
 
 lazy val util =

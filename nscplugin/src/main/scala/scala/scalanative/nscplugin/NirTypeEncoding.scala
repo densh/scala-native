@@ -111,7 +111,7 @@ trait NirTypeEncoding { self: NirCodeGen =>
     case UnitClass   => nir.Type.Unit
     case NullClass   => genRefType(RuntimeNullClass)
     case ArrayClass =>
-      genRefType(RuntimeArrayClass(genPrimCode(st.targs.head)))
+      nir.Type.ArrayClass(genPrimCodeType(genPrimCode(st.targs.head)))
     case _ if st.isStruct      => genStruct(st)
     case _ if st.isScalaModule => nir.Type.Module(genTypeName(st.sym))
     case _ if st.isInterface   => nir.Type.Trait(genTypeName(st.sym))
@@ -123,7 +123,18 @@ trait NirTypeEncoding { self: NirCodeGen =>
       case _ if st.sym == UnitClass =>
         genTypeValue(RuntimePrimitive('U'))
       case _ if st.sym == ArrayClass =>
-        genTypeValue(RuntimeArrayClass(genPrimCode(st.targs.head)))
+        val id = genPrimCode(st.targs.head.sym) match {
+          case 'C' => "__array_char_type"
+          case 'B' => "__array_bool_type"
+          case 'Z' => "__array_byte_type"
+          case 'S' => "__array_short_type"
+          case 'I' => "__array_int_type"
+          case 'L' => "__array_long_type"
+          case 'F' => "__array_float_type"
+          case 'D' => "__array_double_type"
+          case 'O' => "__array_object_type"
+        }
+        nir.Val.Global(nir.Global.Top(id), nir.Type.Ptr)
       case 'O' =>
         nir.Val.Global(genTypeName(st.sym), nir.Type.Ptr)
       case code =>
@@ -159,6 +170,22 @@ trait NirTypeEncoding { self: NirCodeGen =>
     case FloatClass   => 'F'
     case DoubleClass  => 'D'
     case _            => 'O'
+  }
+
+  def genPrimCodeType(ch: Char): nir.Type = ch match {
+    case 'C' => nir.Type.Char
+    case 'B' => nir.Type.Bool
+    case 'z' => nir.Type.Byte
+    case 'Z' => nir.Type.UByte
+    case 's' => nir.Type.Short
+    case 'S' => nir.Type.UShort
+    case 'i' => nir.Type.Int
+    case 'I' => nir.Type.UInt
+    case 'l' => nir.Type.Long
+    case 'L' => nir.Type.ULong
+    case 'F' => nir.Type.Float
+    case 'D' => nir.Type.Double
+    case 'O' => nir.Rt.Object
   }
 
   def genBoxType(st: SimpleType): nir.Type = st.sym match {

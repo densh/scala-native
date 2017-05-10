@@ -26,20 +26,6 @@ class ClassLowering(implicit top: Top, fresh: Fresh) extends Pass {
         true
     })
 
-  override def onInst(inst: Inst) = super.onInst {
-    inst match {
-      case Inst.Let(n, Op.Field(obj, FieldRef(cls: Class, fld))) =>
-        val layout = cls.layout
-        val ty     = layout.struct
-        val index  = layout.index(fld)
-
-        Inst.Let(n, Op.Elem(ty, obj, Seq(Val.Int(0), Val.Int(index))))
-
-      case _ =>
-        inst
-    }
-  }
-
   override def onType(ty: Type): Type = ty match {
     case ty: Type.RefKind if ty != Type.Unit =>
       Type.Ptr

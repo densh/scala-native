@@ -98,7 +98,7 @@ trait NirNameEncoding { self: NirCodeGen =>
       case nir.Type.Float       => sb.str("f32")
       case nir.Type.Double      => sb.str("f64")
       case nir.Type.Array(ty, n) =>
-        sb.str("arr.")
+        sb.str("carr.")
         printType(ty)
         sb.str(".")
         sb.str(n)
@@ -111,6 +111,9 @@ trait NirNameEncoding { self: NirCodeGen =>
       case nir.Type.Class(name)     => printGlobal(name)
       case nir.Type.Trait(name)     => printGlobal(name)
       case nir.Type.Module(name)    => printGlobal(name)
+      case nir.Type.ArrayClass(ty) =>
+        sb.str("arr.")
+        printType(ty)
     }
 
     def printGlobal(global: nir.Global): Unit = global match {

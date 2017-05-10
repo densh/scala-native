@@ -55,9 +55,9 @@ object ClassHierarchyExtractors {
   }
 
   object FieldRef extends Extractor[(Scope, Field)] {
-    def unapply(name: Global)(implicit top: Top): Option[(Scope, Field)] =
+    def unapply(name: Global)(implicit top: Top): Option[(Class, Field)] =
       top.nodes.get(name).collect {
-        case node: Field => (node.in, node)
+        case node: Field => (node.in.asInstanceOf[Class], node)
       }
   }
 }

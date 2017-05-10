@@ -15,13 +15,11 @@ object System {
                 srcPos: scala.Int,
                 dest: Object,
                 destPos: scala.Int,
-                length: scala.Int): Unit = {
-    scalanative.runtime.Array.copy(src, srcPos, dest, destPos, length)
-  }
+                length: scala.Int): Unit =
+    scalanative.runtime.arrayCopy(src, srcPos, dest, destPos, length)
 
-  def exit(status: Int): Unit = {
+  def exit(status: Int): Unit =
     Runtime.getRuntime().exit(status)
-  }
 
   def identityHashCode(x: Object): scala.Int =
     x.cast[Word].hashCode

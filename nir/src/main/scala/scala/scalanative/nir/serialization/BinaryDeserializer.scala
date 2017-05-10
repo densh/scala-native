@@ -240,20 +240,25 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     case T.SelectOp     => Op.Select(getVal, getVal, getVal)
 
     case T.ClassallocOp => Op.Classalloc(getGlobal)
-    case T.FieldOp      => Op.Field(getVal, getGlobal)
+    case T.FieldloadOp  => Op.Fieldload(getType, getVal, getGlobal)
+    case T.FieldstoreOp => Op.Fieldstore(getType, getVal, getGlobal, getVal)
     case T.MethodOp     => Op.Method(getVal, getGlobal)
     case T.DynmethodOp =>
       val dynmethod = Op.Dynmethod(getVal, getString)
       dyns += dynmethod.signature
       dynmethod
-    case T.ModuleOp  => Op.Module(getGlobal, getNext)
-    case T.AsOp      => Op.As(getType, getVal)
-    case T.IsOp      => Op.Is(getType, getVal)
-    case T.CopyOp    => Op.Copy(getVal)
-    case T.SizeofOp  => Op.Sizeof(getType)
-    case T.ClosureOp => Op.Closure(getType, getVal, getVals)
-    case T.BoxOp     => Op.Box(getType, getVal)
-    case T.UnboxOp   => Op.Unbox(getType, getVal)
+    case T.ModuleOp      => Op.Module(getGlobal, getNext)
+    case T.AsOp          => Op.As(getType, getVal)
+    case T.IsOp          => Op.Is(getType, getVal)
+    case T.CopyOp        => Op.Copy(getVal)
+    case T.SizeofOp      => Op.Sizeof(getType)
+    case T.ClosureOp     => Op.Closure(getType, getVal, getVals)
+    case T.BoxOp         => Op.Box(getType, getVal)
+    case T.UnboxOp       => Op.Unbox(getType, getVal)
+    case T.ArrayallocOp  => Op.Arrayalloc(getType, getVal)
+    case T.ArraylengthOp => Op.Arraylength(getVal)
+    case T.ArrayloadOp   => Op.Arrayload(getType, getVal, getVal)
+    case T.ArraystoreOp  => Op.Arraystore(getType, getVal, getVal, getVal)
   }
 
   private def getParams(): Seq[Val.Local] = getSeq(getParam)
@@ -281,11 +286,12 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     case T.FunctionType => Type.Function(getTypes, getType)
     case T.StructType   => Type.Struct(getGlobal, getTypes)
 
-    case T.UnitType    => Type.Unit
-    case T.NothingType => Type.Nothing
-    case T.ClassType   => Type.Class(getGlobal)
-    case T.TraitType   => Type.Trait(getGlobal)
-    case T.ModuleType  => Type.Module(getGlobal)
+    case T.UnitType       => Type.Unit
+    case T.NothingType    => Type.Nothing
+    case T.ClassType      => Type.Class(getGlobal)
+    case T.TraitType      => Type.Trait(getGlobal)
+    case T.ModuleType     => Type.Module(getGlobal)
+    case T.ArrayClassType => Type.ArrayClass(getType)
   }
 
   private def getVals(): Seq[Val] = getSeq(getVal)

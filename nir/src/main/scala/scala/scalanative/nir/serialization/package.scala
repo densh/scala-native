@@ -6,11 +6,8 @@ import java.nio.file.{StandardOpenOption => OpenOpt, _}
 import java.nio.channels._
 
 package object serialization {
-  def serializeText(defns: Seq[Defn], buffer: ByteBuffer): Unit = {
-    val builder = Show.newBuilder
-    builder.defns_(defns)
-    buffer.put(builder.toString.getBytes)
-  }
+  def serializeText(defns: Seq[Defn], buffer: ByteBuffer): Unit =
+    buffer.put(Show(defns).getBytes("UTF-8"))
 
   def serializeBinary(defns: Seq[Defn], buffer: ByteBuffer): Unit =
     (new BinarySerializer(buffer)).serialize(defns)

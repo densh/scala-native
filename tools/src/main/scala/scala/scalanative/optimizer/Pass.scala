@@ -91,8 +91,10 @@ trait Pass extends AnyPass {
 
     case Op.Classalloc(n) =>
       Op.Classalloc(n)
-    case Op.Field(v, n) =>
-      Op.Field(onVal(v), n)
+    case Op.Fieldload(ty, v, n) =>
+      Op.Fieldload(onType(ty), onVal(v), n)
+    case Op.Fieldstore(ty, v1, n, v2) =>
+      Op.Fieldstore(onType(ty), onVal(v1), n, onVal(v2))
     case Op.Method(v, n) =>
       Op.Method(onVal(v), n)
     case Op.Dynmethod(obj, signature) =>
@@ -113,6 +115,14 @@ trait Pass extends AnyPass {
       Op.Box(code, onVal(obj))
     case Op.Unbox(code, obj) =>
       Op.Unbox(code, onVal(obj))
+    case Op.Arrayalloc(ty, n) =>
+      Op.Arrayalloc(onType(ty), onVal(n))
+    case Op.Arraylength(obj) =>
+      Op.Arraylength(onVal(obj))
+    case Op.Arrayload(ty, obj, index) =>
+      Op.Arrayload(onType(ty), onVal(obj), onVal(index))
+    case Op.Arraystore(ty, obj, index, value) =>
+      Op.Arraystore(onType(ty), onVal(obj), onVal(index), onVal(value))
   }
 
   def onVal(value: Val): Val = value match {

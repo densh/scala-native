@@ -337,10 +337,18 @@ final class BinarySerializer(buffer: ByteBuffer) {
       putInt(T.ClassallocOp)
       putGlobal(n)
 
-    case Op.Field(v, name) =>
-      putInt(T.FieldOp)
-      putVal(v)
+    case Op.Fieldload(ty, obj, name) =>
+      putInt(T.FieldloadOp)
+      putType(ty)
+      putVal(obj)
       putGlobal(name)
+
+    case Op.Fieldstore(ty, obj, name, value) =>
+      putInt(T.FieldstoreOp)
+      putType(ty)
+      putVal(obj)
+      putGlobal(name)
+      putVal(value)
 
     case Op.Method(v, name) =>
       putInt(T.MethodOp)
@@ -390,6 +398,34 @@ final class BinarySerializer(buffer: ByteBuffer) {
       putInt(T.UnboxOp)
       putType(ty)
       putVal(obj)
+
+    case Op.Arrayalloc(ty, v) =>
+      putInt(T.ArrayallocOp)
+      putType(ty)
+      putVal(v)
+
+    case Op.Arraylength(obj) =>
+      putInt(T.ArraylengthOp)
+      putVal(obj)
+
+    case Op.Arrayat(ty, obj, index) =>
+      putInt(T.ArrayatOp)
+      putType(ty)
+      putVal(obj)
+      putVal(index)
+
+    case Op.Arrayload(ty, obj, index) =>
+      putInt(T.ArrayloadOp)
+      putType(ty)
+      putVal(obj)
+      putVal(index)
+
+    case Op.Arraystore(ty, obj, index, value) =>
+      putInt(T.ArraystoreOp)
+      putType(ty)
+      putVal(obj)
+      putVal(index)
+      putVal(value)
   }
 
   private def putParams(params: Seq[Val.Local]) = putSeq(params)(putParam)
@@ -422,11 +458,12 @@ final class BinarySerializer(buffer: ByteBuffer) {
     case Type.Struct(n, tys) =>
       putInt(T.StructType); putGlobal(n); putTypes(tys)
 
-    case Type.Unit      => putInt(T.UnitType)
-    case Type.Nothing   => putInt(T.NothingType)
-    case Type.Class(n)  => putInt(T.ClassType); putGlobal(n)
-    case Type.Trait(n)  => putInt(T.TraitType); putGlobal(n)
-    case Type.Module(n) => putInt(T.ModuleType); putGlobal(n)
+    case Type.Unit           => putInt(T.UnitType)
+    case Type.Nothing        => putInt(T.NothingType)
+    case Type.Class(n)       => putInt(T.ClassType); putGlobal(n)
+    case Type.Trait(n)       => putInt(T.TraitType); putGlobal(n)
+    case Type.Module(n)      => putInt(T.ModuleType); putGlobal(n)
+    case Type.ArrayClass(ty) => putInt(T.ArrayClassType); putType(ty)
   }
 
   private def putVals(values: Seq[Val]): Unit = putSeq(values)(putVal)

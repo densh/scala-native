@@ -159,36 +159,6 @@ trait NirDefinitions { self: NirGlobalAddons =>
       'U' -> getRequiredClass("scala.scalanative.runtime.PrimitiveUnit")
     )
 
-    lazy val RuntimeArrayClass: Map[Char, Symbol] = Map(
-      'B' -> getRequiredClass("scala.scalanative.runtime.BooleanArray"),
-      'C' -> getRequiredClass("scala.scalanative.runtime.CharArray"),
-      'Z' -> getRequiredClass("scala.scalanative.runtime.ByteArray"),
-      'S' -> getRequiredClass("scala.scalanative.runtime.ShortArray"),
-      'I' -> getRequiredClass("scala.scalanative.runtime.IntArray"),
-      'L' -> getRequiredClass("scala.scalanative.runtime.LongArray"),
-      'F' -> getRequiredClass("scala.scalanative.runtime.FloatArray"),
-      'D' -> getRequiredClass("scala.scalanative.runtime.DoubleArray"),
-      'O' -> getRequiredClass("scala.scalanative.runtime.ObjectArray")
-    )
-
-    lazy val RuntimeArrayModule: Map[Char, Symbol] =
-      RuntimeArrayClass.mapValues(_.companion)
-
-    lazy val RuntimeArrayAllocMethod: Map[Char, Symbol] =
-      RuntimeArrayModule.mapValues(getMember(_, TermName("alloc")))
-
-    lazy val RuntimeArrayApplyMethod: Map[Char, Symbol] =
-      RuntimeArrayClass.mapValues(getMember(_, TermName("apply")))
-
-    lazy val RuntimeArrayUpdateMethod: Map[Char, Symbol] =
-      RuntimeArrayClass.mapValues(getMember(_, TermName("update")))
-
-    lazy val RuntimeArrayLengthMethod: Map[Char, Symbol] =
-      RuntimeArrayClass.mapValues(getMember(_, TermName("length")))
-
-    lazy val RuntimeArrayCloneMethod: Map[Char, Symbol] =
-      RuntimeArrayClass.mapValues(getMember(_, TermName("clone")))
-
     lazy val RuntimeBoxesModule = getRequiredModule(
       "scala.scalanative.runtime.Boxes")
 
@@ -200,6 +170,8 @@ trait NirDefinitions { self: NirGlobalAddons =>
       getDecl(NObjectClass, TermName("__scala_$hash$hash"))
     lazy val NObjectEqualsMethod =
       getDecl(NObjectClass, TermName("__scala_$eq$eq"))
+    lazy val NObjectCloneMethod =
+      getDecl(NObjectClass, TermName("__clone"))
 
     lazy val NStringClass  = getRequiredClass("java.lang._String")
     lazy val NStringModule = getRequiredModule("java.lang._String")
@@ -272,5 +244,8 @@ trait NirDefinitions { self: NirGlobalAddons =>
         .map(_.moduleClass)
     lazy val PureMethods: Set[Symbol] =
       (BoxMethod.values ++ UnboxMethod.values).toSet
+
+    lazy val ScalaRunTimeArrayClassMethod =
+      getDecl(ScalaRunTimeModule, TermName("arrayClass"))
   }
 }

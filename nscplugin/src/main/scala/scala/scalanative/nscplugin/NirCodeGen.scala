@@ -546,13 +546,11 @@ abstract class NirCodeGen
             val ty   = genType(tree.symbol.tpe, box = false)
             val qual = genExpr(qualp, focus)
             val name = genFieldName(tree.symbol)
-            val elem =
-              if (sym.owner.isExternModule) {
-                qual withValue Val.Global(name, Type.Ptr)
-              } else {
-                qual withOp Op.Field(qual.value, name)
-              }
-            elem withOp Op.Load(ty, elem.value)
+            if (sym.owner.isExternModule) {
+              qual withValue Val.Global(name, Type.Ptr)
+            } else {
+              qual withOp Op.Fieldload(ty, qual.value, name)
+            }
           }
 
         case id: Ident =>
@@ -585,20 +583,17 @@ abstract class NirCodeGen
               val qual = genExpr(qualp, focus)
               val rhs  = genExpr(rhsp, qual)
               val name = genFieldName(sel.symbol)
-              val elem =
-                if (sel.symbol.owner.isExternModule) {
-                  rhs withValue Val.Global(name, Type.Ptr)
-                } else {
-                  rhs withOp Op.Field(qual.value, name)
-                }
-
-              elem withOp Op.Store(ty, elem.value, rhs.value)
+              if (sel.symbol.owner.isExternModule) {
+                val elem = rhs withValue Val.Global(name, Type.Ptr)
+                elem withOp Op.Store(ty, elem.value, rhs.value)
+              } else {
+                rhs withOp Op.Fieldstore(ty, qual.value, name, rhs.value)
+              }
 
             case id: Ident =>
               val ty  = genType(id.tpe, box = false)
               val rhs = genExpr(rhsp, focus)
               val ptr = curMethodEnv.resolve(id.symbol)
-
               rhs withOp Op.Store(ty, ptr, rhs.value)
           }
 
@@ -905,24 +900,16 @@ abstract class NirCodeGen
     def genArrayValue(av: ArrayValue, focus: Focus): Focus = {
       val ArrayValue(tpt, elems) = av
 
-      val len       = Literal(Constant(elems.length))
-      val elemcode  = genPrimCode(tpt.tpe)
-      val modulesym = RuntimeArrayModule(elemcode)
-      val methsym   = RuntimeArrayAllocMethod(elemcode)
-      val alloc     = genModuleMethodCall(modulesym, methsym, Seq(len), focus)
+      val elemty = genPrimCodeType(genPrimCode(tpt.tpe))
+      val alloc  = focus withOp Op.Arrayalloc(elemty, Val.Int(elems.length))
       val init =
-        if (elems.isEmpty) alloc
-        else {
+        if (elems.isEmpty) {
+          alloc
+        } else {
           val (values, last) = genSimpleArgs(elems, alloc)
           val updates = sequenced(values.zipWithIndex, last) { (vi, focus) =>
             val (v, i) = vi
-            val idx    = Literal(Constant(i))
-
-            genMethodCall(RuntimeArrayUpdateMethod(elemcode),
-                          statically = true,
-                          alloc.value,
-                          Seq(idx, ValTree(v)),
-                          focus)
+            focus withOp Op.Arraystore(elemty, alloc.value, Val.Int(i), v)
           }
 
           updates.last
@@ -1403,41 +1390,60 @@ abstract class NirCodeGen
 
       val Apply(Select(arrayp, _), argsp) = app
 
-      val array = genExpr(arrayp, focus)
+      val array    = genExpr(arrayp, focus)
       def elemcode = genArrayCode(arrayp.tpe)
-      val method =
-        if (code == ARRAY_CLONE) RuntimeArrayCloneMethod(elemcode)
-        else if (scalaPrimitives.isArrayGet(code))
-          RuntimeArrayApplyMethod(elemcode)
-        else if (scalaPrimitives.isArraySet(code))
-          RuntimeArrayUpdateMethod(elemcode)
-        else RuntimeArrayLengthMethod(elemcode)
+      val elemty   = genPrimCodeType(elemcode)
 
-      genMethodCall(method, statically = true, array.value, argsp, array)
+      if (scalaPrimitives.isArrayGet(code)) {
+        val Seq(indexp) = argsp
+        val index       = genExpr(indexp, array)
+        index withOp Op.Arrayload(elemty, array.value, index.value)
+      } else if (scalaPrimitives.isArraySet(code)) {
+        val Seq(indexp, valuep) = argsp
+        val index       = genExpr(indexp, array)
+        val value       = genExpr(valuep, index)
+        value withOp Op.Arraystore(elemty, array.value, index.value, value.value)
+      } else if (scalaPrimitives.isArrayLength(code)) {
+        assert(argsp.isEmpty)
+        array withOp Op.Arraylength(array.value)
+      } else if (code == ARRAY_CLONE) {
+        genMethodCall(NObjectCloneMethod, statically = false,
+                      array.value, argsp, array)
+      } else {
+        unreachable
+      }
     }
 
-    def unwrapClassTagOption(tree: Tree): Option[Symbol] =
+    def unwrapClassTagOption(tree: Tree): Option[SimpleType] =
       tree match {
         case Typed(Apply(ref: RefTree, args), _) =>
           ref.symbol match {
-            case ByteClassTag    => Some(ByteClass)
-            case ShortClassTag   => Some(ShortClass)
-            case CharClassTag    => Some(CharClass)
-            case IntClassTag     => Some(IntClass)
-            case LongClassTag    => Some(LongClass)
-            case FloatClassTag   => Some(FloatClass)
-            case DoubleClassTag  => Some(DoubleClass)
-            case BooleanClassTag => Some(BooleanClass)
-            case UnitClassTag    => Some(UnitClass)
-            case AnyClassTag     => Some(AnyClass)
-            case ObjectClassTag  => Some(ObjectClass)
-            case AnyValClassTag  => Some(ObjectClass)
-            case AnyRefClassTag  => Some(ObjectClass)
-            case NothingClassTag => Some(NothingClass)
-            case NullClassTag    => Some(NullClass)
+            case ByteClassTag    => Some(SimpleType(ByteClass))
+            case ShortClassTag   => Some(SimpleType(ShortClass))
+            case CharClassTag    => Some(SimpleType(CharClass))
+            case IntClassTag     => Some(SimpleType(IntClass))
+            case LongClassTag    => Some(SimpleType(LongClass))
+            case FloatClassTag   => Some(SimpleType(FloatClass))
+            case DoubleClassTag  => Some(SimpleType(DoubleClass))
+            case BooleanClassTag => Some(SimpleType(BooleanClass))
+            case UnitClassTag    => Some(SimpleType(UnitClass))
+            case AnyClassTag     => Some(SimpleType(AnyClass))
+            case ObjectClassTag  => Some(SimpleType(ObjectClass))
+            case AnyValClassTag  => Some(SimpleType(ObjectClass))
+            case AnyRefClassTag  => Some(SimpleType(ObjectClass))
+            case NothingClassTag => Some(SimpleType(NothingClass))
+            case NullClassTag    => Some(SimpleType(NullClass))
             case ClassTagApply =>
-              val Seq(Literal(const: Constant)) = args
-              Some(const.typeValue.typeSymbol)
+              args match {
+                case Seq(Literal(const: Constant)) =>
+                  Some(const.typeValue.typeSymbol)
+                case Seq(Apply(ref: RefTree, Seq(Literal(const: Constant))))
+                  if ref.symbol == ScalaRunTimeArrayClassMethod =>
+                  val elemty = SimpleType(const.typeValue.typeSymbol)
+                  Some(SimpleType(ArrayClass, Seq(elemty)))
+                case _ =>
+                  unreachable
+              }
             case _ =>
               None
           }
@@ -1471,7 +1477,8 @@ abstract class NirCodeGen
             case FloatTagMethod   => just(FloatClass)
             case DoubleTagMethod  => just(DoubleClass)
             case PtrTagMethod     => just(PtrClass)
-            case RefTagMethod     => just(unwrapClassTagOption(args.head).get)
+            case RefTagMethod     =>
+              unwrapClassTagOption(args.head)
             case sym if NatBaseTagMethod.contains(sym) =>
               just(NatBaseClass(NatBaseTagMethod.indexOf(sym)))
             case NatDigitTagMethod =>
@@ -1961,12 +1968,16 @@ abstract class NirCodeGen
       }
     }
 
-    def genNewArray(elemcode: Char, argsp: Seq[Tree], focus: Focus) = {
-      val module = RuntimeArrayModule(elemcode)
-      val meth   = RuntimeArrayAllocMethod(elemcode)
+    def genNewArray(elemcode: Char, argsp: Seq[Tree], focus: Focus) =
+      argsp match {
+        case Seq(length) =>
+          val len    = genExpr(length, focus)
+          val elemty = genPrimCodeType(elemcode)
+          len withOp Op.Arrayalloc(elemty, len.value)
 
-      genModuleMethodCall(module, meth, argsp, focus)
-    }
+        case _ =>
+          unreachable
+      }
 
     def genNew(
         clssym: Symbol, ctorsym: Symbol, args: List[Tree], focus: Focus) = {

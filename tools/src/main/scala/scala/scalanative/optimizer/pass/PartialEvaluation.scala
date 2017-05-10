@@ -2,13 +2,9 @@ package scala.scalanative
 package optimizer
 package pass
 
-import analysis.ClassHierarchy.Top
-
-import nir._
-import Inst.Let
-import Bin._
-import Comp._
-
+import scalanative.optimizer.analysis.ClassHierarchy.Top
+import scalanative.nir._, Inst.Let, Bin._, Comp._
+import scalanative.util.unreachable
 import scala.None
 
 /** Simplifies single instruction patterns */
@@ -276,6 +272,7 @@ object PartialEvaluation extends PassCompanion {
     case Type.Short => Short.MinValue
     case Type.Int   => Int.MinValue
     case Type.Long  => Long.MinValue
+    case _          => unreachable
   }
 
   private def maxValue(ty: Type): Long = ty match {
@@ -283,6 +280,7 @@ object PartialEvaluation extends PassCompanion {
     case Type.Short => Short.MaxValue
     case Type.Int   => Int.MaxValue
     case Type.Long  => Long.MaxValue
+    case _          => unreachable
   }
 
   private def uminValue(ty: Type): Long =
