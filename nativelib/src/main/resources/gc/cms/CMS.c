@@ -62,3 +62,5 @@ void *scalanative_alloc(void *info, size_t size) {
 void *scalanative_alloc_raw(size_t size) { return allocate(size); }
 
 void *scalanative_alloc_raw_atomic(size_t size) { return allocate(size); }
+
+void scalanative_safepoint() {}

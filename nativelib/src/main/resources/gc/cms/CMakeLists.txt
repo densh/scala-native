@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(markandsweep)
+project(cms)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -27,4 +27,4 @@ set(SOURCE_FILES
         Object.h
         Log.h)
 
-add_executable(markandsweep ${SOURCE_FILES})
+add_executable(cms ${SOURCE_FILES})
