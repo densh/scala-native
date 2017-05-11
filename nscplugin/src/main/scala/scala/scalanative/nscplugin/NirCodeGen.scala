@@ -149,6 +149,13 @@ abstract class NirCodeGen
           case (sym, defns) =>
             resultDefns += ((getPathFor(cunit, sym), defns))
         }
+
+        resultDefns.foreach {
+          case (_, defns) =>
+            defns.foreach { defn =>
+              println(defn.show)
+            }
+        }
       } finally {
         lazyAnonDefs.clear()
       }

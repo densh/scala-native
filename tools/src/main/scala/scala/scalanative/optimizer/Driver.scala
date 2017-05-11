@@ -44,6 +44,7 @@ object Driver {
     )
 
   private val loweringPasses = Seq(
+    pass.WriteBarrierInsertion,
     pass.DynmethodLowering,
     pass.ExternHoisting,
     pass.ModuleLowering,
@@ -61,8 +62,8 @@ object Driver {
     pass.AllocLowering,
     pass.SizeofLowering,
     pass.CopyPropagation,
-    pass.DeadCodeElimination
-    // pass.SafepointInsertion
+    pass.DeadCodeElimination,
+    pass.SafepointInsertion
   )
 
   /** Create driver with default pipeline for this configuration. */
