@@ -1,5 +1,5 @@
-#ifndef MARKANDSWEEP_LOG_H
-#define MARKANDSWEEP_LOG_H
+#ifndef CMS_LOG_H
+#define CMS_LOG_H
 
 // Used to enable/disable asserts
 #define NDEBUG
@@ -8,4 +8,4 @@
 #define DEBUG_PRINT
 //#define PRINT_STACK_OVERFLOW
 
-#endif // MARKANDSWEEP_LOG_H
+#endif // CMS_LOG_H

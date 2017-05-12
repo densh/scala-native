@@ -5,6 +5,6 @@
 
 void CMS_init();
 void *CMS_allocate(size_t byteSize);
-void CMS_collect();
+void CMS_safepoint();
 
 #endif // CMS_H
