@@ -47,6 +47,7 @@ void *CMS_allocate(size_t byteSize) {
     assert(Heap_isWordInHeap(CMS_heap, alloc));
 
     memset(alloc + 1, 0, (wordSize - 1) * WORD_SIZE);
+    // TODO: set object collector to be current allocation color
     return alloc + 1;
 }
 
@@ -108,12 +109,18 @@ void CMS_sweep() {
     // TODO: perform sweep
 }
 
+void CMS_cleanup() {
+    // TODO: reset log pointers
+    // TODO: reset buffer
+}
+
 void *CMS_backgroundThreadEntry(void *unused) {
     while (true) {
         CMS_initiateCollectionCycle();
         CMS_getRoots();
         CMS_traceHeap();
         CMS_sweep();
+        CMS_cleanup();
     }
     return NULL;
 }

@@ -16,6 +16,16 @@ typedef enum {
     Object_allocated = 0x1,
 } ObjectTag_t;
 
+// TODO: update object header
+//
+// typedef struct {
+//   uint8_t color:2;   // black/white/blue
+//   uint8_t type:2;    // large/small
+//   uint32_t size:28;  // number of 1k pages for large objects,
+//                      // number of words for small ones
+//   uint32_t log_offset;
+// } ObjectHeader;
+
 typedef struct {
     uint32_t size;
     uint8_t tag;
