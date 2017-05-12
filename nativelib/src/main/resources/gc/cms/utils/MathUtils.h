@@ -1,5 +1,5 @@
-#ifndef MARKANDSWEEP_MATHUTILS_H
-#define MARKANDSWEEP_MATHUTILS_H
+#ifndef CMS_MATHUTILS_H
+#define CMS_MATHUTILS_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -20,4 +20,4 @@ inline int log2_floor(size_t v) {
 
 inline int log2_ceil(size_t value) { return log2_floor(2 * value - 1); }
 
-#endif // MARKANDSWEEP_MATHUTILS_H
+#endif // CMS_MATHUTILS_H

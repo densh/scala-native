@@ -1,8 +1,8 @@
-#ifndef MARKANDSWEEP_LARGEALLOCATOR_H
-#define MARKANDSWEEP_LARGEALLOCATOR_H
+#ifndef CMS_LARGEALLOCATOR_H
+#define CMS_LARGEALLOCATOR_H
 
 #include <stddef.h>
-#include "GCTypes.h"
+#include "Types.h"
 #include "datastructures/FreeList.h"
 #include "Constants.h"
 #include "datastructures/Bitmap.h"
@@ -18,8 +18,8 @@ typedef struct {
     long allocCount;
 } LargeAllocator;
 
-LargeAllocator *largeAllocator_create(word_t *offset, size_t size);
-Object *largeAllocator_alloc(LargeAllocator *allocator, uint32_t size);
-void largeAllocator_sweep(LargeAllocator *allocator);
+LargeAllocator *LargeAllocator_create(word_t *offset, size_t size);
+Object *LargeAllocator_alloc(LargeAllocator *allocator, uint32_t size);
+void LargeAllocator_sweep(LargeAllocator *allocator);
 
-#endif // MARKANDSWEEP_LARGEALLOCATOR_H
+#endif // CMS_LARGEALLOCATOR_H

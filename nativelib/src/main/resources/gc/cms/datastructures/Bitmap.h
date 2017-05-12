@@ -1,11 +1,11 @@
-#ifndef MARKANDSWEEP_BITMAP_H
-#define MARKANDSWEEP_BITMAP_H
+#ifndef CMS_BITMAP_H
+#define CMS_BITMAP_H
 
 #include <stddef.h>
 #include <stdlib.h>
 #include <limits.h>
 #include "../Log.h"
-#include "../GCTypes.h"
+#include "../Types.h"
 #include "../Constants.h"
 
 typedef struct {
@@ -21,7 +21,7 @@ typedef struct {
 #define BITMAP_GRANULARITY LARGE_OBJECT_MIN_SIZE
 
 // Allocates a bitmap that can contain `size` bits
-inline Bitmap *bitmap_alloc(size_t size, word_t *offset) {
+inline Bitmap *Bitmap_alloc(size_t size, word_t *offset) {
     assert(size % sizeof(word_t) == 0);
     assert(size % LARGE_OBJECT_MIN_SIZE == 0);
     size_t nbBlocks = size / LARGE_OBJECT_MIN_SIZE;
@@ -40,7 +40,7 @@ inline size_t addressToIndex(word_t *offset, word_t *addr) {
 }
 
 // Set the bit of the given address to `1`
-inline void bitmap_setBit(Bitmap *bitmap, word_t *addr) {
+inline void Bitmap_setBit(Bitmap *bitmap, word_t *addr) {
     assert(addr >= bitmap->offset &&
            addr < bitmap->offset +
                       (bitmap->size * LARGE_OBJECT_MIN_SIZE / WORD_SIZE));
@@ -49,7 +49,7 @@ inline void bitmap_setBit(Bitmap *bitmap, word_t *addr) {
 }
 
 // Set the bit of the given address to `0`
-inline void bitmap_clearBit(Bitmap *bitmap, word_t *addr) {
+inline void Bitmap_clearBit(Bitmap *bitmap, word_t *addr) {
     assert(addr >= bitmap->offset &&
            addr < bitmap->offset +
                       (bitmap->size * LARGE_OBJECT_MIN_SIZE / WORD_SIZE));
@@ -59,7 +59,7 @@ inline void bitmap_clearBit(Bitmap *bitmap, word_t *addr) {
     bitmap->words[WORD_OFFSET(index)] &= ~(1LLU << BIT_OFFSET(index));
 }
 // Returns the bit of the given address
-inline int bitmap_getBit(Bitmap *bitmap, word_t *addr) {
+inline int Bitmap_getBit(Bitmap *bitmap, word_t *addr) {
     assert(addr >= bitmap->offset &&
            addr < bitmap->offset +
                       (bitmap->size * LARGE_OBJECT_MIN_SIZE / WORD_SIZE));
@@ -71,7 +71,7 @@ inline int bitmap_getBit(Bitmap *bitmap, word_t *addr) {
 }
 
 // Grows the bitmap to contain `nbWords` more words
-inline void bitmap_grow(Bitmap *bitmap, size_t nbWords) {
+inline void Bitmap_grow(Bitmap *bitmap, size_t nbWords) {
     size_t currentNbWords =
         (bitmap->size / sizeof(word_t) + BITS_PER_WORD - 1) / BITS_PER_WORD;
     size_t newNbWords = currentNbWords + BITS_PER_WORD * nbWords;
@@ -79,4 +79,4 @@ inline void bitmap_grow(Bitmap *bitmap, size_t nbWords) {
     bitmap->size = newNbWords * sizeof(word_t);
 }
 
-#endif // MARKANDSWEEP_BITMAP_H
+#endif // CMS_BITMAP_H

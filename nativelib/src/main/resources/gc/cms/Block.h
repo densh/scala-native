@@ -1,5 +1,5 @@
-#ifndef MARKANDSWEEP_BLOCK_H
-#define MARKANDSWEEP_BLOCK_H
+#ifndef CMS_BLOCK_H
+#define CMS_BLOCK_H
 
 #include "headers/BlockHeader.h"
 #include "Allocator.h"
@@ -8,9 +8,9 @@
 
 #define LAST_BLOCK_PTR ((FreeBlockHeader *)-1)
 
-FreeBlockHeader *block_getNextFreeBlock(FreeBlockHeader *freeBlock);
-void block_sweep(Allocator *allocator, BlockHeader *block);
-bool block_overflowHeapScan(BlockHeader *block, Heap *heap, Stack *stack,
+FreeBlockHeader *Block_getNextFreeBlock(FreeBlockHeader *freeBlock);
+void Block_sweep(Allocator *allocator, BlockHeader *block);
+bool Block_overflowHeapScan(BlockHeader *block, Heap *heap, Stack *stack,
                             word_t **currentOverflowAddress);
 
-#endif // MARKANDSWEEP_BLOCK_H
+#endif // CMS_BLOCK_H

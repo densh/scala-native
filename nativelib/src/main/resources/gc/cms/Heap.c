@@ -26,14 +26,14 @@ word_t *mapAndAlign(unsigned long long alignmentMask, int blockSize) {
 
 // Allocates the `Heap` struct, maps the memory for both heaps and sets the
 // value correspondingly
-Heap *heap_create() {
+Heap *Heap_create() {
     Heap *heap = malloc(sizeof(Heap));
 
     word_t *heapStart = mapAndAlign(BLOCK_MASK, BLOCK_SIZE);
 
     // Small heap
     size_t heapSize = HEAP_INITIAL_SIZE / WORD_SIZE;
-    heap->allocator = allocator_create(heapStart, heapSize);
+    heap->allocator = Allocator_create(heapStart, heapSize);
     heap->heapStart = heapStart;
     heap->heapEnd = heapStart + heapSize;
     heap->heapSize = heapSize;
@@ -42,7 +42,7 @@ Heap *heap_create() {
     word_t *largeHeapStart =
         mapAndAlign(LARGE_OBJECT_MIN_SIZE_MASK, LARGE_OBJECT_MIN_SIZE);
     size_t largeHeapSize = HEAP_INITIAL_SIZE / WORD_SIZE;
-    heap->largeAllocator = largeAllocator_create(largeHeapStart, largeHeapSize);
+    heap->largeAllocator = LargeAllocator_create(largeHeapStart, largeHeapSize);
     heap->largeHeapStart = largeHeapStart;
     heap->largeHeapEnd = largeHeapStart + largeHeapSize;
     heap->largeHeapSize = largeHeapSize;
@@ -52,28 +52,28 @@ Heap *heap_create() {
 
 // Allocates an object using the LargeAllocator for large objects and the
 // standard allocator for small objects
-Object *heap_alloc(Heap *heap, uint32_t size) {
+Object *Heap_alloc(Heap *heap, uint32_t size) {
     if (size >= LARGE_OBJECT_MIN_SIZE) {
-        Object *object = largeAllocator_alloc(heap->largeAllocator, size);
+        Object *object = LargeAllocator_alloc(heap->largeAllocator, size);
         if (object != NULL) {
-            object_setSize(object, size);
-            object_setTag(object, object_allocated);
-            object_setType(object, object_large);
+            Object_setSize(object, size);
+            Object_setTag(object, Object_allocated);
+            Object_setType(object, Object_large);
             assert((word_t)object % (LARGE_OBJECT_MIN_SIZE * WORD_SIZE) == 0);
         }
         return object;
     } else {
-        Object *object = allocator_alloc(heap->allocator, size);
+        Object *object = Allocator_alloc(heap->allocator, size);
         if (object != NULL) {
-            object_setSize(object, size);
-            object_setTag(object, object_allocated);
-            object_setType(object, object_standard);
+            Object_setSize(object, size);
+            Object_setTag(object, Object_allocated);
+            Object_setType(object, Object_standard);
         }
         return object;
     }
 }
 
-void heap_collect(Heap *heap) {
-    allocator_sweep(heap->allocator);
-    largeAllocator_sweep(heap->largeAllocator);
+void Heap_collect(Heap *heap) {
+    Allocator_sweep(heap->allocator);
+    LargeAllocator_sweep(heap->largeAllocator);
 }

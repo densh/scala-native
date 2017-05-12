@@ -16,7 +16,7 @@ inline uint32_t sizeToAllocatableSize(uint32_t size) {
 }
 
 // Allocates the `Allocator` struct and initialises it
-Allocator *allocator_create(word_t *offset, size_t size) {
+Allocator *Allocator_create(word_t *offset, size_t size) {
     assert((word_t)offset % (BLOCK_SIZE * WORD_SIZE) == 0);
     assert(size % BLOCK_SIZE == 0);
 
@@ -33,7 +33,7 @@ Allocator *allocator_create(word_t *offset, size_t size) {
 
     for (int i = 0; i < LIST_COUNT; i++) {
         allocator->blocks[i] = NULL;
-        freeList_init(&allocator->freeLists[i]);
+        FreeList_init(&allocator->freeLists[i]);
     }
 
     return allocator;
@@ -47,13 +47,13 @@ inline BlockHeader *getFreeBlock(Allocator *allocator) {
     }
 
     BlockHeader *blockHeader = &allocator->freeBlocks->header;
-    allocator->freeBlocks = block_getNextFreeBlock(allocator->freeBlocks);
+    allocator->freeBlocks = Block_getNextFreeBlock(allocator->freeBlocks);
 
     return blockHeader;
 }
 
 // Allocates an object of `size` words.
-Object *allocator_alloc(Allocator *allocator, uint32_t size) {
+Object *Allocator_alloc(Allocator *allocator, uint32_t size) {
     int listIndex = sizeToIndex(size);
     // Round the size up to the allocatable size
     uint32_t allocatedSize = sizeToAllocatableSize(size);
@@ -63,15 +63,15 @@ Object *allocator_alloc(Allocator *allocator, uint32_t size) {
     word_t *end = start + allocatedSize;
 
     // Check if bump allocation worked
-    if (start != NULL && end < block_getBlockEnd(start)) {
+    if (start != NULL && end < Block_getBlockEnd(start)) {
         allocator->blocks[listIndex] = end;
         return (Object *)start;
     }
 
     // if bump allocation failed, try linkedlist
-    if (!freeList_isEmpty(&allocator->freeLists[listIndex])) {
+    if (!FreeList_isEmpty(&allocator->freeLists[listIndex])) {
         allocator->fromFreeList++;
-        return freeList_removeFirst(&allocator->freeLists[listIndex]);
+        return FreeList_removeFirst(&allocator->freeLists[listIndex]);
     }
 
     // if linkedlist is empty, try to get a new block
@@ -81,8 +81,8 @@ Object *allocator_alloc(Allocator *allocator, uint32_t size) {
     }
 
     // If we get a block, set the corresponding size and alloc
-    block_setObjectSize(blockHeader, allocatedSize);
-    word_t *object = block_getFirstWord(blockHeader);
+    Block_setObjectSize(blockHeader, allocatedSize);
+    word_t *object = Block_getFirstWord(blockHeader);
     allocator->blocks[listIndex] = object + allocatedSize;
     allocator->fromChunk++;
 
@@ -90,7 +90,7 @@ Object *allocator_alloc(Allocator *allocator, uint32_t size) {
 }
 
 // Sweeps the small heap. Resets the allocator and sweeps the blocks one by one.
-void allocator_sweep(Allocator *allocator) {
+void Allocator_sweep(Allocator *allocator) {
 #ifdef DEBUG_PRINT
     printf("from free list: %ld\nfrom chunk: %ld\n", allocator->fromFreeList,
            allocator->fromChunk);
@@ -113,11 +113,11 @@ void allocator_sweep(Allocator *allocator) {
     word_t *current = allocator->offset;
 
     while (current != heapEnd) {
-        block_sweep(allocator, (BlockHeader *)current);
+        Block_sweep(allocator, (BlockHeader *)current);
         current += BLOCK_SIZE;
     }
 #ifdef DEBUG_PRINT
     long long end = nano_time();
-    printf("allocator_sweep: %lld ns\n", end - start);
+    printf("Allocator_sweep: %lld ns\n", end - start);
 #endif
 }

@@ -2,22 +2,22 @@
 #include "Object.h"
 #include "Log.h"
 
-Object *object_getObjectConservative(Heap *heap, word_t *word) {
-    BlockHeader *blockHeader = block_getBlockHeader(word);
+Object *Object_getObjectConservative(Heap *heap, word_t *word) {
+    BlockHeader *blockHeader = Block_getBlockHeader(word);
 
     if (word == (word_t *)blockHeader) {
         return NULL;
     }
 
-    size_t size = block_getObjectSize(blockHeader);
+    size_t size = Block_getObjectSize(blockHeader);
     word_t addressAsInteger = (word_t)word;
     word_t diff = addressAsInteger - (word_t)blockHeader;
     // Align to the multiple of the size, add one word because of the chunk
     // header
     Object *object =
         (Object *)(addressAsInteger - (diff % (size * WORD_SIZE)) + WORD_SIZE);
-    if ((word_t *)object + size <= block_getBlockEnd(word) &&
-        object_isAllocated(object)) {
+    if ((word_t *)object + size <= Block_getBlockEnd(word) &&
+        Object_isAllocated(object)) {
         return object;
     }
 #ifdef DEBUG_PRINT
@@ -31,22 +31,22 @@ Object *object_getObjectConservative(Heap *heap, word_t *word) {
 Object *getLargeInnerPointer(LargeAllocator *allocator, word_t *word) {
     word_t *current = (word_t *)((word_t)word & LARGE_OBJECT_MIN_SIZE_MASK);
 
-    while (!bitmap_getBit(allocator->bitmap, current)) {
+    while (!Bitmap_getBit(allocator->bitmap, current)) {
         current -= LARGE_OBJECT_MIN_SIZE;
     }
     Object *object = (Object *)current;
 
-    if (word < (word_t *)object + object_getSize(object)) {
+    if (word < (word_t *)object + Object_getSize(object)) {
         return object;
     } else {
         return NULL;
     }
 }
 
-Object *object_getLargeObjectConservative(Heap *heap, word_t *word) {
-    if (bitmap_getBit(heap->largeAllocator->bitmap, word)) {
+Object *Object_getLargeObjectConservative(Heap *heap, word_t *word) {
+    if (Bitmap_getBit(heap->largeAllocator->bitmap, word)) {
         Object *object = (Object *)word;
-        if (object_isAllocated(object)) {
+        if (Object_isAllocated(object)) {
             return object;
         } else {
 #ifdef DEBUG_PRINT
@@ -56,7 +56,7 @@ Object *object_getLargeObjectConservative(Heap *heap, word_t *word) {
         }
     } else {
         Object *object = getLargeInnerPointer(heap->largeAllocator, word);
-        if (object != NULL && object_isAllocated(object)) {
+        if (object != NULL && Object_isAllocated(object)) {
             return object;
         } else {
 #ifdef DEBUG_PRINT
@@ -67,25 +67,25 @@ Object *object_getLargeObjectConservative(Heap *heap, word_t *word) {
     }
 }
 
-void object_markObject(Object *object) {
-    if (object_isStandard(object)) {
-        BlockHeader *blockHeader = block_getBlockHeader((word_t *)object);
-        block_mark(blockHeader);
+void Object_markObject(Object *object) {
+    if (Object_isStandard(object)) {
+        BlockHeader *blockHeader = Block_getBlockHeader((word_t *)object);
+        Block_mark(blockHeader);
     }
-    object_mark(object);
+    Object_mark(object);
 }
 
-Object *object_nextObject(Object *object) {
-    assert(object_getSize(object) != 0);
-    return (Object *)((word_t *)object + object_getSize(object));
+Object *Object_nextObject(Object *object) {
+    assert(Object_getSize(object) != 0);
+    return (Object *)((word_t *)object + Object_getSize(object));
 }
 
-uint32_t object_getLargeObjectSize(Object *object) {
-    uint32_t size = object_getSize(object);
+uint32_t Object_getLargeObjectSize(Object *object) {
+    uint32_t size = Object_getSize(object);
     return (size + LARGE_OBJECT_MIN_SIZE - 1) / LARGE_OBJECT_MIN_SIZE *
            LARGE_OBJECT_MIN_SIZE;
 }
 
-Object *object_nextLargeObject(Object *object) {
-    return (Object *)((word_t *)object + object_getLargeObjectSize(object));
+Object *Object_nextLargeObject(Object *object) {
+    return (Object *)((word_t *)object + Object_getLargeObjectSize(object));
 }

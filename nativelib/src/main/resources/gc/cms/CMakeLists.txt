@@ -15,7 +15,7 @@ set(SOURCE_FILES
         Block.c
         Block.h
         Constants.h
-        GCTypes.h
+        Types.h
         Heap.c
         Heap.h
         LargeAllocator.c

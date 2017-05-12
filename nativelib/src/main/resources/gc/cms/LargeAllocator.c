@@ -30,11 +30,11 @@ void addChunk(LargeAllocator *allocator, word_t *chunk, size_t size) {
         int listIndex = size_to_linked_list(chunkSize);
 
         Object *currentObject = (Object *)current;
-        freeList_addLast(&allocator->freeLists[listIndex], currentObject);
-        object_setSize(currentObject, chunkSize);
-        object_setType(currentObject, object_large);
-        object_setTag(currentObject, object_free);
-        bitmap_setBit(allocator->bitmap, current);
+        FreeList_addLast(&allocator->freeLists[listIndex], currentObject);
+        Object_setSize(currentObject, chunkSize);
+        Object_setType(currentObject, Object_large);
+        Object_setTag(currentObject, Object_free);
+        Bitmap_setBit(allocator->bitmap, current);
 
         current += chunkSize;
         remainingSize -= chunkSize;
@@ -42,18 +42,18 @@ void addChunk(LargeAllocator *allocator, word_t *chunk, size_t size) {
 }
 
 // Allocates the LargeAllocator and creates the bitmap need for it.
-LargeAllocator *largeAllocator_create(word_t *offset, size_t size) {
+LargeAllocator *LargeAllocator_create(word_t *offset, size_t size) {
 
     assert((word_t)offset % (LARGE_OBJECT_MIN_SIZE * WORD_SIZE) == 0);
 
     LargeAllocator *allocator = malloc(sizeof(LargeAllocator));
     allocator->offset = offset;
     allocator->size = size;
-    allocator->bitmap = bitmap_alloc(size, offset);
+    allocator->bitmap = Bitmap_alloc(size, offset);
     allocator->allocCount = 0;
 
     for (int i = 0; i < CHUNK_LIST_COUNT; i++) {
-        freeList_init(&allocator->freeLists[i]);
+        FreeList_init(&allocator->freeLists[i]);
     }
 
     addChunk(allocator, offset, size);
@@ -62,7 +62,7 @@ LargeAllocator *largeAllocator_create(word_t *offset, size_t size) {
 }
 
 // Allocates a large block
-Object *largeAllocator_alloc(LargeAllocator *allocator,
+Object *LargeAllocator_alloc(LargeAllocator *allocator,
                              uint32_t requestedBlockSize) {
     uint32_t actualBlockSize =
         (requestedBlockSize + LARGE_OBJECT_MIN_SIZE - 1) /
@@ -73,7 +73,7 @@ Object *largeAllocator_alloc(LargeAllocator *allocator,
     int listIndex = size_to_linked_list(requiredChunkSize);
     // While there is no block, try with a larger block
     while (listIndex <= CHUNK_LIST_COUNT - 1 &&
-           freeList_isEmpty(&allocator->freeLists[listIndex])) {
+           FreeList_isEmpty(&allocator->freeLists[listIndex])) {
         ++listIndex;
     }
     // No block available
@@ -81,9 +81,9 @@ Object *largeAllocator_alloc(LargeAllocator *allocator,
         return NULL;
     }
     // Remove the first block of the linkedlist found.
-    Object *object = freeList_removeFirst(&allocator->freeLists[listIndex]);
+    Object *object = FreeList_removeFirst(&allocator->freeLists[listIndex]);
 
-    uint32_t objectSize = object_getSize(object);
+    uint32_t objectSize = Object_getSize(object);
     assert(objectSize >= LARGE_OBJECT_MIN_SIZE);
 
     // If the block is large enough, split it and add the remaining part back to
@@ -94,7 +94,7 @@ Object *largeAllocator_alloc(LargeAllocator *allocator,
         addChunk(allocator, remainingChunk, remainingChunkSize);
     }
 
-    assert(bitmap_getBit(allocator->bitmap, (word_t *)object));
+    assert(Bitmap_getBit(allocator->bitmap, (word_t *)object));
     return object;
 }
 
@@ -106,7 +106,7 @@ void clearFreeLists(LargeAllocator *allocator) {
 }
 
 // Sweeps through the whole large heap.
-void largeAllocator_sweep(LargeAllocator *allocator) {
+void LargeAllocator_sweep(LargeAllocator *allocator) {
 #ifdef DEBUG_PRINT
     long long start = nano_time();
 #endif
@@ -120,22 +120,22 @@ void largeAllocator_sweep(LargeAllocator *allocator) {
     void *heapEnd = allocator->offset + allocator->size;
 
     while (current != heapEnd) {
-        assert(bitmap_getBit(allocator->bitmap, (word_t *)current));
+        assert(Bitmap_getBit(allocator->bitmap, (word_t *)current));
         // If the block is marked, unmark it and move to the next block
-        if (object_isMarked(current)) {
-            object_unmark(current);
+        if (Object_isMarked(current)) {
+            Object_unmark(current);
 
-            current = object_nextLargeObject(current);
+            current = Object_nextLargeObject(current);
         } else {
             // If the block is not marked, try to merge blocks while they are
             // not marked.
-            size_t currentSize = object_getLargeObjectSize(current);
-            Object *next = object_nextLargeObject(current);
-            while (next != heapEnd && !object_isMarked(next)) {
-                size_t size = object_getLargeObjectSize(next);
+            size_t currentSize = Object_getLargeObjectSize(current);
+            Object *next = Object_nextLargeObject(current);
+            while (next != heapEnd && !Object_isMarked(next)) {
+                size_t size = Object_getLargeObjectSize(next);
                 currentSize += size;
-                bitmap_clearBit(allocator->bitmap, (word_t *)next);
-                next = object_nextLargeObject(next);
+                Bitmap_clearBit(allocator->bitmap, (word_t *)next);
+                next = Object_nextLargeObject(next);
             }
             // If the next block is the end of the heap or if it is marked, add
             // the current block to the allocator.
@@ -145,6 +145,6 @@ void largeAllocator_sweep(LargeAllocator *allocator) {
     }
 #ifdef DEBUG_PRINT
     long long end = nano_time();
-    printf("largeAllocator_sweep: %lld ns\n", end - start);
+    printf("LargeAllocator_sweep: %lld ns\n", end - start);
 #endif
 }

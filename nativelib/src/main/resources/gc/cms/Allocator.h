@@ -1,9 +1,9 @@
-#ifndef MARKANDSWEEP_ALLOCATOR_H
-#define MARKANDSWEEP_ALLOCATOR_H
+#ifndef CMS_ALLOCATOR_H
+#define CMS_ALLOCATOR_H
 
 #include <stddef.h>
 #include <stdlib.h>
-#include "GCTypes.h"
+#include "Types.h"
 #include "datastructures/FreeList.h"
 #include "Constants.h"
 #include "utils/MathUtils.h"
@@ -26,9 +26,9 @@ typedef struct {
     long fromChunk;
 } Allocator;
 
-Allocator *allocator_create(word_t *offset, size_t size);
-Object *allocator_alloc(Allocator *allocator, uint32_t size);
-void allocator_sweep(Allocator *allocator);
+Allocator *Allocator_create(word_t *offset, size_t size);
+Object *Allocator_alloc(Allocator *allocator, uint32_t size);
+void Allocator_sweep(Allocator *allocator);
 
 inline int sizeToIndex(uint32_t object_size) {
     assert(object_size > 0 && object_size <= LARGE_OBJECT_MIN_SIZE);
@@ -42,4 +42,4 @@ inline int sizeToIndex(uint32_t object_size) {
     }
 }
 
-#endif // MARKANDSWEEP_ALLOCATOR_H
+#endif // CMS_ALLOCATOR_H

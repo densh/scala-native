@@ -2,13 +2,13 @@
 // Created by Lukas Kellenberger on 29.04.17.
 //
 
-#ifndef MARKANDSWEEP_LINKEDLIST_H
-#define MARKANDSWEEP_LINKEDLIST_H
+#ifndef CMS_LINKEDLIST_H
+#define CMS_LINKEDLIST_H
 
 #include <stdbool.h>
 #include <stdio.h>
 #include "../Log.h"
-#include "../GCTypes.h"
+#include "../Types.h"
 #include "../headers/ObjectHeader.h"
 
 typedef struct {
@@ -16,17 +16,17 @@ typedef struct {
     Object *last;
 } FreeList;
 
-inline void freeList_init(FreeList *linkedList) {
+inline void FreeList_init(FreeList *linkedList) {
     linkedList->first = NULL;
     linkedList->last = NULL;
 }
 
-inline bool freeList_isEmpty(FreeList *linkedList) {
+inline bool FreeList_isEmpty(FreeList *linkedList) {
     return linkedList->first == NULL;
 }
 
-inline Object *freeList_removeFirst(FreeList *linkedList) {
-    assert(!freeList_isEmpty(linkedList));
+inline Object *FreeList_removeFirst(FreeList *linkedList) {
+    assert(!FreeList_isEmpty(linkedList));
 
     Object *object = linkedList->first;
     Object *next = object->next;
@@ -42,7 +42,7 @@ inline Object *freeList_removeFirst(FreeList *linkedList) {
     return object;
 }
 
-inline void freeList_addLast(FreeList *linkedList, Object *object) {
+inline void FreeList_addLast(FreeList *linkedList, Object *object) {
     if (linkedList->first == NULL) {
         linkedList->first = object;
     } else {
@@ -55,14 +55,14 @@ inline void freeList_addLast(FreeList *linkedList, Object *object) {
     linkedList->last = object;
 }
 
-inline void freeList_print(FreeList *freeList) {
+inline void FreeList_print(FreeList *freeList) {
     Object *object = freeList->first;
     while (object != NULL) {
-        printf("[%p (%u)] -> ", object, object_getSize(object));
+        printf("[%p (%u)] -> ", object, Object_getSize(object));
         object = object->next;
     }
     printf("END\n");
     fflush(stdout);
 }
 
-#endif // MARKANDSWEEP_LINKEDLIST_H
+#endif // CMS_LINKEDLIST_H

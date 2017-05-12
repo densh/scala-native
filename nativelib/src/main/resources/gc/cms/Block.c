@@ -7,7 +7,7 @@ extern int __object_array_id;
 
 // Returns the next block of the linkedlist of `FreeBlockHeader`,
 // `NULL` if `freeBlock` is the last block.
-FreeBlockHeader *block_getNextFreeBlock(FreeBlockHeader *freeBlock) {
+FreeBlockHeader *Block_getNextFreeBlock(FreeBlockHeader *freeBlock) {
     FreeBlockHeader *next = freeBlock->next;
 
     // NULL means next block
@@ -21,7 +21,7 @@ FreeBlockHeader *block_getNextFreeBlock(FreeBlockHeader *freeBlock) {
 }
 
 // Adds a block to the end of the linkedlist of free blocks
-void block_freeBlockAddLast(Allocator *allocator,
+void Block_freeBlockAddLast(Allocator *allocator,
                             FreeBlockHeader *freeBlockHeader) {
     freeBlockHeader->next = LAST_BLOCK_PTR;
     if (allocator->lastFreeBlock == NULL) {
@@ -36,26 +36,26 @@ void block_freeBlockAddLast(Allocator *allocator,
 // Sweeps through a block. If the full block is not marked, free it completely.
 // Otherwise go through the block object by object. Add the marked objects to
 // the linkedlist corresponding to their size
-void block_sweep(Allocator *allocator, BlockHeader *block) {
-    if (!block_isMarked(block)) {
+void Block_sweep(Allocator *allocator, BlockHeader *block) {
+    if (!Block_isMarked(block)) {
         // Block is not marked it is all free
-        memset(block_getFirstWord(block), 0, (BLOCK_SIZE - 1) * WORD_SIZE);
-        block_freeBlockAddLast(allocator, (FreeBlockHeader *)block);
+        memset(Block_getFirstWord(block), 0, (BLOCK_SIZE - 1) * WORD_SIZE);
+        Block_freeBlockAddLast(allocator, (FreeBlockHeader *)block);
     } else {
-        block_unmark(block);
-        uint32_t size = block_getObjectSize(block);
-        word_t *blockEnd = block_getBlockEnd((word_t *)block);
-        word_t *current = block_getFirstWord(block);
+        Block_unmark(block);
+        uint32_t size = Block_getObjectSize(block);
+        word_t *blockEnd = Block_getBlockEnd((word_t *)block);
+        word_t *current = Block_getFirstWord(block);
         while (current + size <= blockEnd) {
             Object *object = (Object *)current;
-            assert(object_isFree(object) || object_getSize(object) <= size);
-            if (object_isMarked(object)) {
-                object_unmark(object);
+            assert(Object_isFree(object) || Object_getSize(object) <= size);
+            if (Object_isMarked(object)) {
+                Object_unmark(object);
             } else {
                 memset(object, 0, size);
-                object_setTag(object, object_free);
-                object_setSize(object, size);
-                freeList_addLast(&allocator->freeLists[sizeToIndex(size)],
+                Object_setTag(object, Object_free);
+                Object_setSize(object, size);
+                FreeList_addLast(&allocator->freeLists[sizeToIndex(size)],
                                  object);
             }
             current += size;
@@ -69,26 +69,26 @@ void block_sweep(Allocator *allocator, BlockHeader *block) {
 // `currentOverflowAddress` while sweeping through the block Once a block is
 // found it adds it to the stack and returns `true`. If no block is found it
 // returns `false`.
-bool block_overflowHeapScan(BlockHeader *block, Heap *heap, Stack *stack,
+bool Block_overflowHeapScan(BlockHeader *block, Heap *heap, Stack *stack,
                             word_t **currentOverflowAddress) {
-    uint32_t size = block_getObjectSize(block);
-    word_t *blockEnd = block_getBlockEnd((word_t *)block);
+    uint32_t size = Block_getObjectSize(block);
+    word_t *blockEnd = Block_getBlockEnd((word_t *)block);
 
     if (*currentOverflowAddress == (word_t *)block) {
-        *currentOverflowAddress = block_getFirstWord(block);
+        *currentOverflowAddress = Block_getFirstWord(block);
     }
 
     while (*currentOverflowAddress + size <= blockEnd) {
         Object *object = (Object *)*currentOverflowAddress;
-        if (object_isAllocated(object) && object_isMarked(object)) {
+        if (Object_isAllocated(object) && Object_isMarked(object)) {
             if (object->rtti->rt.id == __object_array_id) {
-                uint32_t nbWords = object_getSize(object) - 2;
+                uint32_t nbWords = Object_getSize(object) - 2;
                 for (int i = 0; i < nbWords; i++) {
                     word_t *field = object->fields[i];
                     Object *fieldObject = (Object *)(field - 1);
-                    if (heap_isObjectInHeap(heap, fieldObject) &&
-                        !object_isMarked(fieldObject)) {
-                        stack_push(stack, object);
+                    if (Heap_isObjectInHeap(heap, fieldObject) &&
+                        !Object_isMarked(fieldObject)) {
+                        Stack_push(stack, object);
                         return true;
                     }
                 }
@@ -99,9 +99,9 @@ bool block_overflowHeapScan(BlockHeader *block, Heap *heap, Stack *stack,
                     word_t *field =
                         object->fields[ptr_map[i] / sizeof(word_t) - 1];
                     Object *fieldObject = (Object *)(field - 1);
-                    if (heap_isObjectInHeap(heap, fieldObject) &&
-                        !object_isMarked(fieldObject)) {
-                        stack_push(stack, object);
+                    if (Heap_isObjectInHeap(heap, fieldObject) &&
+                        !Object_isMarked(fieldObject)) {
+                        Stack_push(stack, object);
                         return true;
                     }
                     ++i;
