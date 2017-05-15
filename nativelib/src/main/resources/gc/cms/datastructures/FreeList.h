@@ -1,7 +1,3 @@
-//
-// Created by Lukas Kellenberger on 29.04.17.
-//
-
 #ifndef CMS_LINKEDLIST_H
 #define CMS_LINKEDLIST_H
 

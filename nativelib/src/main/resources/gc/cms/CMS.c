@@ -9,6 +9,7 @@
 #include "Time.h"
 #include "pthread.h"
 #include "../../safepoint.h"
+#include "datastructures/Buffer.h"
 
 #define PHASE_NONE 0
 #define PHASE_SNOOPON 1
@@ -22,6 +23,8 @@ Stack *CMS_stack = NULL;
 
 //#define CONCURRENT
 #ifdef CONCURRENT
+Buffer *CMS_replicaBuffer = NULL;
+Buffer *CMS_snoopingBuffer = NULL;
 volatile int CMS_collectorPhase = PHASE_NONE;
 volatile int CMS_mutatorPhase = PHASE_NONE;
 volatile bool CMS_snoopOn = false;
@@ -155,12 +158,12 @@ void CMS_startBackgroundThread() {
 }
 
 void CMS_init() {
-#ifdef CONCURRENT
-    scalanative_safepoint_init();
-#endif
     CMS_heap = Heap_create();
     CMS_stack = Stack_alloc(INITIAL_STACK_SIZE);
 #ifdef CONCURRENT
+    CMS_replicaBuffer = Buffer_create();
+    CMS_snoopingBuffer = Buffer_create();
+    scalanative_safepoint_init();
     CMS_startBackgroundThread();
 #endif
 }
