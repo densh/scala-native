@@ -6,7 +6,6 @@
 #include "Log.h"
 #include "Time.h"
 
-extern int __object_array_id;
 extern word_t *__modules;
 extern int __modules_size;
 

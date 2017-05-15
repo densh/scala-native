@@ -5,6 +5,8 @@
 #include "Heap.h"
 #include "LargeAllocator.h"
 
+extern int __object_array_id;
+
 Object *Object_getObjectConservative(Heap *heap, word_t *word);
 Object *Object_getLargeObjectConservative(Heap *heap, word_t *word);
 void Object_markObject(Object *object);

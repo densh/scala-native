@@ -28,10 +28,8 @@ inline uint32_t Buffer_append(Buffer *buffer, void *value) {
     return buffer->current++;
 }
 
-inline uint32_t Buffer_appendv(Buffer *buffer, void **appendv,
-                               int32_t appendc) {
-    memcpy(&buffer->data[buffer->current], appendv, appendc);
-    return buffer->current += appendc;
+inline void Buffer_reset(Buffer *buffer) {
+    buffer->current = 0;
 }
 
 #endif // CMS_BUFFER_H

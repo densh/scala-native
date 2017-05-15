@@ -21,8 +21,9 @@
 Heap *CMS_heap = NULL;
 Stack *CMS_stack = NULL;
 
-//#define CONCURRENT
+#define CONCURRENT
 #ifdef CONCURRENT
+Buffer *CMS_tempBuffer = NULL;
 Buffer *CMS_replicaBuffer = NULL;
 Buffer *CMS_snoopingBuffer = NULL;
 volatile int CMS_collectorPhase = PHASE_NONE;
@@ -161,6 +162,7 @@ void CMS_init() {
     CMS_heap = Heap_create();
     CMS_stack = Stack_alloc(INITIAL_STACK_SIZE);
 #ifdef CONCURRENT
+    CMS_tempBuffer = Buffer_create();
     CMS_replicaBuffer = Buffer_create();
     CMS_snoopingBuffer = Buffer_create();
     scalanative_safepoint_init();
@@ -174,4 +176,31 @@ void CMS_collect() {
     Marker_markRoots(CMS_heap, CMS_stack);
     Heap_collect(CMS_heap);
 #endif
+}
+
+uint32_t CMS_replicate(Object *object, Buffer *buffer) {
+    if (object->rtti->rt.id == __object_array_id) {
+        // remove header and rtti from size
+        uint32_t nbWords = Object_getSize(object) - 2;
+        for (int i = 0; i < nbWords; i++) {
+            word_t *field = object->fields[i];
+            Object *fieldObject = (Object *)(field - 1);
+            if (Heap_isObjectInHeap(CMS_heap, fieldObject)) {
+                Buffer_append(buffer, fieldObject);
+            }
+        }
+        return nbWords;
+    } else {
+        int64_t *ptr_map = object->rtti->refMapStruct;
+        int i = 0;
+        while (ptr_map[i] != -1) {
+            word_t *field = object->fields[ptr_map[i] / sizeof(word_t) - 1];
+            Object *fieldObject = (Object *)(field - 1);
+            if (Heap_isObjectInHeap(CMS_heap, fieldObject)) {
+                Buffer_append(buffer, fieldObject);
+            }
+            ++i;
+        }
+        return i;
+    }
 }
