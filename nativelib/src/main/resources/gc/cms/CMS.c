@@ -19,10 +19,14 @@
 
 Heap *CMS_heap = NULL;
 Stack *CMS_stack = NULL;
+
+//#define CONCURRENT
+#ifdef CONCURRENT
 volatile int CMS_collectorPhase = PHASE_NONE;
 volatile int CMS_mutatorPhase = PHASE_NONE;
 volatile bool CMS_snoopOn = false;
 volatile bool CMS_traceOn = false;
+#endif
 
 void *CMS_allocate(size_t byteSize) {
     assert(CMS_heap != NULL);
@@ -33,7 +37,9 @@ void *CMS_allocate(size_t byteSize) {
     word_t *alloc = (word_t *)Heap_alloc(CMS_heap, wordSize);
     if (alloc == NULL) {
         assert(false);
-        // CMS_collect();
+#ifndef CONCURRENT
+        CMS_collect();
+#endif
 
         alloc = (word_t *)Heap_alloc(CMS_heap, wordSize);
         if (alloc == NULL) {
@@ -52,6 +58,7 @@ void *CMS_allocate(size_t byteSize) {
 }
 
 void CMS_safepoint() {
+#ifdef CONCURRENT
     int phase = CMS_collectorPhase;
     switch (phase) {
     case PHASE_SNOOPON:
@@ -78,43 +85,57 @@ void CMS_safepoint() {
     }
     CMS_mutatorPhase = phase;
     scalanative_safepoint_off();
+#endif
 }
 
 void CMS_startPhase(int phase) {
+#ifdef CONCURRENT
     assert(!scalanative_safepoint_status);
     CMS_collectorPhase = phase;
     scalanative_safepoint_on();
     // busy wait for mutator to reach the safepoint
     while (CMS_mutatorPhase != phase) {
     }
+#endif
 }
 
 void CMS_initiateCollectionCycle() {
+#ifdef CONCURRENT
     CMS_startPhase(PHASE_SNOOPON);
     CMS_startPhase(PHASE_TRACEON);
+#endif
 }
 
 void CMS_getRoots() {
+#ifdef CONCURRENT
     CMS_startPhase(PHASE_GETROOTS);
     CMS_startPhase(PHASE_GETSNOOPED);
+#endif
 }
 
 void CMS_traceHeap() {
-    // TODO: put all objects from roots to mark stack
-    // TODO: mark stack transitively
+#ifdef CONCURRENT
+// TODO: put all objects from roots to mark stack
+// TODO: mark stack transitively
+#endif
 }
 
 void CMS_sweep() {
+#ifdef CONCURRENT
     CMS_startPhase(PHASE_TRACEOFF);
-    // TODO: perform sweep
+// TODO: perform sweep
+#endif
 }
 
 void CMS_cleanup() {
-    // TODO: reset log pointers
-    // TODO: reset buffer
+#ifdef CONCURRENT
+// TODO: reset log pointers
+// TODO: reset buffer
+#endif
 }
 
 void *CMS_backgroundThreadEntry(void *unused) {
+#ifdef CONCURRENT
     while (true) {
         CMS_initiateCollectionCycle();
         CMS_getRoots();
@@ -122,17 +143,32 @@ void *CMS_backgroundThreadEntry(void *unused) {
         CMS_sweep();
         CMS_cleanup();
     }
+#endif
     return NULL;
 }
 
 void CMS_startBackgroundThread() {
+#ifdef CONCURRENT
     pthread_t thread;
     pthread_create(&thread, NULL, CMS_backgroundThreadEntry, NULL);
+#endif
 }
 
 void CMS_init() {
+#ifdef CONCURRENT
     scalanative_safepoint_init();
+#endif
     CMS_heap = Heap_create();
     CMS_stack = Stack_alloc(INITIAL_STACK_SIZE);
+#ifdef CONCURRENT
     CMS_startBackgroundThread();
+#endif
+}
+
+void CMS_collect() {
+#ifndef CONCURRENT
+    printf("GC collection!\n");
+    Marker_markRoots(CMS_heap, CMS_stack);
+    Heap_collect(CMS_heap);
+#endif
 }

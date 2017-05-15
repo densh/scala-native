@@ -32,8 +32,8 @@ void addChunk(LargeAllocator *allocator, word_t *chunk, size_t size) {
         Object *currentObject = (Object *)current;
         FreeList_addLast(&allocator->freeLists[listIndex], currentObject);
         Object_setSize(currentObject, chunkSize);
-        Object_setType(currentObject, Object_large);
-        Object_setTag(currentObject, Object_free);
+        Object_setLarge(currentObject);
+        Object_setFree(currentObject);
         Bitmap_setBit(allocator->bitmap, current);
 
         current += chunkSize;

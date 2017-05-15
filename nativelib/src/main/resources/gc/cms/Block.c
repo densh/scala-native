@@ -53,7 +53,7 @@ void Block_sweep(Allocator *allocator, BlockHeader *block) {
                 Object_unmark(object);
             } else {
                 memset(object, 0, size);
-                Object_setTag(object, Object_free);
+                Object_setFree(object);
                 Object_setSize(object, size);
                 FreeList_addLast(&allocator->freeLists[sizeToIndex(size)],
                                  object);

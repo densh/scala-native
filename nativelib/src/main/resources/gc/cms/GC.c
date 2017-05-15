@@ -14,4 +14,4 @@ void *scalanative_alloc_raw_atomic(size_t size) { return CMS_allocate(size); }
 
 void scalanative_safepoint() { CMS_safepoint(); }
 
-void scalanative_collect() {}
+void scalanative_collect() { CMS_collect(); }

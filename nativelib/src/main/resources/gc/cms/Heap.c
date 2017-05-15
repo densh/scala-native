@@ -57,8 +57,8 @@ Object *Heap_alloc(Heap *heap, uint32_t size) {
         Object *object = LargeAllocator_alloc(heap->largeAllocator, size);
         if (object != NULL) {
             Object_setSize(object, size);
-            Object_setTag(object, Object_allocated);
-            Object_setType(object, Object_large);
+            Object_setAllocated(object);
+            Object_setLarge(object);
             assert((word_t)object % (LARGE_OBJECT_MIN_SIZE * WORD_SIZE) == 0);
         }
         return object;
@@ -66,8 +66,8 @@ Object *Heap_alloc(Heap *heap, uint32_t size) {
         Object *object = Allocator_alloc(heap->allocator, size);
         if (object != NULL) {
             Object_setSize(object, size);
-            Object_setTag(object, Object_allocated);
-            Object_setType(object, Object_standard);
+            Object_setAllocated(object);
+            Object_setStandard(object);
         }
         return object;
     }

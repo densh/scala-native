@@ -74,8 +74,12 @@ static inline bool Object_isMarked(Object *object) {
     return object->header.marked == 0x1;
 }
 
-static inline void Object_setType(Object *object, ObjectType_t type) {
-    object->header.type = type;
+static inline void Object_setStandard(Object *object) {
+    object->header.type = Object_standard;
+}
+
+static inline void Object_setLarge(Object *object) {
+    object->header.type = Object_large;
 }
 
 static inline bool Object_isLarge(Object *object) {
@@ -86,8 +90,12 @@ static inline bool Object_isStandard(Object *object) {
     return object->header.type == Object_standard;
 }
 
-static inline void Object_setTag(Object *object, ObjectTag_t objectTag) {
-    object->header.tag = objectTag;
+static inline void Object_setFree(Object *object) {
+    object->header.tag = Object_free;
+}
+
+static inline void Object_setAllocated(Object *object) {
+    object->header.tag = Object_allocated;
 }
 
 static inline bool Object_isFree(Object *object) {

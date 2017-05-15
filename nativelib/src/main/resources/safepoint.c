@@ -10,13 +10,11 @@ bool scalanative_safepoint_status = false;
 void scalanative_safepoint();
 
 void scalanative_safepoint_on() {
-    printf("switching safepoint on.\n");
     scalanative_safepoint_status = true;
     mprotect((void*) &scalanative_safepoint_trigger, 4096, PROT_NONE);
 }
 
 void scalanative_safepoint_off() {
-    printf("switching safepoint off.\n");
     scalanative_safepoint_status = false;
     mprotect((void*) &scalanative_safepoint_trigger, 4096, PROT_READ);
 }
