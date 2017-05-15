@@ -7,8 +7,8 @@
 #include "../Types.h"
 
 typedef enum {
+    Object_standard = 0x0,
     Object_large = 0x1,
-    Object_standard = 0x2,
 } ObjectType_t;
 
 typedef enum {
@@ -16,21 +16,12 @@ typedef enum {
     Object_allocated = 0x1,
 } ObjectTag_t;
 
-// TODO: update object header
-//
-// typedef struct {
-//   uint8_t color:2;   // black/white/blue
-//   uint8_t type:2;    // large/small
-//   uint32_t size:28;  // number of 1k pages for large objects,
-//                      // number of words for small ones
-//   uint32_t log_offset;
-// } ObjectHeader;
-
 typedef struct {
-    uint32_t size;
-    uint8_t tag;
-    uint8_t type;
-    uint8_t marked;
+    uint8_t marked : 1;
+    uint8_t tag : 1;
+    uint8_t type : 1;
+    uint32_t size : 29;
+    uint32_t replica;
 } ObjectHeader;
 
 typedef struct {
