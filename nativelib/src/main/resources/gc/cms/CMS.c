@@ -178,29 +178,55 @@ void CMS_collect() {
 #endif
 }
 
-uint32_t CMS_replicate(Object *object, Buffer *buffer) {
+void **CMS_replicate(Buffer *buffer, Object *object) {
     if (object->rtti->rt.id == __object_array_id) {
+        void **current = Buffer_current(buffer);
         // remove header and rtti from size
         uint32_t nbWords = Object_getSize(object) - 2;
         for (int i = 0; i < nbWords; i++) {
             word_t *field = object->fields[i];
             Object *fieldObject = (Object *)(field - 1);
             if (Heap_isObjectInHeap(CMS_heap, fieldObject)) {
-                Buffer_append(buffer, fieldObject);
+                *current = fieldObject;
+                current++;
             }
         }
-        return nbWords;
+        return current;
     } else {
+        void **current = Buffer_current(buffer);
         int64_t *ptr_map = object->rtti->refMapStruct;
         int i = 0;
         while (ptr_map[i] != -1) {
             word_t *field = object->fields[ptr_map[i] / sizeof(word_t) - 1];
             Object *fieldObject = (Object *)(field - 1);
             if (Heap_isObjectInHeap(CMS_heap, fieldObject)) {
-                Buffer_append(buffer, fieldObject);
+                *current = fieldObject;
+                current++;
             }
             ++i;
         }
-        return i;
+        return current;
+    }
+}
+
+void CMS_log_replica(Object *object) {
+    if (!Object_isMarked(object)) {
+        if (Object_getReplicaOffset(object) == 0) {
+            void **start = Buffer_current(CMS_replicaBuffer);
+            void **current = CMS_replicate(CMS_replicaBuffer, object);
+            if (Object_getReplicaOffset(object) == 0) {
+                *current = object;
+                current++;
+                Buffer_commit(CMS_replicaBuffer, current);
+                uint32_t offset = (word_t *) Buffer_start(CMS_replicaBuffer) - (word_t *) start;
+                Object_setReplicaOffset(object, offset);
+            }
+        }
+    }
+}
+
+void CMS_log_snoop(Object *value) {
+    if (value != NULL) {
+        Buffer_append(CMS_snoopingBuffer, value);
     }
 }

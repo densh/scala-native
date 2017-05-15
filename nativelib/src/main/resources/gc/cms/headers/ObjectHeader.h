@@ -21,7 +21,7 @@ typedef struct {
     uint8_t tag : 1;
     uint8_t type : 1;
     uint32_t size : 29;
-    uint32_t replica;
+    uint32_t replicaOffset;
 } ObjectHeader;
 
 typedef struct {
@@ -96,12 +96,20 @@ static inline bool Object_isAllocated(Object *object) {
     return object->header.tag == Object_allocated;
 }
 
+static inline void Object_setSize(Object *object, uint32_t value) {
+    object->header.size = value;
+}
+
 static inline uint32_t Object_getSize(Object *object) {
     return object->header.size;
 }
 
-static inline void Object_setSize(Object *object, uint32_t size) {
-    object->header.size = size;
+static inline void Object_setReplicaOffset(Object *object, uint32_t value) {
+    object->header.replicaOffset = value;
+}
+
+static inline uint32_t Object_getReplicaOffset(Object *object) {
+    return object->header.replicaOffset;
 }
 
 #endif // CMS_OBJECTHEADER_H
