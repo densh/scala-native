@@ -44,7 +44,7 @@ object Driver {
     )
 
   private val loweringPasses = Seq(
-    pass.WriteBarrierInsertion,
+    pass.CMSWriteBarrier,
     pass.DynmethodLowering,
     pass.ExternHoisting,
     pass.ModuleLowering,

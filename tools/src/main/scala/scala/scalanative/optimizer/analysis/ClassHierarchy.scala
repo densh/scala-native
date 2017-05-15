@@ -235,11 +235,15 @@ object ClassHierarchy {
       }
     }
 
-    def completeFields(): Unit = fields.foreach { node =>
-      val owner = nodes(node.name.top).asInstanceOf[Class]
-      node.in = owner
-      owner.members += node
-      owner.fields += node
+    def completeFields(): Unit = fields.foreach { fld =>
+      if (fld.name.isTop) {
+        fld.in = top
+      } else {
+        val owner = nodes(fld.name.top).asInstanceOf[Class]
+        fld.in = owner
+        owner.members += fld
+        owner.fields += fld
+      }
     }
 
     def completeTraits(): Unit =

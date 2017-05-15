@@ -26,10 +26,10 @@ Stack *CMS_stack = NULL;
 Buffer *CMS_tempBuffer = NULL;
 Buffer *CMS_replicaBuffer = NULL;
 Buffer *CMS_snoopingBuffer = NULL;
-volatile int CMS_collectorPhase = PHASE_NONE;
-volatile int CMS_mutatorPhase = PHASE_NONE;
 volatile bool CMS_snoopOn = false;
 volatile bool CMS_traceOn = false;
+volatile int CMS_collectorPhase = PHASE_NONE;
+volatile int CMS_mutatorPhase = PHASE_NONE;
 #endif
 
 void *CMS_allocate(size_t byteSize) {
@@ -133,8 +133,10 @@ void CMS_sweep() {
 
 void CMS_cleanup() {
 #ifdef CONCURRENT
-// TODO: reset log pointers
-// TODO: reset buffer
+    // TODO: reset log pointers
+    Buffer_reset(CMS_tempBuffer);
+    Buffer_reset(CMS_replicaBuffer);
+    Buffer_reset(CMS_snoopingBuffer);
 #endif
 }
 
@@ -209,7 +211,7 @@ void **CMS_replicate(Buffer *buffer, Object *object) {
     }
 }
 
-void CMS_log_replica(Object *object) {
+void CMS_logReplica(Object *object) {
     if (!Object_isMarked(object)) {
         if (Object_getReplicaOffset(object) == 0) {
             void **start = Buffer_current(CMS_replicaBuffer);
@@ -218,14 +220,15 @@ void CMS_log_replica(Object *object) {
                 *current = object;
                 current++;
                 Buffer_commit(CMS_replicaBuffer, current);
-                uint32_t offset = (word_t *) Buffer_start(CMS_replicaBuffer) - (word_t *) start;
+                uint32_t offset =
+                    (word_t *)Buffer_start(CMS_replicaBuffer) - (word_t *)start;
                 Object_setReplicaOffset(object, offset);
             }
         }
     }
 }
 
-void CMS_log_snoop(Object *value) {
+void CMS_logSnoop(Object *value) {
     if (value != NULL) {
         Buffer_append(CMS_snoopingBuffer, value);
     }

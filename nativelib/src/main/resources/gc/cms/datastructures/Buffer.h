@@ -23,25 +23,19 @@ inline Buffer *Buffer_create() {
     return buffer;
 }
 
-inline void **Buffer_start(Buffer *buffer) {
-    return buffer->start;
-}
+inline void **Buffer_start(Buffer *buffer) { return buffer->start; }
 
-inline void **Buffer_current(Buffer *buffer) {
-    return buffer->current;
-}
+inline void **Buffer_current(Buffer *buffer) { return buffer->current; }
 
 inline void Buffer_commit(Buffer *buffer, void **current) {
     buffer->current = current;
 }
 
-inline void Buffer_append(Buffer *buffer, void* value) {
+inline void Buffer_append(Buffer *buffer, void *value) {
     buffer->current = value;
     buffer->current++;
 }
 
-inline void Buffer_reset(Buffer *buffer) {
-    buffer->current = buffer->start;
-}
+inline void Buffer_reset(Buffer *buffer) { buffer->current = buffer->start; }
 
 #endif // CMS_BUFFER_H

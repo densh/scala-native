@@ -22,7 +22,8 @@ class AllocLowering(implicit fresh: Fresh, top: Top) extends Pass {
     insts.foreach {
       case Let(n, Op.Classalloc(ClassRef(cls))) =>
         val size = let(Op.Sizeof(cls.layout.struct))
-        let(n, Op.Call(allocSig, alloc, Seq(cls.rtti.const, size), Next.None))
+        let(n,
+            Op.Call(allocSig, allocVal, Seq(cls.rtti.const, size), Next.None))
 
       case inst =>
         buf += inst
@@ -35,10 +36,11 @@ class AllocLowering(implicit fresh: Fresh, top: Top) extends Pass {
 object AllocLowering extends PassCompanion {
   val allocName = Global.Top("scalanative_alloc")
   val allocSig  = Type.Function(Seq(Type.Ptr, Type.Long), Type.Ptr)
-  val alloc     = Val.Global(allocName, allocSig)
+  val allocVal  = Val.Global(allocName, Type.Ptr)
+  val allocDefn = Defn.Declare(Attrs.None, allocName, allocSig)
 
   override val injects =
-    Seq(Defn.Declare(Attrs.None, allocName, allocSig))
+    Seq(allocDefn)
 
   override def apply(config: tools.Config, top: Top) =
     new AllocLowering()(top.fresh, top)
