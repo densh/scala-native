@@ -23,9 +23,10 @@ Stack *CMS_stack = NULL;
 
 #define CONCURRENT
 #ifdef CONCURRENT
-Buffer *CMS_tempBuffer = NULL;
+Buffer *CMS_rootsBuffer = NULL;
 Buffer *CMS_replicaBuffer = NULL;
-Buffer *CMS_snoopingBuffer = NULL;
+Buffer *CMS_snoopBuffer = NULL;
+Buffer *CMS_tempBuffer = NULL;
 volatile bool CMS_snoopOn = false;
 volatile bool CMS_traceOn = false;
 volatile int CMS_collectorPhase = PHASE_NONE;
@@ -66,29 +67,34 @@ void CMS_safepoint() {
     int phase = CMS_collectorPhase;
     switch (phase) {
     case PHASE_SNOOPON:
+        printf("PHASE_SNOOPON\n");
         CMS_snoopOn = true;
         break;
     case PHASE_TRACEON:
+        printf("PHASE_TRACEON\n");
         CMS_traceOn = true;
         break;
     case PHASE_GETROOTS:
+        printf("PHASE_GETROOTS\n");
         // TODO: swap allocation color
         CMS_snoopOn = false;
-        // TODO: get roots
+        Marker_collectRoots(CMS_heap, CMS_rootsBuffer);
         break;
     case PHASE_GETSNOOPED:
-        // TODO: add snooped to roots
-        // TODO: clear snooped
+        printf("PHASE_GETSNOOPED\n");
+        Buffer_concat(CMS_rootsBuffer, CMS_snoopBuffer);
+        printf("Collected %u roots\n", Buffer_size(CMS_rootsBuffer));
         break;
     case PHASE_TRACEOFF:
+        printf("PHASE_TRACEOFF\n");
         CMS_traceOn = false;
         break;
     default:
         assert(false);
         break;
     }
-    CMS_mutatorPhase = phase;
     scalanative_safepoint_off();
+    CMS_mutatorPhase = phase;
 #endif
 }
 
@@ -119,13 +125,14 @@ void CMS_getRoots() {
 
 void CMS_traceHeap() {
 #ifdef CONCURRENT
-// TODO: put all objects from roots to mark stack
-// TODO: mark stack transitively
+    printf("Concurrent tracing heap\n");
+    Marker_markBuffer(CMS_heap, CMS_stack, CMS_rootsBuffer, CMS_tempBuffer);
 #endif
 }
 
 void CMS_sweep() {
 #ifdef CONCURRENT
+    printf("Sweeping heap\n");
     CMS_startPhase(PHASE_TRACEOFF);
 // TODO: perform sweep
 #endif
@@ -133,10 +140,11 @@ void CMS_sweep() {
 
 void CMS_cleanup() {
 #ifdef CONCURRENT
-    // TODO: reset log pointers
-    Buffer_reset(CMS_tempBuffer);
+    // TODO: reset log pointers in replica buffer
+    Buffer_reset(CMS_rootsBuffer);
     Buffer_reset(CMS_replicaBuffer);
-    Buffer_reset(CMS_snoopingBuffer);
+    Buffer_reset(CMS_snoopBuffer);
+    Buffer_reset(CMS_tempBuffer);
 #endif
 }
 
@@ -148,6 +156,8 @@ void *CMS_backgroundThreadEntry(void *unused) {
         CMS_traceHeap();
         CMS_sweep();
         CMS_cleanup();
+        printf("End of full cycle");
+        exit(1);
     }
 #endif
     return NULL;
@@ -164,9 +174,10 @@ void CMS_init() {
     CMS_heap = Heap_create();
     CMS_stack = Stack_alloc(INITIAL_STACK_SIZE);
 #ifdef CONCURRENT
-    CMS_tempBuffer = Buffer_create();
+    CMS_rootsBuffer = Buffer_create();
     CMS_replicaBuffer = Buffer_create();
-    CMS_snoopingBuffer = Buffer_create();
+    CMS_snoopBuffer = Buffer_create();
+    CMS_tempBuffer = Buffer_create();
     scalanative_safepoint_init();
     CMS_startBackgroundThread();
 #endif
@@ -174,62 +185,28 @@ void CMS_init() {
 
 void CMS_collect() {
 #ifndef CONCURRENT
-    printf("GC collection!\n");
+    printf("GC collection\n");
     Marker_markRoots(CMS_heap, CMS_stack);
     Heap_collect(CMS_heap);
 #endif
 }
 
-void **CMS_replicate(Buffer *buffer, Object *object) {
-    if (object->rtti->rt.id == __object_array_id) {
-        void **current = Buffer_current(buffer);
-        // remove header and rtti from size
-        uint32_t nbWords = Object_getSize(object) - 2;
-        for (int i = 0; i < nbWords; i++) {
-            word_t *field = object->fields[i];
-            Object *fieldObject = (Object *)(field - 1);
-            if (Heap_isObjectInHeap(CMS_heap, fieldObject)) {
-                *current = fieldObject;
-                current++;
-            }
-        }
-        return current;
-    } else {
-        void **current = Buffer_current(buffer);
-        int64_t *ptr_map = object->rtti->refMapStruct;
-        int i = 0;
-        while (ptr_map[i] != -1) {
-            word_t *field = object->fields[ptr_map[i] / sizeof(word_t) - 1];
-            Object *fieldObject = (Object *)(field - 1);
-            if (Heap_isObjectInHeap(CMS_heap, fieldObject)) {
-                *current = fieldObject;
-                current++;
-            }
-            ++i;
-        }
-        return current;
-    }
-}
+
 
 void CMS_logReplica(Object *object) {
     if (!Object_isMarked(object)) {
         if (Object_getReplicaOffset(object) == 0) {
-            void **start = Buffer_current(CMS_replicaBuffer);
-            void **current = CMS_replicate(CMS_replicaBuffer, object);
+            uint32_t offset = Buffer_size(CMS_replicaBuffer);
+            Marker_replicate(CMS_heap, CMS_replicaBuffer, object);
             if (Object_getReplicaOffset(object) == 0) {
-                *current = object;
-                current++;
-                Buffer_commit(CMS_replicaBuffer, current);
-                uint32_t offset =
-                    (word_t *)Buffer_start(CMS_replicaBuffer) - (word_t *)start;
                 Object_setReplicaOffset(object, offset);
             }
         }
     }
 }
 
-void CMS_logSnoop(Object *value) {
-    if (value != NULL) {
-        Buffer_append(CMS_snoopingBuffer, value);
+void CMS_logSnoop(Object *object) {
+    if (object != NULL) {
+        Buffer_append(CMS_snoopBuffer, (word_t) object);
     }
 }

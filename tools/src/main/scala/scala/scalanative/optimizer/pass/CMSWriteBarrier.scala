@@ -14,7 +14,6 @@ class CMSWriteBarrier(implicit top: Top, fresh: Fresh) extends Pass {
 
   override def onDefn(defn: Defn): Defn =
     if (defn.name == ObjectArrayUpdateName) {
-      println(defn.show)
       defn
     } else {
       super.onDefn(defn)

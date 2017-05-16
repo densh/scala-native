@@ -17,11 +17,11 @@ typedef enum {
 } ObjectTag_t;
 
 typedef struct {
-    uint8_t marked : 1;
-    uint8_t tag : 1;
-    uint8_t type : 1;
-    uint32_t size : 29;
-    uint32_t replicaOffset;
+    uint8_t marked:1;
+    uint8_t tag:1;
+    uint8_t type:1;
+    uint32_t replicaOffset:29;
+    uint32_t size;
 } ObjectHeader;
 
 typedef struct {

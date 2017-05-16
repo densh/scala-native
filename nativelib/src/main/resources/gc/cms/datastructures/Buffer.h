@@ -11,29 +11,42 @@
 #define BUFFER_MEM_FD_OFFSET 0
 
 typedef struct {
-    void **start;
-    void **current;
+    word_t *start;
+    word_t *current;
 } Buffer;
 
 inline Buffer *Buffer_create() {
     Buffer *buffer = malloc(sizeof(Buffer));
-    buffer->current = 0;
     buffer->start = mmap(NULL, BUFFER_MAX_SIZE, BUFFER_MEM_PROT,
                          BUFFER_MEM_FLAGS, BUFFER_MEM_FD, BUFFER_MEM_FD_OFFSET);
+    buffer->current = buffer->start;
     return buffer;
 }
 
-inline void **Buffer_start(Buffer *buffer) { return buffer->start; }
+inline word_t *Buffer_start(Buffer *buffer) {
+    return buffer->start;
+}
 
-inline void **Buffer_current(Buffer *buffer) { return buffer->current; }
+inline word_t *Buffer_current(Buffer *buffer) {
+    return buffer->current;
+}
 
-inline void Buffer_commit(Buffer *buffer, void **current) {
+inline uint32_t Buffer_size(Buffer *buffer) {
+    return buffer->current - buffer->start;
+}
+
+inline void Buffer_append(Buffer *buffer, word_t value) {
+    word_t *current = buffer->current;
+    *current = value;
+    current += 1;
     buffer->current = current;
 }
 
-inline void Buffer_append(Buffer *buffer, void *value) {
-    buffer->current = value;
-    buffer->current++;
+inline void Buffer_concat(Buffer *to, Buffer *from) {
+    word_t *current = to->current;
+    size_t size = Buffer_size(from);
+    memcpy(current, from->start, size * sizeof(word_t));
+    to->current = current + size;
 }
 
 inline void Buffer_reset(Buffer *buffer) { buffer->current = buffer->start; }

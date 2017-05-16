@@ -2,7 +2,7 @@
 #define CMS_LOG_H
 
 // Used to enable/disable asserts
-#define NDEBUG
+//#define NDEBUG
 #include <assert.h>
 
 #define DEBUG_PRINT

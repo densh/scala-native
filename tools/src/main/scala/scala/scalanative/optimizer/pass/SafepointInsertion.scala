@@ -10,28 +10,14 @@ import nir._
 class SafepointInsertion(implicit fresh: Fresh) extends Pass {
   import SafepointInsertion._
 
-  override def onDefns(defns: Seq[Defn]): Seq[Defn] = {
-    val buf = mutable.UnrolledBuffer.empty[Defn]
-
-    defns.foreach {
-      case defn: Defn.Define if defn.attrs.inline ne Attr.AlwaysInline =>
-        buf += defn.copy(insts = onInsts(defn.insts))
-
-      case defn =>
-        buf += defn
-    }
-
-    buf
-  }
-
   override def onInsts(insts: Seq[Inst]): Seq[Inst] = {
     val buf = new nir.Buffer
     import buf._
 
     insts.foreach {
-      case inst: Inst.Ret =>
-        let(Op.Load(Type.Byte, safepointTriggerVal, isVolatile = true))
+      case inst: Inst.Label =>
         buf += inst
+        let(Op.Load(Type.Byte, safepointTriggerVal, isVolatile = true))
 
       case inst =>
         buf += inst

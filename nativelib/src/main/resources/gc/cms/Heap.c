@@ -59,6 +59,7 @@ Object *Heap_alloc(Heap *heap, uint32_t size) {
             Object_setSize(object, size);
             Object_setAllocated(object);
             Object_setLarge(object);
+            Object_setReplicaOffset(object, 0);
             assert((word_t)object % (LARGE_OBJECT_MIN_SIZE * WORD_SIZE) == 0);
         }
         return object;
@@ -68,6 +69,7 @@ Object *Heap_alloc(Heap *heap, uint32_t size) {
             Object_setSize(object, size);
             Object_setAllocated(object);
             Object_setStandard(object);
+            Object_setReplicaOffset(object, 0);
         }
         return object;
     }
