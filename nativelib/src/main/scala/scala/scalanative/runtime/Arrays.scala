@@ -101,9 +101,9 @@ final class BooleanArray private () extends Array[Boolean] {
     sizeof[Boolean]
 
   @inline def at(i: Int): Ptr[Boolean] =
-    if (i < 0 || i >= length) {
+    /*if (i < 0 || i >= length) {
       throw new IndexOutOfBoundsException(i.toString)
-    } else {
+    } else*/ {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
       val ith   = first + stride * i
 
@@ -152,9 +152,9 @@ final class CharArray private () extends Array[Char] {
     sizeof[Char]
 
   @inline def at(i: Int): Ptr[Char] =
-    if (i < 0 || i >= length) {
+    /*if (i < 0 || i >= length) {
       throw new IndexOutOfBoundsException(i.toString)
-    } else {
+    } else*/ {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
       val ith   = first + stride * i
 
@@ -203,9 +203,9 @@ final class ByteArray private () extends Array[Byte] {
     sizeof[Byte]
 
   @inline def at(i: Int): Ptr[Byte] =
-    if (i < 0 || i >= length) {
+    /*if (i < 0 || i >= length) {
       throw new IndexOutOfBoundsException(i.toString)
-    } else {
+    } else*/ {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
       val ith   = first + stride * i
 
@@ -254,9 +254,9 @@ final class ShortArray private () extends Array[Short] {
     sizeof[Short]
 
   @inline def at(i: Int): Ptr[Short] =
-    if (i < 0 || i >= length) {
+    /*if (i < 0 || i >= length) {
       throw new IndexOutOfBoundsException(i.toString)
-    } else {
+    } else*/ {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
       val ith   = first + stride * i
 
@@ -305,9 +305,9 @@ final class IntArray private () extends Array[Int] {
     sizeof[Int]
 
   @inline def at(i: Int): Ptr[Int] =
-    if (i < 0 || i >= length) {
+    /*if (i < 0 || i >= length) {
       throw new IndexOutOfBoundsException(i.toString)
-    } else {
+    } else*/ {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
       val ith   = first + stride * i
 
@@ -356,9 +356,9 @@ final class LongArray private () extends Array[Long] {
     sizeof[Long]
 
   @inline def at(i: Int): Ptr[Long] =
-    if (i < 0 || i >= length) {
+    /*if (i < 0 || i >= length) {
       throw new IndexOutOfBoundsException(i.toString)
-    } else {
+    } else*/ {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
       val ith   = first + stride * i
 
@@ -407,9 +407,9 @@ final class FloatArray private () extends Array[Float] {
     sizeof[Float]
 
   @inline def at(i: Int): Ptr[Float] =
-    if (i < 0 || i >= length) {
+    /*if (i < 0 || i >= length) {
       throw new IndexOutOfBoundsException(i.toString)
-    } else {
+    } else*/ {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
       val ith   = first + stride * i
 
@@ -458,9 +458,9 @@ final class DoubleArray private () extends Array[Double] {
     sizeof[Double]
 
   @inline def at(i: Int): Ptr[Double] =
-    if (i < 0 || i >= length) {
+    /*if (i < 0 || i >= length) {
       throw new IndexOutOfBoundsException(i.toString)
-    } else {
+    } else*/ {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
       val ith   = first + stride * i
 
@@ -509,9 +509,9 @@ final class ObjectArray private () extends Array[Object] {
     sizeof[Object]
 
   @inline def at(i: Int): Ptr[Object] =
-    if (i < 0 || i >= length) {
+    /*if (i < 0 || i >= length) {
       throw new IndexOutOfBoundsException(i.toString)
-    } else {
+    } else*/ {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
       val ith   = first + stride * i
 

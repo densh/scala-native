@@ -93,9 +93,9 @@ final class ${T}Array private () extends Array[${T}] {
     sizeof[${T}]
 
   @inline def at(i: Int): Ptr[${T}] =
-    if (i < 0 || i >= length) {
+    /*if (i < 0 || i >= length) {
       throw new IndexOutOfBoundsException(i.toString)
-    } else {
+    } else*/ {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
       val ith   = first + stride * i
 
