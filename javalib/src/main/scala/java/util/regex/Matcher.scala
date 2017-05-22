@@ -1,9 +1,9 @@
 package java.util
 package regex
 
-import cre2h._
-
-import scalanative.native._, stdlib._, stdio._, string._
+import scalanative.native._, stdlib.{malloc, free}
+import scalanative.runtime.RE2
+import scalanative.runtime.RE2Utils._
 
 // Inspired by: https://github.com/google/re2j/blob/master/java/com/google/re2j/Matcher.java
 
@@ -38,17 +38,17 @@ final class Matcher private[regex] (var _pattern: Pattern,
   private var appendPos = 0
 
   private var groups =
-    Array.ofDim[(Int, Int)](cre2.numCapturingGroups(regex) + 1)
+    Array.ofDim[(Int, Int)](RE2.numCapturingGroups(regex) + 1)
 
-  private var lastAnchor: Option[Anchor] = None
+  private var lastAnchor: Option[RE2.anchor_t] = None
 
   private[regex] var inputLength = inputSequence.length
 
-  def matches(): Boolean = genMatch(0, Anchor.Both)
+  def matches(): Boolean = genMatch(0, ANCHOR_BOTH)
 
-  def lookingAt(): Boolean = genMatch(0, Anchor.Start)
+  def lookingAt(): Boolean = genMatch(0, ANCHOR_START)
 
-  def find(start: Int): Boolean = genMatch(0, Anchor.None)
+  def find(start: Int): Boolean = genMatch(0, UNANCHORED)
 
   def find(): Boolean = {
     var startIndex = 0
@@ -59,17 +59,18 @@ final class Matcher private[regex] (var _pattern: Pattern,
       }
     }
 
-    genMatch(startIndex, Anchor.None)
+    genMatch(startIndex, UNANCHORED)
   }
 
   private def doMatch(start: Int,
                       end: Int,
                       nMatches: Int,
-                      anchor: Anchor): Boolean = {
-    val matches = StringPart.array(nMatches)
-    val in      = toCString(inputSequence.toString)
+                      anchor: RE2.anchor_t): Boolean = {
+    val matches = malloc(nMatches * sizeof[RE2.string_t])
+      .cast[Ptr[RE2.string_t]]
+    val in = toCString(inputSequence.toString)
 
-    val ok = cre2.matches(
+    val ok = RE2.matches(
         regex = regex,
         text = in,
         textlen = inputLength,
@@ -83,19 +84,21 @@ final class Matcher private[regex] (var _pattern: Pattern,
     if (ok) {
       var i = 0
       while (i < nMatches) {
-        val m     = matches(i)
+        val m     = matches + i
         val start = (m.data - in).toInt
-        val end   = start + m.lenght
+        val end   = start + m.length
         groups(i) = ((start, end))
 
         i += 1
       }
     }
 
+    free(matches.cast[Ptr[Byte]])
+
     ok
   }
 
-  private def genMatch(start: Int, anchor: Anchor): Boolean = {
+  private def genMatch(start: Int, anchor: RE2.anchor_t): Boolean = {
     val ok = doMatch(start, inputLength, 1, anchor)
 
     if (ok) {
@@ -114,13 +117,23 @@ final class Matcher private[regex] (var _pattern: Pattern,
     replace(replacement, global = true)
 
   private def replace(replacement: String, global: Boolean): String = {
-    val textAndTarget = StringPart(inputSequence.toString)
-    val rewrite       = StringPart(replacement)
+    val textAndTarget, rewrite = stackalloc[RE2.string_t]
 
-    if (global) cre2.globalReplace(regex, textAndTarget, rewrite)
-    else cre2.replace(regex, textAndTarget, rewrite)
+    toRE2String(inputSequence.toString, textAndTarget)
+    toRE2String(replacement, rewrite)
 
-    textAndTarget.toString
+    if (global) {
+      RE2.globalReplace(regex, textAndTarget, rewrite)
+    } else {
+      RE2.replace(regex, textAndTarget, rewrite)
+    }
+
+    val res = fromRE2String(textAndTarget)
+
+    freeRE2String(textAndTarget)
+    freeRE2String(rewrite)
+
+    res
   }
 
   def group(): String = group(0)
@@ -129,14 +142,17 @@ final class Matcher private[regex] (var _pattern: Pattern,
     val startIndex = start(group)
     val endIndex   = end(group)
 
-    if (startIndex < 0 && endIndex < 0) null
-    else inputSequence.subSequence(startIndex, endIndex).toString()
+    if (startIndex < 0 && endIndex < 0) {
+      null
+    } else {
+      inputSequence.subSequence(startIndex, endIndex).toString()
+    }
   }
 
   def group(name: String): String = group(groupIndex(name))
 
   private def groupIndex(name: String): Int = {
-    val pos = cre2.findNamedCapturingGroups(regex, toCString(name))
+    val pos = RE2.findNamedCapturingGroups(regex, toCString(name))
     if (pos == -1) {
       throw new IllegalArgumentException(s"No group with name <$name>")
     }
@@ -234,7 +250,9 @@ final class Matcher private[regex] (var _pattern: Pattern,
       }
       m.appendTail(sb2)
       sb.append(sb2.toString())
-    } else sb.append(replacement)
+    } else {
+      sb.append(replacement)
+    }
 
     this
   }

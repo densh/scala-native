@@ -39,11 +39,11 @@ class _Object {
     __hashCode
 
   protected def __clone(): _Object = {
-    val size  = runtime.getType(this).size
-    val clone = runtime.GC.malloc(size)
+    val ty    = runtime.getType(this)
+    val clone = runtime.GC.alloc(ty.cast[Ptr[runtime.Type]], ty.size)
     `llvm.memcpy.p0i8.p0i8.i64`(clone.cast[Ptr[scala.Byte]],
                                 this.cast[Ptr[scala.Byte]],
-                                size,
+                                ty.size,
                                 1,
                                 false)
     clone.cast[_Object]

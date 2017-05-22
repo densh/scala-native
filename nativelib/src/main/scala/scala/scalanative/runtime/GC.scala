@@ -10,10 +10,14 @@ import native._
  */
 @extern
 object GC {
-  @name("scalanative_alloc_raw")
-  def malloc(size: CSize): Ptr[Byte] = extern
-  @name("scalanative_alloc_raw_atomic")
-  def malloc_atomic(size: CSize): Ptr[Byte] = extern
+  @name("scalanative_alloc")
+  def alloc(ty: Ptr[Type], size: CSize): Ptr[Byte] = extern
   @name("scalanative_collect")
   def collect(): Unit = extern
+  // TODO: remove me
+  @name("GC_malloc")
+  def malloc(size: CSize): Ptr[Byte] = extern
+  // TODO: remove me
+  @name("GC_malloc_atomic")
+  def malloc_atomic(size: CSize): Ptr[Byte] = extern
 }

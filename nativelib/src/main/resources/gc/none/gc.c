@@ -21,37 +21,23 @@
 void *current = 0;
 void *end = 0;
 
-void scalanative_safepoint_init();
-
 void scalanative_init() {
     current = mmap(NULL, CHUNK, DUMMY_GC_PROT, DUMMY_GC_FLAGS, DUMMY_GC_FD,
                    DUMMY_GC_FD_OFFSET);
     end = current + CHUNK;
-    scalanative_safepoint_init();
 }
 
-void *scalanative_alloc_raw(size_t size) {
+void *scalanative_alloc(void *info, size_t size) {
     size = size + (8 - size % 8);
-    if (current != 0 && current + size < end) {
-        void *alloc = current;
+    if (current + size < end) {
+        void *result = current;
+        *result = info;
         current += size;
-        return alloc;
+        return result;
     } else {
         scalanative_init();
         return scalanative_alloc_raw(size);
     }
 }
 
-void *scalanative_alloc_raw_atomic(size_t size) {
-    return scalanative_alloc_raw(size);
-}
-
-void *scalanative_alloc(void *info, size_t size) {
-    void **alloc = (void **)scalanative_alloc_raw(size);
-    *alloc = info;
-    return (void *)alloc;
-}
-
 void scalanative_collect() {}
-
-void scalanative_safepoint() {}

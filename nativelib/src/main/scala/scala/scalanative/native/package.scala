@@ -1,7 +1,9 @@
 package scala.scalanative
 
 import java.nio.charset.Charset
-import runtime.{undefined, GC}
+import scalanative.runtime.{GC, undefined}
+import scalanative.runtime.Intrinsics._
+import scalanative.native.string.memcpy
 
 package object native {
 
@@ -136,30 +138,26 @@ package object native {
   def fromCString(cstr: CString,
                   charset: Charset = Charset.defaultCharset()): String = {
     val len   = string.strlen(cstr).toInt
-    val bytes = new Array[Byte](len)
+    val bytes = runtime.ByteArray.alloc(len)
 
-    var c = 0
-    while (c < len) {
-      bytes(c) = !(cstr + c)
-      c += 1
-    }
+    memcpy(bytes.at(0), cstr, len)
 
-    new String(bytes, charset)
+    new String(bytes.asInstanceOf[Array[Byte]], charset)
   }
 
-  /** Convert a java.lang.String to a CString using given charset. */
+  /** Convert a java.lang.String to a CString using given charset.
+   *  The returned string is allocated using malloc allocator and
+   *  must be freed manually.
+   */
   def toCString(str: String,
                 charset: Charset = Charset.defaultCharset()): CString = {
-    val bytes = str.getBytes(charset)
-    val cstr  = GC.malloc_atomic(bytes.length + 1).cast[Ptr[Byte]]
+    val bytes = str.getBytes(charset).asInstanceOf[runtime.ByteArray]
+    val len   = bytes.length
+    val cstr  = stdlib.malloc(len + 1)
 
-    var c = 0
-    while (c < bytes.length) {
-      !(cstr + c) = bytes(c)
-      c += 1
-    }
+    memcpy(cstr, bytes.at(0), len)
 
-    !(cstr + c) = 0.toByte
+    !(cstr + len) = 0.toByte
 
     cstr
   }
