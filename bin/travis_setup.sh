@@ -2,37 +2,26 @@
 
 if [ "$(uname)" == "Darwin" ]; then
 
+    # scala native dependencies
     brew update
-    brew install sbt
-    brew install bdw-gc
-    brew link bdw-gc
-    brew install jq
-    brew install re2
-    brew install llvm@4
+    brew install sbt bdw-gc re2 llvm@4
+
+    # extra configuration for CI
+    brew jq
     export PATH="/usr/local/opt/llvm@4/bin:$PATH"
 
 else
 
-    # Install LLVM/Clang 3.7, Boehm GC, libunwind
-    sudo apt-get -qq update
-    sudo sh -c "echo 'deb http://apt.llvm.org/precise/ llvm-toolchain-precise-3.7 main' >> /etc/apt/sources.list"
-    sudo sh -c "echo 'deb http://apt.llvm.org/precise/ llvm-toolchain-precise main' >> /etc/apt/sources.list"
-    wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-    sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
+    # scala native dependencies
     sudo apt-get -qq update
     sudo apt-get install -y \
-      clang++-3.7 \
-      llvm-3.7 \
-      llvm-3.7-dev \
-      llvm-3.7-runtime \
-      llvm-3.7-tool \
+      clang++-3.8 \
       libgc-dev \
-      libunwind7-dev
+      libunwind8-dev
 
-    # Install re2
-    # Starting from Ubuntu 16.04 LTS, it'll be available as http://packages.ubuntu.com/xenial/libre2-dev
+    # available as libre2-dev package starting from 16.04
     sudo apt-get install -y make
-    export CXX=clang++-3.7
+    export CXX=clang++-3.8
     git clone https://code.googlesource.com/re2
     pushd re2
     git checkout 2017-03-01
