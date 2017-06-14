@@ -32,7 +32,7 @@ object FileDescriptor {
   val out: FileDescriptor = new FileDescriptor(unistd.STDOUT_FILENO)
   val err: FileDescriptor = new FileDescriptor(unistd.STDERR_FILENO)
 
-  private[io] def open(file: File): FileDescriptor =
+  private[io] def openReadOnly(file: File): FileDescriptor =
     Zone { implicit z =>
       val fd = fcntl.open(toCString(file.getPath), fcntl.O_RDONLY)
       if (fd == -1) {
