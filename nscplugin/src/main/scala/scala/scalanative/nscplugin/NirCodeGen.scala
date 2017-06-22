@@ -497,7 +497,14 @@ abstract class NirCodeGen
           val values = params.take(label.params.length)
           val jump   = entry.withJump(local, values: _*)
 
-          genTailRecLabel(dd, isStatic, label, jump)
+          scoped(
+            curMethodThis := {
+              if (isStatic) None
+              else Some(Val.Local(params.head.name, params.head.ty))
+            }
+          ) {
+            genTailRecLabel(dd, isStatic, label, jump)
+          }
 
         case _ if curMethodSym.get == NObjectInitMethod =>
           return Seq(

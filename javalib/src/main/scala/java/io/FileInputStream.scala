@@ -76,5 +76,5 @@ class FileInputStream(fd: FileDescriptor) extends InputStream {
     }
 
   // TODO:
-  // def getChannel: FileChannel
+  def getChannel: java.nio.channels.FileChannel = ???
 }

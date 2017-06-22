@@ -1,0 +1,3 @@
+package java.security
+
+class NoSuchAlgorithmException extends GeneralSecurityException

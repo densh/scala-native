@@ -116,9 +116,9 @@ object ScalaNativePluginInternal {
 
   lazy val dependencies = Seq(
     libraryDependencies ++= Seq(
-      "org.scala-native" %%% "nativelib"      % nativeVersion,
-      "org.scala-native" %%% "javalib"        % nativeVersion,
-      "org.scala-native" %%% "scalalib"       % nativeVersion,
+      "org.scala-native" %%% "nativelib"      % nativeVersion changing(),
+      "org.scala-native" %%% "javalib"        % nativeVersion changing(),
+      "org.scala-native" %%% "scalalib"       % nativeVersion changing(),
       "org.scala-native" %%% "test-interface" % nativeVersion % Test
     ),
     addCompilerPlugin(

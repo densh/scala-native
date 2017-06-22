@@ -34,6 +34,10 @@ class Thread private (runnable: Runnable) extends Runnable {
   trait UncaughtExceptionHandler {
     def uncaughtException(thread: Thread, e: Throwable): Unit
   }
+
+  // TODO:
+  def this(name: String) = this(??? : Runnable)
+  def getContextClassLoader(): java.lang.ClassLoader = ???
 }
 
 object Thread {
@@ -72,4 +76,6 @@ object Thread {
   }
 
   def sleep(millis: scala.Long): Unit = sleep(millis, 0)
+
+  def dumpStack(): Unit = ???
 }
