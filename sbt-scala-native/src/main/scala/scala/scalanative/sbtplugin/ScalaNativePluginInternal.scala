@@ -384,7 +384,7 @@ object ScalaNativePluginInternal {
       val reporter = nativeOptimizerReporter.value
       val driver   = nativeOptimizerDriver.value
       logger.time("Optimizing") {
-        tools.optimize(config, driver, result.defns, result.dyns, reporter)
+        tools.optimize(config, driver, result.defns, result.dyns, result.calls, reporter)
       }
     },
     nativeGenerateLL := {

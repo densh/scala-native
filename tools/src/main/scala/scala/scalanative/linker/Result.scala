@@ -17,6 +17,9 @@ trait Result {
   /** Sequence of signatures of dynamic methods that were discovered during linking. */
   def dyns: Seq[String]
 
+  /** Sequence of globals of methods calls that were discovered during linking. */
+  def calls: Seq[Global]
+
   /** Create a copy of the result with given unresolved sequence. */
   def withUnresolved(value: Seq[Global]): Result
 
@@ -28,17 +31,22 @@ trait Result {
 
   /** Create a copy of the result with given dyns sequence. */
   def withDyns(value: Seq[String]): Result
+
+  /** Create a copy of the result with given calls sequence. */
+  def withCalls(calls: Seq[Global]): Result
 }
 
 object Result {
 
   /** Default, empty linker result. */
-  val empty: Result = Impl(Seq.empty, Seq.empty, Seq.empty, Seq.empty)
+  val empty: Result =
+    Impl(Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty)
 
   private[linker] final case class Impl(unresolved: Seq[Global],
                                         links: Seq[Attr.Link],
                                         defns: Seq[nir.Defn],
-                                        dyns: Seq[String])
+                                        dyns: Seq[String],
+                                        calls: Seq[Global])
       extends Result {
     def withUnresolved(value: Seq[Global]): Result =
       copy(unresolved = value)
@@ -51,11 +59,15 @@ object Result {
 
     def withDyns(value: Seq[String]): Result =
       copy(dyns = value)
+
+    def withCalls(calls: Seq[Global]): Result =
+      copy(calls = calls)
   }
 
   private[linker] def apply(unresolved: Seq[Global],
                             links: Seq[Attr.Link],
                             defns: Seq[nir.Defn],
-                            dyns: Seq[String]): Result =
-    Impl(unresolved, links, defns, dyns)
+                            dyns: Seq[String],
+                            calls: Seq[Global]): Result =
+    Impl(unresolved, links, defns, dyns, calls)
 }

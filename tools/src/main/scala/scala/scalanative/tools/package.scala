@@ -61,8 +61,9 @@ package object tools {
       driver: OptimizerDriver,
       assembly: Seq[nir.Defn],
       dyns: Seq[String],
+      calls: Seq[Global],
       reporter: OptimizerReporter = OptimizerReporter.empty): Seq[nir.Defn] =
-    optimizer.Optimizer(config, driver, assembly, dyns, reporter)
+    optimizer.Optimizer(config, driver, assembly, dyns, calls, reporter)
 
   /** Given low-level assembly, emit LLVM IR for it to the buildDirectory. */
   def codegen(config: Config, assembly: Seq[nir.Defn]): Unit =

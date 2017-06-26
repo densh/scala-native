@@ -30,12 +30,13 @@ object Optimizer {
             driver: Driver,
             assembly: Seq[Defn],
             dyns: Seq[String],
+            calls: Seq[Global],
             reporter: Reporter): Seq[Defn] = {
     import reporter._
 
     val injects    = driver.passes.filter(_.isInjectionPass)
     val transforms = driver.passes.filterNot(_.isInjectionPass)
-    val world      = analysis.ClassHierarchy(assembly, dyns)
+    val world      = analysis.ClassHierarchy(assembly, dyns, calls)
 
     val injected = {
       val buf = mutable.UnrolledBuffer.empty[Defn]

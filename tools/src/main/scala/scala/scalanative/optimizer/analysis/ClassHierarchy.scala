@@ -79,6 +79,7 @@ object ClassHierarchy {
                   val classes: Seq[Class],
                   val traits: Seq[Trait],
                   val dyns: Seq[String],
+                  val calls: Seq[Global],
                   override val methods: mutable.UnrolledBuffer[Method],
                   override val fields: mutable.UnrolledBuffer[Field])
       extends Scope {
@@ -89,7 +90,7 @@ object ClassHierarchy {
     var moduleArray: ModuleArray    = _
   }
 
-  def apply(defns: Seq[Defn], dyns: Seq[String]): Top = {
+  def apply(defns: Seq[Defn], dyns: Seq[String], calls: Seq[Global]): Top = {
     val nodes   = mutable.Map.empty[Global, Node]
     val structs = mutable.UnrolledBuffer.empty[Struct]
     val classes = mutable.UnrolledBuffer.empty[Class]
@@ -200,7 +201,8 @@ object ClassHierarchy {
                       traits = sortTraits(traits),
                       methods = methods,
                       fields = fields,
-                      dyns = dyns)
+                      dyns = dyns,
+                      calls = calls)
     top.members ++= nodes.values
 
     def assignMethodIds(): Unit = {
@@ -292,7 +294,7 @@ object ClassHierarchy {
     }
 
     def completeTop(): Unit = {
-      top.tables = new TraitDispatchTables(top)
+      top.tables = new TraitDispatchTables(top, calls)
       top.moduleArray = new ModuleArray(top)
     }
 

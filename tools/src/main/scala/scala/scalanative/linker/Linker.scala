@@ -22,6 +22,19 @@ object Linker {
             reporter: Reporter = Reporter.empty): Linker =
     new Impl(config, reporter)
 
+  private def collectCalls(calls: mutable.Set[Global], defn: Defn): Unit =
+    defn match {
+      case defn: Defn.Define =>
+        defn.insts.foreach {
+          case Inst.Let(_, Op.Method(_, name)) =>
+            calls += name
+          case _ =>
+            ()
+        }
+      case _ =>
+        ()
+    }
+
   private final class Impl(config: tools.Config, reporter: Reporter)
       extends Linker {
     import reporter._
@@ -36,6 +49,7 @@ object Linker {
       val weaks       = mutable.Set.empty[Global]
       val signatures  = mutable.Set.empty[String]
       val dyndefns    = mutable.Set.empty[Global]
+      val calls       = mutable.Set.empty[Global]
 
       val paths = config.paths.map(p => ClassPath(VirtualDirectory.real(p)))
       def load(global: Global) =
@@ -59,6 +73,7 @@ object Linker {
                 defns += defn
                 links ++= newlinks
                 signatures ++= newsignatures
+                collectCalls(calls, defn)
 
                 // Comparing new signatures with already collected weak dependencies
                 newsignatures
@@ -137,7 +152,8 @@ object Linker {
       Result(unresolved.toSeq,
              links.toSeq,
              defnss.sortBy(_.name.toString),
-             signatures.toSeq)
+             signatures.toSeq,
+             calls.toSeq)
     }
   }
 }

@@ -6,7 +6,7 @@ import scala.collection.mutable
 import ClassHierarchy._
 import nir._
 
-class TraitDispatchTables(top: Top) {
+class TraitDispatchTables(top: Top, calls: Seq[Global]) {
   val dispatchName                          = Global.Top("__dispatch")
   val dispatchVal                           = Val.Global(dispatchName, Type.Ptr)
   var dispatchTy: Type                      = _
@@ -35,6 +35,15 @@ class TraitDispatchTables(top: Top) {
       }
     }
     sigs
+  }
+
+  locally {
+    val total = traitMethodSigs.size
+    var called = calls.collect {
+      case name if top.nodes(name).inTrait => name.id
+    }.distinct.size
+    println("---")
+    println("trait method called % = " + (called.toFloat / total))
   }
 
   def initDispatch(): Unit = {
@@ -70,6 +79,38 @@ class TraitDispatchTables(top: Top) {
         cur.parent.foreach(visit)
       }
       visit(cls)
+    }
+
+    // Print statistics
+    locally {
+      val counts = mutable.Map.empty[Int, Int]
+      var i = 0
+      while (i < sigsLength) {
+        var count = 0
+        var j = 0
+        while (j < classes.length) {
+          if (get(j, i) ne Val.Null) {
+            count += 1
+          }
+          j += 1
+        }
+        if (!counts.contains(count)) {
+          counts(count) = 0
+        }
+        counts(count) += 1
+        i += 1
+      }
+      println("---")
+      val total = counts.toArray.map(_._2).sum
+      println("trait method stats:")
+      counts.toArray.sortBy(_._1).foreach { case (impls, count) =>
+        println(s"  $impls : $count")
+      }
+      println("percentage:")
+      (1 to 64).foreach { upto =>
+        val v = counts.toArray.filter(_._1 <= upto).map(_._2).sum
+        println(s"  <= $upto : ${v.toFloat / total}")
+      }
     }
 
     // Generate a compressed representation of the dispatch table
