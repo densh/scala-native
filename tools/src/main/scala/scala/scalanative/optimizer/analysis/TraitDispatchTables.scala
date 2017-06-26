@@ -72,6 +72,38 @@ class TraitDispatchTables(top: Top) {
       visit(cls)
     }
 
+    // Print statistics
+    locally {
+      val counts = mutable.Map.empty[Int, Int]
+      var i = 0
+      while (i < sigsLength) {
+        var count = 0
+        var j = 0
+        while (j < classes.length) {
+          if (get(j, i) ne Val.Null) {
+            count += 1
+          }
+          j += 1
+        }
+        if (!counts.contains(count)) {
+          counts(count) = 0
+        }
+        counts(count) += 1
+        i += 1
+      }
+      println("---")
+      val total = counts.toArray.map(_._2).sum
+      println("trait method stats:")
+      counts.toArray.sortBy(_._1).foreach { case (impls, count) =>
+        println(s"  $impls : $count")
+      }
+      println("percentage:")
+      (1 to 64).foreach { upto =>
+        val v = counts.toArray.filter(_._1 <= upto).map(_._2).sum
+        println(s"  <= $upto : ${v.toFloat / total}")
+      }
+    }
+
     // Generate a compressed representation of the dispatch table
     // that displaces method rows one of top of the other to miniminize
     // number of nulls in the table.
