@@ -1,5 +1,6 @@
 package benchmarks
 
+
 sealed abstract class BenchmarkResult(val name: String, val success: Boolean)
 
 case class BenchmarkCompleted(override val name: String,
@@ -22,6 +23,12 @@ case object MediumRunningTime   extends BenchmarkRunningTime(10000)
 case object ShortRunningTime    extends BenchmarkRunningTime(30000)
 case object UnknownRunningTime  extends BenchmarkRunningTime(1)
 
+import scalanative.native._
+@extern object cycleclock {
+  @name("scalanative_cycleclock")
+  def cycleclock(): Long = extern
+}
+
 abstract class Benchmark[T]() {
   def run(): T
   def check(t: T): Boolean
@@ -40,9 +47,9 @@ abstract class Benchmark[T]() {
       val times: Array[Long] = new Array[Long](iterations)
 
       while (i < iterations) {
-        val start  = System.nanoTime()
+        val start  = cycleclock.cycleclock()
         val result = run()
-        val end    = System.nanoTime()
+        val end    = cycleclock.cycleclock()
 
         success = success && check(result)
         times(i) = end - start
