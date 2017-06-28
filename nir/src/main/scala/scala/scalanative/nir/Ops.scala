@@ -64,7 +64,7 @@ object Op {
   // high-level
   final case class Classalloc(name: Global)                        extends Op
   final case class Field(obj: Val, name: Global)                   extends Op
-  final case class Method(obj: Val, name: Global)                  extends Op
+  final case class Method(obj: Val, name: Global)                  extends Pure
   final case class Dynmethod(obj: Val, signature: String)          extends Op
   final case class Module(name: Global, unwind: Next)              extends Unwind
   final case class As(ty: Type, obj: Val)                          extends Op

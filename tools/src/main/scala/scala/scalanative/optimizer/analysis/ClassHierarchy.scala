@@ -61,7 +61,7 @@ object ClassHierarchy {
                      val isConcrete: Boolean)
       extends Node {
     val overrides = mutable.UnrolledBuffer.empty[Method]
-    val overriden = mutable.UnrolledBuffer.empty[Method]
+    val overriden = mutable.UnrolledBuffer.empty[(Class, Global)]
     val value =
       if (isConcrete) Val.Global(name, Type.Ptr)
       else Val.Null
@@ -230,7 +230,7 @@ object ClassHierarchy {
         meth.attrs.overrides.foreach { name =>
           val ovmeth = nodes(name).asInstanceOf[Method]
           meth.overrides += ovmeth
-          ovmeth.overriden += meth
+          ovmeth.overriden += ((meth.in.asInstanceOf[Class], meth.name))
         }
       }
     }

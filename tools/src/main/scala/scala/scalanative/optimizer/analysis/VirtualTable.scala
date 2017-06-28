@@ -46,4 +46,19 @@ class VirtualTable(cls: Class) {
       .getOrElse {
         entries.indexOf(meth)
       }
+  def impls(meth: Method): Seq[(Class, Global)] = {
+    val idx   = index(meth)
+    val names = mutable.Buffer.empty[(Class, Global)]
+    def visit(cls: Class): Unit = {
+      cls.vtable.values(idx) match {
+        case Val.Global(name, _) =>
+          names += ((cls, name))
+        case _ =>
+          ()
+      }
+      cls.subclasses.foreach(visit)
+    }
+    visit(cls)
+    names.toSeq
+  }
 }

@@ -24,22 +24,41 @@ class TraitDispatchTables(top: Top) {
   var traitHasTraitDefn: Defn = _
 
   val traitMethods = top.methods.filter(_.inTrait).sortBy(_.id)
-  val traitMethodSigs = {
-    val sigs = mutable.Map.empty[String, Int]
-    var i    = 0
+  val traitSigImpls = {
+    val impls =
+      mutable.Map.empty[String, mutable.UnrolledBuffer[(Class, Global)]]
     traitMethods.foreach { meth =>
       val sig = meth.name.id
-      if (!sigs.contains(sig)) {
-        sigs(sig) = i
-        i += 1
-      }
+      impls(sig) = mutable.UnrolledBuffer.empty
     }
-    sigs
+    val clsImpls = mutable.Map.empty[String, Global]
+    top.classes.foreach { cls =>
+      def visit(cls: Class): Unit = {
+        cls.methods.foreach { meth =>
+          val sig = meth.name.id
+          if (impls.contains(sig) && !clsImpls.contains(sig)) {
+            clsImpls(sig) = meth.name
+          }
+        }
+        cls.parent.foreach(visit)
+      }
+      visit(cls)
+      clsImpls.foreach {
+        case (sig, impl) =>
+          impls(sig) += ((cls, impl))
+      }
+      clsImpls.clear()
+    }
+    impls
   }
+  val switchSigs =
+    traitSigImpls.filter { case (_, i) => i.size <= 4 }.keys.toSet
+  val tableSigs =
+    traitSigImpls.filter { case (_, i) => i.size > 4 }.keys.zipWithIndex.toMap
 
   def initDispatch(): Unit = {
-    val sigs          = traitMethodSigs
-    val sigsLength    = traitMethodSigs.size
+    val sigs          = tableSigs
+    val sigsLength    = tableSigs.size
     val classes       = top.classes.sortBy(_.id)
     val classesLength = classes.length
     val table =
@@ -75,10 +94,10 @@ class TraitDispatchTables(top: Top) {
     // Print statistics
     locally {
       val counts = mutable.Map.empty[Int, Int]
-      var i = 0
+      var i      = 0
       while (i < sigsLength) {
         var count = 0
-        var j = 0
+        var j     = 0
         while (j < classes.length) {
           if (get(j, i) ne Val.Null) {
             count += 1
@@ -94,8 +113,9 @@ class TraitDispatchTables(top: Top) {
       println("---")
       val total = counts.toArray.map(_._2).sum
       println("trait method stats:")
-      counts.toArray.sortBy(_._1).foreach { case (impls, count) =>
-        println(s"  $impls : $count")
+      counts.toArray.sortBy(_._1).foreach {
+        case (impls, count) =>
+          println(s"  $impls : $count")
       }
       println("percentage:")
       (1 to 64).foreach { upto =>

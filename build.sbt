@@ -408,6 +408,7 @@ lazy val tests =
       //   crossTarget.value),
       libraryDependencies += "org.scala-native" %%% "test-interface" % nativeVersion,
       testFrameworks += new TestFramework("tests.NativeFramework"),
+      nativeMode := "release",
       envVars in (Test, test) ++= Map(
         "USER"                           -> "scala-native",
         "HOME"                           -> baseDirectory.value.getAbsolutePath,
@@ -422,9 +423,10 @@ lazy val sandbox =
     .in(file("sandbox"))
     .settings(noPublishSettings)
     .settings(
-      // nativeOptimizerReporter := OptimizerReporter.toDirectory(
-      //   crossTarget.value)
-      scalaVersion := libScalaVersion
+      nativeOptimizerReporter := OptimizerReporter.toDirectory(
+        crossTarget.value),
+      scalaVersion := libScalaVersion,
+      nativeMode := "release"
     )
     .enablePlugins(ScalaNativePlugin)
 
@@ -435,6 +437,8 @@ lazy val benchmarks =
     .settings(noPublishSettings)
     .settings(
       nativeMode := "release",
+      nativeOptimizerReporter := OptimizerReporter.toDirectory(
+        crossTarget.value),
       sourceGenerators in Compile += Def.task {
         val dir = (scalaSource in Compile).value
         val benchmarks = (dir ** "*Benchmark.scala").get

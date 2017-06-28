@@ -40,7 +40,8 @@ object Driver {
     pass.PartialEvaluation,
     pass.InstCombine,
     pass.ConstantFolding,
-    pass.GlobalValueNumbering
+    pass.GlobalValueNumbering,
+    pass.CopyPropagation
   )
 
   private val loweringPasses = Seq(
