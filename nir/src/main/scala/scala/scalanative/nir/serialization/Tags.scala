@@ -20,7 +20,8 @@ object Tags {
   final val PureAttr         = 1 + AlwaysInlineAttr
   final val ExternAttr       = 1 + PureAttr
   final val OverrideAttr     = 1 + ExternAttr
-  final val LinkAttr         = 1 + OverrideAttr
+  final val AlignAttr        = 1 + OverrideAttr
+  final val LinkAttr         = 1 + AlignAttr
   final val PinAlwaysAttr    = 1 + LinkAttr
   final val PinIfAttr        = 1 + PinAlwaysAttr
   final val PinWeakAttr      = 1 + PinIfAttr
@@ -195,7 +196,8 @@ object Tags {
   final val NoneVal   = 1 + Val
   final val TrueVal   = 1 + NoneVal
   final val FalseVal  = 1 + TrueVal
-  final val ZeroVal   = 1 + FalseVal
+  final val NullVal   = 1 + FalseVal
+  final val ZeroVal   = 1 + NullVal
   final val UndefVal  = 1 + ZeroVal
   final val ByteVal   = 1 + UndefVal
   final val ShortVal  = 1 + ByteVal

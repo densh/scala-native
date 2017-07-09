@@ -9,11 +9,6 @@ import nir.serialization.{Tags => T}
 final class BinarySerializer(buffer: ByteBuffer) {
   import buffer._
 
-  // Things to change in next binary-breaking release:
-  // 1. Val.Null should have its own tag, not encoded via Val.Zero(Type.Ptr).
-  // 2. Volatile Op.{Load, Store} should become serializable.
-  // 3. Attr.Align should become serializable;
-
   final def serialize(defns: Seq[Defn]): Unit = {
     val names     = defns.map(_.name)
     val positions = mutable.UnrolledBuffer.empty[Int]
@@ -72,8 +67,7 @@ final class BinarySerializer(buffer: ByteBuffer) {
 
     case Attr.Dyn => putInt(T.DynAttr)
 
-    case Attr.Align(_) =>
-      assert(false, "alignment attribute is not serializable")
+    case Attr.Align(v) => putInt(T.AlignAttr); putInt(v)
 
     case Attr.Pure        => putInt(T.PureAttr)
     case Attr.Extern      => putInt(T.ExternAttr)
@@ -273,17 +267,17 @@ final class BinarySerializer(buffer: ByteBuffer) {
       putNext(unwind)
 
     case Op.Load(ty, ptr, isVolatile) =>
-      assert(!isVolatile, "volatile loads are not serializable")
       putInt(T.LoadOp)
       putType(ty)
       putVal(ptr)
+      putBool(isVolatile)
 
     case Op.Store(ty, value, ptr, isVolatile) =>
-      assert(!isVolatile, "volatile stores are not serializable")
       putInt(T.StoreOp)
       putType(ty)
       putVal(value)
       putVal(ptr)
+      putBool(isVolatile)
 
     case Op.Elem(ty, v, indexes) =>
       putInt(T.ElemOp)
@@ -434,7 +428,7 @@ final class BinarySerializer(buffer: ByteBuffer) {
     case Val.None          => putInt(T.NoneVal)
     case Val.True          => putInt(T.TrueVal)
     case Val.False         => putInt(T.FalseVal)
-    case Val.Null          => putInt(T.ZeroVal); putType(Type.Ptr)
+    case Val.Null          => putInt(T.NullVal)
     case Val.Zero(ty)      => putInt(T.ZeroVal); putType(ty)
     case Val.Undef(ty)     => putInt(T.UndefVal); putType(ty)
     case Val.Byte(v)       => putInt(T.ByteVal); put(v)
