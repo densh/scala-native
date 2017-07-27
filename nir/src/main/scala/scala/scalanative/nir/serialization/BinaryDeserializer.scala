@@ -60,6 +60,8 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
         (deps.toSeq, links.toSeq, dyns.toSeq, defn)
     }
 
+  private def getTag: Int = get.toInt
+
   private def getSeq[T](getT: => T): Seq[T] =
     (1 to getInt).map(_ => getT).toSeq
 
@@ -81,7 +83,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     val buf = mutable.UnrolledBuffer.empty[Attr]
 
     (1 to getInt).foreach { _ =>
-      getInt match {
+      getTag match {
         case T.MayInlineAttr    => buf += Attr.MayInline
         case T.InlineHintAttr   => buf += Attr.InlineHint
         case T.NoInlineAttr     => buf += Attr.NoInline
@@ -104,7 +106,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     Attrs.fromSeq(buf)
   }
 
-  private def getBin(): Bin = getInt match {
+  private def getBin(): Bin = getTag match {
     case T.IaddBin => Bin.Iadd
     case T.FaddBin => Bin.Fadd
     case T.IsubBin => Bin.Isub
@@ -126,7 +128,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
   }
 
   private def getInsts(): Seq[Inst] = getSeq(getInst)
-  private def getInst(): Inst = getInt match {
+  private def getInst(): Inst = getTag match {
     case T.NoneInst        => Inst.None
     case T.LabelInst       => Inst.Label(getLocal, getParams)
     case T.LetInst         => Inst.Let(getLocal, getOp)
@@ -138,7 +140,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     case T.ThrowInst       => Inst.Throw(getVal, getNext)
   }
 
-  private def getComp(): Comp = getInt match {
+  private def getComp(): Comp = getTag match {
     case T.IeqComp => Comp.Ieq
     case T.IneComp => Comp.Ine
     case T.UgtComp => Comp.Ugt
@@ -158,7 +160,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     case T.FleComp => Comp.Fle
   }
 
-  private def getConv(): Conv = getInt match {
+  private def getConv(): Conv = getTag match {
     case T.TruncConv    => Conv.Trunc
     case T.ZextConv     => Conv.Zext
     case T.SextConv     => Conv.Sext
@@ -174,7 +176,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
   }
 
   private def getDefns(): Seq[Defn] = getSeq(getDefn)
-  private def getDefn(): Defn = getInt match {
+  private def getDefn(): Defn = getTag match {
     case T.VarDefn =>
       Defn.Var(getAttrs, getGlobal, getType, getVal)
 
@@ -210,7 +212,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     name
   }
 
-  private def getGlobalNoDep(): Global = getInt match {
+  private def getGlobalNoDep(): Global = getTag match {
     case T.NoneGlobal   => Global.None
     case T.TopGlobal    => Global.Top(getString)
     case T.MemberGlobal => Global.Member(getGlobal, getString)
@@ -219,14 +221,14 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
   private def getLocal(): Local = Local(getString, getInt)
 
   private def getNexts(): Seq[Next] = getSeq(getNext)
-  private def getNext(): Next = getInt match {
+  private def getNext(): Next = getTag match {
     case T.NoneNext   => Next.None
     case T.UnwindNext => Next.Unwind(getLocal)
     case T.LabelNext  => Next.Label(getLocal, getVals)
     case T.CaseNext   => Next.Case(getVal, getLocal)
   }
 
-  private def getOp(): Op = getInt match {
+  private def getOp(): Op = getTag match {
     case T.CallOp       => Op.Call(getType, getVal, getVals, getNext)
     case T.LoadOp       => Op.Load(getType, getVal, isVolatile = false)
     case T.StoreOp      => Op.Store(getType, getVal, getVal, isVolatile = false)
@@ -260,7 +262,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
   private def getParam(): Val.Local       = Val.Local(getLocal, getType)
 
   private def getTypes(): Seq[Type] = getSeq(getType)
-  private def getType(): Type = getInt match {
+  private def getType(): Type = getTag match {
     case T.NoneType     => Type.None
     case T.VoidType     => Type.Void
     case T.VarargType   => Type.Vararg
@@ -289,7 +291,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
   }
 
   private def getVals(): Seq[Val] = getSeq(getVal)
-  private def getVal(): Val = getInt match {
+  private def getVal(): Val = getTag match {
     case T.NoneVal   => Val.None
     case T.TrueVal   => Val.True
     case T.FalseVal  => Val.False
