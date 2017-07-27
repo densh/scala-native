@@ -1,7 +1,8 @@
 package scala.scalanative
 package nscplugin
 
-import java.nio.file.{Path, Paths}
+import java.nio.file._
+import java.nio.channels._
 import scala.tools.nsc._
 import scala.tools.nsc.io.AbstractFile
 import scalanative.nir.serialization.{serializeText, serializeBinary}
@@ -28,10 +29,11 @@ trait NirFiles { self: NirCodeGen =>
   def genIRFiles(files: Seq[(Path, Seq[nir.Defn])]): Unit =
     files.foreach {
       case (path, defns) =>
-        withScratchBuffer { buffer =>
-          serializeBinary(defns, buffer)
-          buffer.flip
-          VirtualDirectory.local(path.getParent.toFile).write(path, buffer)
-        }
+        val channel = FileChannel.open(path,
+                                       StandardOpenOption.CREATE,
+                                       StandardOpenOption.WRITE,
+                                       StandardOpenOption.TRUNCATE_EXISTING)
+        try serializeBinary(defns, channel)
+        finally channel.close()
     }
 }

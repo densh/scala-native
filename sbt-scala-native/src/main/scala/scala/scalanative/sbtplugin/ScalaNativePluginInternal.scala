@@ -443,6 +443,19 @@ object ScalaNativePluginInternal {
       val config = tools.Config.empty.withPaths(Seq(classDir))
       val result = (linker.Linker(config)).link(globals.toSeq)
 
+      {
+        import java.nio.file._
+        import java.nio.channels._
+        import scalanative.nir.serialization._
+        val path = Paths.get(moduleName.value + ".nir")
+        val channel = FileChannel.open(path,
+                                       StandardOpenOption.CREATE,
+                                       StandardOpenOption.WRITE,
+                                       StandardOpenOption.TRUNCATE_EXISTING)
+        try serializeBinary(result.defns, channel)
+        finally channel.close()
+      }
+
       result.unresolved.map(_.show).sorted
     }
   )

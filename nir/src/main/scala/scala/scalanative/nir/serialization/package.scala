@@ -12,9 +12,12 @@ package object serialization {
     buffer.put(builder.toString.getBytes)
   }
 
-  def serializeBinary(defns: Seq[Defn], buffer: ByteBuffer): Unit =
-    (new BinarySerializer(buffer)).serialize(defns)
+  def serializeBinary(defns: Seq[Defn], channel: ByteChannel): Unit = {
+    val writer = new BinaryWriter
+    writer.put(defns)
+    writer.write(channel)
+  }
 
-  def deserializeBinary(buffer: ByteBuffer): BinaryDeserializer =
-    new BinaryDeserializer(buffer)
+  def deserializeBinary(buffer: ByteBuffer): BinaryReader =
+    new BinaryReader(buffer)
 }

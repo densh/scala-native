@@ -109,10 +109,10 @@ trait Pass extends AnyPass {
       Op.Sizeof(onType(ty))
     case Op.Closure(ty, fun, captures) =>
       Op.Closure(onType(ty), onVal(fun), captures.map(onVal))
-    case Op.Box(code, obj) =>
-      Op.Box(code, onVal(obj))
-    case Op.Unbox(code, obj) =>
-      Op.Unbox(code, onVal(obj))
+    case Op.Box(ty, obj) =>
+      Op.Box(onType(ty), onVal(obj))
+    case Op.Unbox(ty, obj) =>
+      Op.Unbox(onType(ty), onVal(obj))
   }
 
   def onVal(value: Val): Val = value match {

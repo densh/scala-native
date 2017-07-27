@@ -11,9 +11,7 @@ object Tags {
 
   // Attibutes
 
-  final val Attr = 0
-
-  final val MayInlineAttr    = 1 + Attr
+  final val MayInlineAttr    = 1
   final val InlineHintAttr   = 1 + MayInlineAttr
   final val NoInlineAttr     = 1 + InlineHintAttr
   final val AlwaysInlineAttr = 1 + NoInlineAttr
@@ -28,9 +26,7 @@ object Tags {
 
   // Binary ops
 
-  final val Bin = Attr + 32
-
-  final val IaddBin = 1 + Bin
+  final val IaddBin = 1
   final val FaddBin = 1 + IaddBin
   final val IsubBin = 1 + FaddBin
   final val FsubBin = 1 + IsubBin
@@ -51,9 +47,7 @@ object Tags {
 
   // Comparison ops
 
-  final val Comp = Bin + 32
-
-  final val IeqComp = 1 + Comp
+  final val IeqComp = 1
   final val IneComp = 1 + IeqComp
   final val UgtComp = 1 + IneComp
   final val UgeComp = 1 + UgtComp
@@ -72,9 +66,7 @@ object Tags {
 
   // Conversion ops
 
-  final val Conv = Comp + 32
-
-  final val TruncConv    = 1 + Conv
+  final val TruncConv    = 1
   final val ZextConv     = 1 + TruncConv
   final val SextConv     = 1 + ZextConv
   final val FptruncConv  = 1 + SextConv
@@ -89,9 +81,7 @@ object Tags {
 
   // Definitions
 
-  final val Defn = Conv + 32
-
-  final val VarDefn     = 1 + Defn
+  final val VarDefn     = 1
   final val ConstDefn   = 1 + VarDefn
   final val DeclareDefn = 1 + ConstDefn
   final val DefineDefn  = 1 + DeclareDefn
@@ -102,9 +92,7 @@ object Tags {
 
   // Control-flow ops
 
-  final val Inst = Defn + 32
-
-  final val NoneInst        = 1 + Inst
+  final val NoneInst        = 1
   final val LabelInst       = 1 + NoneInst
   final val LetInst         = 1 + LabelInst
   final val UnreachableInst = 1 + LetInst
@@ -116,26 +104,20 @@ object Tags {
 
   // Globals
 
-  final val Global = Inst + 32
-
-  final val NoneGlobal   = 1 + Global
+  final val NoneGlobal   = 1
   final val TopGlobal    = 1 + NoneGlobal
   final val MemberGlobal = 1 + TopGlobal
 
   // Nexts
 
-  final val Next = Global + 32
-
-  final val NoneNext   = 1 + Next
+  final val NoneNext   = 1
   final val UnwindNext = 1 + NoneNext
   final val LabelNext  = 1 + UnwindNext
   final val CaseNext   = 1 + LabelNext
 
   // Ops
 
-  final val Op = Next + 32
-
-  final val CallOp       = 1 + Op
+  final val CallOp       = 1
   final val LoadOp       = 1 + CallOp
   final val StoreOp      = 1 + LoadOp
   final val ElemOp       = 1 + StoreOp
@@ -161,9 +143,7 @@ object Tags {
 
   // Types
 
-  final val Type = Op + 32
-
-  final val NoneType     = 1 + Type
+  final val NoneType     = 1
   final val VoidType     = 1 + NoneType
   final val VarargType   = 1 + VoidType
   final val BoolType     = 1 + VarargType
@@ -190,9 +170,7 @@ object Tags {
 
   // Values
 
-  final val Val = Type + 32
-
-  final val NoneVal   = 1 + Val
+  final val NoneVal   = 1
   final val TrueVal   = 1 + NoneVal
   final val FalseVal  = 1 + TrueVal
   final val ZeroVal   = 1 + FalseVal

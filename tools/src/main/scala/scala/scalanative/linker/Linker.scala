@@ -53,45 +53,45 @@ object Linker {
             load(workitem).fold[Unit] {
               unresolved += workitem
               onUnresolved(workitem)
-            } {
-              case (deps, newlinks, newsignatures, defn) =>
-                resolved += workitem
-                defns += defn
-                links ++= newlinks
-                signatures ++= newsignatures
+            } { info =>
+              ///case (deps, newlinks, newsignatures, defn) =>
+              resolved += workitem
+              defns += info.defn
+              links ++= info.links
+              signatures ++= info.sigs
 
-                // Comparing new signatures with already collected weak dependencies
-                newsignatures
-                  .flatMap(signature =>
-                    weaks.collect {
-                      case weak if Global.genSignature(weak) == signature =>
-                        weak
-                  })
-                  .foreach { global =>
+              // Comparing new signatures with already collected weak dependencies
+              info.sigs
+                .flatMap(signature =>
+                  weaks.collect {
+                    case weak if Global.genSignature(weak) == signature =>
+                      weak
+                })
+                .foreach { global =>
+                  direct.push(global)
+                  dyndefns += global
+                }
+
+              onResolved(workitem)
+
+              info.deps.foreach {
+                case Dep.Direct(dep) =>
+                  direct.push(dep)
+                  onDirectDependency(workitem, dep)
+
+                case cond @ Dep.Conditional(dep, condition) =>
+                  conditional += cond
+                  onConditionalDependency(workitem, dep, condition)
+
+                case Dep.Weak(global) =>
+                  // comparing new dependencies with all signatures
+                  if (signatures(Global.genSignature(global))) {
                     direct.push(global)
+                    onDirectDependency(workitem, global)
                     dyndefns += global
                   }
-
-                onResolved(workitem)
-
-                deps.foreach {
-                  case Dep.Direct(dep) =>
-                    direct.push(dep)
-                    onDirectDependency(workitem, dep)
-
-                  case cond @ Dep.Conditional(dep, condition) =>
-                    conditional += cond
-                    onConditionalDependency(workitem, dep, condition)
-
-                  case Dep.Weak(global) =>
-                    // comparing new dependencies with all signatures
-                    if (signatures(Global.genSignature(global))) {
-                      direct.push(global)
-                      onDirectDependency(workitem, global)
-                      dyndefns += global
-                    }
-                    weaks += global
-                }
+                  weaks += global
+              }
 
             }
           }
@@ -133,6 +133,9 @@ object Linker {
       val defnss = defns ++ reflectiveProxies
 
       onComplete()
+
+      Stats.print()
+      Stats.clear()
 
       Result(unresolved.toSeq,
              links.toSeq,
