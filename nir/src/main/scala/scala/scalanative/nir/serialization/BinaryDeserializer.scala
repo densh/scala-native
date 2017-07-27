@@ -218,7 +218,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     case T.MemberGlobal => Global.Member(getGlobal, getString)
   }
 
-  private def getLocal(): Local = Local(getString, getInt)
+  private def getLocal(): Local = Local("src", getInt)
 
   private def getNexts(): Seq[Next] = getSeq(getNext)
   private def getNext(): Next = getTag match {

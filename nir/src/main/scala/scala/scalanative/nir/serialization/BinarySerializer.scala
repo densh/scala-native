@@ -254,9 +254,7 @@ final class BinarySerializer(buffer: ByteBuffer) {
       putTag(T.MemberGlobal); putGlobal(n); putString(id)
   }
 
-  private def putLocal(local: Local): Unit = {
-    putString(local.scope); putInt(local.id)
-  }
+  private def putLocal(local: Local): Unit = putInt(local.id)
 
   private def putNexts(nexts: Seq[Next]) = putSeq(nexts)(putNext)
   private def putNext(next: Next) = next match {
