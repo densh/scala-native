@@ -18,14 +18,14 @@ final class BinarySerializer(buffer: ByteBuffer) {
     val names     = defns.map(_.name)
     val positions = mutable.UnrolledBuffer.empty[Int]
 
-    putInt(Versions.magic)
-    putInt(Versions.compat)
-    putInt(Versions.revision)
+    putLeb(Versions.magic)
+    putLeb(Versions.compat)
+    putLeb(Versions.revision)
 
     putSeq(names) { n =>
       putGlobal(n)
       positions += buffer.position
-      putInt(0)
+      putLeb(0)
     }
 
     val offsets = defns.map { defn =>
@@ -38,15 +38,28 @@ final class BinarySerializer(buffer: ByteBuffer) {
     positions.zip(offsets).map {
       case (pos, offset) =>
         buffer.position(pos)
-        putInt(offset)
+        putLeb(offset)
     }
     buffer.position(end)
   }
 
   private def putTag(value: Int): Unit = put(value.toByte)
 
+  private def putLeb(v: Int): Unit = {
+    var value     = v
+    var remaining = value >> 7
+    var hasMore   = true
+    var end       = if ((value & java.lang.Integer.MIN_VALUE) == 0) 0 else -1
+    while (hasMore) {
+      hasMore = (remaining != end) || ((remaining & 1) != ((value >> 6) & 1))
+      buffer.put(((value & 0x7f) | (if (hasMore) 0x80 else 0)).toByte)
+      value = remaining
+      remaining >>= 7
+    }
+  }
+
   private def putSeq[T](seq: Seq[T])(putT: T => Unit) = {
-    putInt(seq.length)
+    putLeb(seq.length)
     seq.foreach(putT)
   }
 
@@ -55,12 +68,12 @@ final class BinarySerializer(buffer: ByteBuffer) {
     case Some(t) => put(1.toByte); putT(t)
   }
 
-  private def putInts(ints: Seq[Int]) = putSeq[Int](ints)(putInt(_))
+  private def putLebs(ints: Seq[Int]) = putSeq[Int](ints)(putLeb(_))
 
   private def putStrings(vs: Seq[String]) = putSeq(vs)(putString)
   private def putString(v: String) = {
     val bytes = v.getBytes("UTF-8")
-    putInt(bytes.length); put(bytes)
+    putLeb(bytes.length); put(bytes)
   }
 
   private def putBool(v: Boolean) = put((if (v) 1 else 0).toByte)
@@ -254,7 +267,7 @@ final class BinarySerializer(buffer: ByteBuffer) {
       putTag(T.MemberGlobal); putGlobal(n); putString(id)
   }
 
-  private def putLocal(local: Local): Unit = putInt(local.id)
+  private def putLocal(local: Local): Unit = putLeb(local.id)
 
   private def putNexts(nexts: Seq[Next]) = putSeq(nexts)(putNext)
   private def putNext(next: Next) = next match {
@@ -294,13 +307,13 @@ final class BinarySerializer(buffer: ByteBuffer) {
     case Op.Extract(v, indexes) =>
       putTag(T.ExtractOp)
       putVal(v)
-      putInts(indexes)
+      putLebs(indexes)
 
     case Op.Insert(v, value, indexes) =>
       putTag(T.InsertOp)
       putVal(v)
       putVal(value)
-      putInts(indexes)
+      putLebs(indexes)
 
     case Op.Stackalloc(ty, n) =>
       putTag(T.StackallocOp)
@@ -416,7 +429,7 @@ final class BinarySerializer(buffer: ByteBuffer) {
     case Type.ULong        => putTag(T.ULongType)
     case Type.Float        => putTag(T.FloatType)
     case Type.Double       => putTag(T.DoubleType)
-    case Type.Array(ty, n) => putTag(T.ArrayType); putType(ty); putInt(n)
+    case Type.Array(ty, n) => putTag(T.ArrayType); putType(ty); putLeb(n)
     case Type.Function(args, ret) =>
       putTag(T.FunctionType); putTypes(args); putType(ret)
     case Type.Struct(n, tys) =>
@@ -439,7 +452,7 @@ final class BinarySerializer(buffer: ByteBuffer) {
     case Val.Undef(ty)     => putTag(T.UndefVal); putType(ty)
     case Val.Byte(v)       => putTag(T.ByteVal); put(v)
     case Val.Short(v)      => putTag(T.ShortVal); putShort(v)
-    case Val.Int(v)        => putTag(T.IntVal); putInt(v)
+    case Val.Int(v)        => putTag(T.IntVal); putLeb(v)
     case Val.Long(v)       => putTag(T.LongVal); putLong(v)
     case Val.Float(v)      => putTag(T.FloatVal); putFloat(v)
     case Val.Double(v)     => putTag(T.DoubleVal); putDouble(v)

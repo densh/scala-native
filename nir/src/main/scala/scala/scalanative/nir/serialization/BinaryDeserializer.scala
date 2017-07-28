@@ -15,15 +15,15 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
   private lazy val header: Map[Global, Int] = {
     buffer.position(0)
 
-    val magic    = getInt
-    val compat   = getInt
-    val revision = getInt
+    val magic    = getLeb
+    val compat   = getLeb
+    val revision = getLeb
 
     assert(magic == Versions.magic, "Can't read non-NIR file.")
     assert(compat == Versions.compat && revision <= Versions.revision,
            "Can't read binary-incompatible version of NIR.")
 
-    val (_, _, _, pairs) = scoped(getSeq((getGlobal, getInt)))
+    val (_, _, _, pairs) = scoped(getSeq((getGlobal, getLeb)))
     val map              = pairs.toMap
     this.deps = null
     map
@@ -62,17 +62,32 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
 
   private def getTag: Int = get.toInt
 
+  private def getLeb: Int = {
+    var result = 0
+    var cur    = 0
+    var count  = 0
+    do {
+      cur = get & 0xff
+      result |= (cur & 0x7f) << (count * 7)
+      count += 1
+    } while (((cur & 0x80) == 0x80) && count < 5)
+    if ((cur & 0x80) == 0x80) {
+      throw new Exception("invalid LEB128 sequence")
+    }
+    result
+  }
+
   private def getSeq[T](getT: => T): Seq[T] =
-    (1 to getInt).map(_ => getT).toSeq
+    (1 to getLeb).map(_ => getT).toSeq
 
   private def getOpt[T](getT: => T): Option[T] =
     if (get == 0) None else Some(getT)
 
-  private def getInts(): Seq[Int] = getSeq(getInt)
+  private def getLebs(): Seq[Int] = getSeq(getLeb)
 
   private def getStrings(): Seq[String] = getSeq(getString)
   private def getString(): String = {
-    val arr = new Array[Byte](getInt)
+    val arr = new Array[Byte](getLeb)
     get(arr)
     new String(arr, "UTF-8")
   }
@@ -82,7 +97,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
   private def getAttrs(): Attrs = {
     val buf = mutable.UnrolledBuffer.empty[Attr]
 
-    (1 to getInt).foreach { _ =>
+    (1 to getLeb).foreach { _ =>
       getTag match {
         case T.MayInlineAttr    => buf += Attr.MayInline
         case T.InlineHintAttr   => buf += Attr.InlineHint
@@ -218,7 +233,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     case T.MemberGlobal => Global.Member(getGlobal, getString)
   }
 
-  private def getLocal(): Local = Local("src", getInt)
+  private def getLocal(): Local = Local("src", getLeb)
 
   private def getNexts(): Seq[Next] = getSeq(getNext)
   private def getNext(): Next = getTag match {
@@ -233,8 +248,8 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     case T.LoadOp       => Op.Load(getType, getVal, isVolatile = false)
     case T.StoreOp      => Op.Store(getType, getVal, getVal, isVolatile = false)
     case T.ElemOp       => Op.Elem(getType, getVal, getVals)
-    case T.ExtractOp    => Op.Extract(getVal, getInts)
-    case T.InsertOp     => Op.Insert(getVal, getVal, getInts)
+    case T.ExtractOp    => Op.Extract(getVal, getLebs)
+    case T.InsertOp     => Op.Insert(getVal, getVal, getLebs)
     case T.StackallocOp => Op.Stackalloc(getType, getVal)
     case T.BinOp        => Op.Bin(getBin, getType, getVal, getVal)
     case T.CompOp       => Op.Comp(getComp, getType, getVal, getVal)
@@ -279,7 +294,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     case T.ULongType    => Type.ULong
     case T.FloatType    => Type.Float
     case T.DoubleType   => Type.Double
-    case T.ArrayType    => Type.Array(getType, getInt)
+    case T.ArrayType    => Type.Array(getType, getLeb)
     case T.FunctionType => Type.Function(getTypes, getType)
     case T.StructType   => Type.Struct(getGlobal, getTypes)
 
@@ -299,7 +314,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     case T.UndefVal  => Val.Undef(getType)
     case T.ByteVal   => Val.Byte(get)
     case T.ShortVal  => Val.Short(getShort)
-    case T.IntVal    => Val.Int(getInt)
+    case T.IntVal    => Val.Int(getLeb)
     case T.LongVal   => Val.Long(getLong)
     case T.FloatVal  => Val.Float(getFloat)
     case T.DoubleVal => Val.Double(getDouble)
