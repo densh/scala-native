@@ -8,56 +8,70 @@ import scala.collection.mutable
 import nir.serialization.{Tags => T}
 import Global.Member
 
-final class BinaryDeserializer(_buffer: => ByteBuffer) {
+final class BinaryReader(_buffer: => ByteBuffer) {
   private lazy val buffer = _buffer
   import buffer._
 
-  private lazy val header: Map[Global, Int] = {
-    buffer.position(0)
-
-    val magic    = getLeb
-    val compat   = getLeb
-    val revision = getLeb
-
+  private final case class Header(magic: Int, compat: Int, revision: Int,
+                                  offsets: Int, strings: Int, globals: Int,
+                                  types: Int, defns: Int, vals: Int,
+                                  insts: Int) {
     assert(magic == Versions.magic, "Can't read non-NIR file.")
     assert(compat == Versions.compat && revision <= Versions.revision,
            "Can't read binary-incompatible version of NIR.")
-
-    val (_, _, _, pairs) = scoped(getSeq((getGlobal, getLeb)))
-    val map              = pairs.toMap
-    this.deps = null
-    map
   }
 
-  private var deps: mutable.Set[Dep]        = _
-  private var links: mutable.Set[Attr.Link] = _
-  private var dyns: mutable.Set[String]     = _
 
-  private def scoped[T](f: => T)
-    : (mutable.Set[Dep], mutable.Set[Attr.Link], mutable.Set[String], T) = {
-    this.deps = mutable.Set.empty[Dep]
-    this.links = mutable.Set.empty[Attr.Link]
-    this.dyns = mutable.Set.empty[String]
-    val res   = f
-    val deps  = this.deps
-    val links = this.links
-    val dyns  = this.dyns
-    this.deps = null
-    this.links = null
-    this.dyns = null
-    (deps, links, dyns, res)
+
+  private lazy val header: Header = {
+    buffer.position(0)
+
+    Header(getInt, getInt, getInt, getInt, getInt,
+           getInt, getInt, getInt, getInt, getInt)
   }
 
-  final def globals: Set[Global] = header.keySet
+  private lazy val offsets: mutable.Map[Global, Int] = {
+    buffer.position(header.offsets)
 
-  final def deserialize(
-      g: Global): Option[(Seq[Dep], Seq[Attr.Link], Seq[String], Defn)] =
-    header.get(g).map {
-      case offset =>
-        buffer.position(offset)
-        val (deps, links, dyns, defn) = scoped(getDefn)
-        deps -= Dep.Direct(g)
-        (deps.toSeq, links.toSeq, dyns.toSeq, defn)
+    val entries = mutable.Map.empty[Global, Int]
+
+    @scala.annotation.tailrec def loop(): Unit = {
+      val global = getGlobal
+      val offset = getLeb
+
+      if (global ne Global.None) {
+        entries(global) = offset
+        loop()
+      }
+    }
+
+    loop()
+
+    entries
+  }
+
+  private val cache = new java.util.HashMap[Int, Any]
+  private def in[T](start: Int)(getT: => T): T = {
+    val target = start + getLeb
+
+    if (cache.containsKey(target)) {
+      cache.get(target).asInstanceOf[T]
+    } else {
+      val pos    = position
+      position(target)
+      val res = getT
+      position(pos)
+      cache.put(target, res)
+      res
+    }
+  }
+
+  final lazy val globals: Set[Global] = offsets.keySet.toSet
+
+  final def deserialize(g: Global): Option[Defn] =
+    offsets.get(g).map { offset =>
+      position(header.defns + offset)
+      getDefn
     }
 
   private def getTag: Int = get.toInt
@@ -86,7 +100,8 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
   private def getLebs(): Seq[Int] = getSeq(getLeb)
 
   private def getStrings(): Seq[String] = getSeq(getString)
-  private def getString(): String = {
+
+  private def getString(): String = in(header.strings) {
     val arr = new Array[Byte](getLeb)
     get(arr)
     new String(arr, "UTF-8")
@@ -110,11 +125,10 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
         case T.ExternAttr   => buf += Attr.Extern
         case T.OverrideAttr => buf += Attr.Override(getGlobal)
 
-        case T.LinkAttr      => links += Attr.Link(getString)
-        case T.PinAlwaysAttr => deps += Dep.Direct(getGlobalNoDep)
-        case T.PinWeakAttr   => deps += Dep.Weak(getGlobalNoDep)
-        case T.PinIfAttr =>
-          deps += Dep.Conditional(getGlobalNoDep, getGlobalNoDep)
+        case T.LinkAttr      => buf += Attr.Link(getString)
+        case T.PinAlwaysAttr => buf += Attr.PinAlways(getGlobal)
+        case T.PinWeakAttr   => buf += Attr.PinWeak(getGlobal)
+        case T.PinIfAttr     => buf += Attr.PinIf(getGlobal, getGlobal)
       }
     }
 
@@ -142,7 +156,10 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     case T.XorBin  => Bin.Xor
   }
 
-  private def getInsts(): Seq[Inst] = getSeq(getInst)
+  private def getInsts(): Seq[Inst] = in(header.insts) {
+    getSeq(getInst)
+  }
+
   private def getInst(): Inst = getTag match {
     case T.NoneInst        => Inst.None
     case T.LabelInst       => Inst.Label(getLocal, getParams)
@@ -191,6 +208,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
   }
 
   private def getDefns(): Seq[Defn] = getSeq(getDefn)
+
   private def getDefn(): Defn = getTag match {
     case T.VarDefn =>
       Defn.Var(getAttrs, getGlobal, getType, getVal)
@@ -217,25 +235,22 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
       Defn.Module(getAttrs, getGlobal, getGlobalOpt, getGlobals)
   }
 
-  private def getGlobals(): Seq[Global]      = getSeq(getGlobal)
-  private def getGlobalOpt(): Option[Global] = getOpt(getGlobal)
-  private def getGlobal(): Global = {
-    val name = getGlobalNoDep
-    if (name != Global.None) {
-      deps += Dep.Direct(name)
-    }
-    name
-  }
+  private def getGlobals(): Seq[Global] = getSeq(getGlobal)
 
-  private def getGlobalNoDep(): Global = getTag match {
-    case T.NoneGlobal   => Global.None
-    case T.TopGlobal    => Global.Top(getString)
-    case T.MemberGlobal => Global.Member(getGlobal, getString)
+  private def getGlobalOpt(): Option[Global] = getOpt(getGlobal)
+
+  private def getGlobal(): Global = in(header.globals) {
+    getTag match {
+      case T.NoneGlobal   => Global.None
+      case T.TopGlobal    => Global.Top(getString)
+      case T.MemberGlobal => Global.Member(getGlobal, getString)
+    }
   }
 
   private def getLocal(): Local = Local("src", getLeb)
 
   private def getNexts(): Seq[Next] = getSeq(getNext)
+
   private def getNext(): Next = getTag match {
     case T.NoneNext   => Next.None
     case T.UnwindNext => Next.Unwind(getLocal)
@@ -259,74 +274,78 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     case T.ClassallocOp => Op.Classalloc(getGlobal)
     case T.FieldOp      => Op.Field(getVal, getGlobal)
     case T.MethodOp     => Op.Method(getVal, getGlobal)
-    case T.DynmethodOp =>
-      val dynmethod = Op.Dynmethod(getVal, getString)
-      dyns += dynmethod.signature
-      dynmethod
-    case T.ModuleOp  => Op.Module(getGlobal, getNext)
-    case T.AsOp      => Op.As(getType, getVal)
-    case T.IsOp      => Op.Is(getType, getVal)
-    case T.CopyOp    => Op.Copy(getVal)
-    case T.SizeofOp  => Op.Sizeof(getType)
-    case T.ClosureOp => Op.Closure(getType, getVal, getVals)
-    case T.BoxOp     => Op.Box(getType, getVal)
-    case T.UnboxOp   => Op.Unbox(getType, getVal)
+    case T.DynmethodOp  => Op.Dynmethod(getVal, getString)
+    case T.ModuleOp     => Op.Module(getGlobal, getNext)
+    case T.AsOp         => Op.As(getType, getVal)
+    case T.IsOp         => Op.Is(getType, getVal)
+    case T.CopyOp       => Op.Copy(getVal)
+    case T.SizeofOp     => Op.Sizeof(getType)
+    case T.ClosureOp    => Op.Closure(getType, getVal, getVals)
+    case T.BoxOp        => Op.Box(getType, getVal)
+    case T.UnboxOp      => Op.Unbox(getType, getVal)
   }
 
   private def getParams(): Seq[Val.Local] = getSeq(getParam)
-  private def getParam(): Val.Local       = Val.Local(getLocal, getType)
+
+  private def getParam(): Val.Local = Val.Local(getLocal, getType)
 
   private def getTypes(): Seq[Type] = getSeq(getType)
-  private def getType(): Type = getTag match {
-    case T.NoneType     => Type.None
-    case T.VoidType     => Type.Void
-    case T.VarargType   => Type.Vararg
-    case T.PtrType      => Type.Ptr
-    case T.BoolType     => Type.Bool
-    case T.CharType     => Type.Char
-    case T.ByteType     => Type.Byte
-    case T.UByteType    => Type.UByte
-    case T.ShortType    => Type.Short
-    case T.UShortType   => Type.UShort
-    case T.IntType      => Type.Int
-    case T.UIntType     => Type.UInt
-    case T.LongType     => Type.Long
-    case T.ULongType    => Type.ULong
-    case T.FloatType    => Type.Float
-    case T.DoubleType   => Type.Double
-    case T.ArrayType    => Type.Array(getType, getLeb)
-    case T.FunctionType => Type.Function(getTypes, getType)
-    case T.StructType   => Type.Struct(getGlobal, getTypes)
 
-    case T.UnitType    => Type.Unit
-    case T.NothingType => Type.Nothing
-    case T.ClassType   => Type.Class(getGlobal)
-    case T.TraitType   => Type.Trait(getGlobal)
-    case T.ModuleType  => Type.Module(getGlobal)
+  private def getType(): Type = in(header.types) {
+    getTag match {
+      case T.NoneType     => Type.None
+      case T.VoidType     => Type.Void
+      case T.VarargType   => Type.Vararg
+      case T.PtrType      => Type.Ptr
+      case T.BoolType     => Type.Bool
+      case T.CharType     => Type.Char
+      case T.ByteType     => Type.Byte
+      case T.UByteType    => Type.UByte
+      case T.ShortType    => Type.Short
+      case T.UShortType   => Type.UShort
+      case T.IntType      => Type.Int
+      case T.UIntType     => Type.UInt
+      case T.LongType     => Type.Long
+      case T.ULongType    => Type.ULong
+      case T.FloatType    => Type.Float
+      case T.DoubleType   => Type.Double
+      case T.ArrayType    => Type.Array(getType, getLeb)
+      case T.FunctionType => Type.Function(getTypes, getType)
+      case T.StructType   => Type.Struct(getGlobal, getTypes)
+
+      case T.UnitType    => Type.Unit
+      case T.NothingType => Type.Nothing
+      case T.ClassType   => Type.Class(getGlobal)
+      case T.TraitType   => Type.Trait(getGlobal)
+      case T.ModuleType  => Type.Module(getGlobal)
+    }
   }
 
   private def getVals(): Seq[Val] = getSeq(getVal)
-  private def getVal(): Val = getTag match {
-    case T.NoneVal   => Val.None
-    case T.TrueVal   => Val.True
-    case T.FalseVal  => Val.False
-    case T.ZeroVal   => getZero()
-    case T.UndefVal  => Val.Undef(getType)
-    case T.ByteVal   => Val.Byte(get)
-    case T.ShortVal  => Val.Short(getShort)
-    case T.IntVal    => Val.Int(getLeb)
-    case T.LongVal   => Val.Long(getLong)
-    case T.FloatVal  => Val.Float(getFloat)
-    case T.DoubleVal => Val.Double(getDouble)
-    case T.StructVal => Val.Struct(getGlobal, getVals)
-    case T.ArrayVal  => Val.Array(getType, getVals)
-    case T.CharsVal  => Val.Chars(getString)
-    case T.LocalVal  => Val.Local(getLocal, getType)
-    case T.GlobalVal => Val.Global(getGlobal, getType)
 
-    case T.UnitVal   => Val.Unit
-    case T.ConstVal  => Val.Const(getVal)
-    case T.StringVal => Val.String(getString)
+  private def getVal(): Val = in(header.vals) {
+    getTag match {
+      case T.NoneVal   => Val.None
+      case T.TrueVal   => Val.True
+      case T.FalseVal  => Val.False
+      case T.ZeroVal   => getZero()
+      case T.UndefVal  => Val.Undef(getType)
+      case T.ByteVal   => Val.Byte(get)
+      case T.ShortVal  => Val.Short(getShort)
+      case T.IntVal    => Val.Int(getLeb)
+      case T.LongVal   => Val.Long(getLong)
+      case T.FloatVal  => Val.Float(getFloat)
+      case T.DoubleVal => Val.Double(getDouble)
+      case T.StructVal => Val.Struct(getGlobal, getVals)
+      case T.ArrayVal  => Val.Array(getType, getVals)
+      case T.CharsVal  => Val.Chars(getString)
+      case T.LocalVal  => Val.Local(getLocal, getType)
+      case T.GlobalVal => Val.Global(getGlobal, getType)
+
+      case T.UnitVal   => Val.Unit
+      case T.ConstVal  => Val.Const(getVal)
+      case T.StringVal => Val.String(getString)
+    }
   }
   private def getZero(): Val = {
     val ty = getType
