@@ -6,7 +6,6 @@ import java.nio.ByteBuffer
 import java.nio.channels.ByteChannel
 import scala.collection.mutable
 import nir.serialization.{Tags => T}
-
 /*
 
 header: { magic, compat_version, revision_version, offsets_offset,

@@ -22,7 +22,6 @@ final class BinaryReader(_buffer: => ByteBuffer) {
   }
 
 
-
   private lazy val header: Header = {
     buffer.position(0)
 
@@ -57,7 +56,7 @@ final class BinaryReader(_buffer: => ByteBuffer) {
     if (cache.containsKey(target)) {
       cache.get(target).asInstanceOf[T]
     } else {
-      val pos    = position
+      val pos = position
       position(target)
       val res = getT
       position(pos)
@@ -68,11 +67,12 @@ final class BinaryReader(_buffer: => ByteBuffer) {
 
   final lazy val globals: Set[Global] = offsets.keySet.toSet
 
-  final def deserialize(g: Global): Option[Defn] =
+  final def deserialize(g: Global): Option[Defn] = Stats.time("deserialize") {
     offsets.get(g).map { offset =>
       position(header.defns + offset)
       getDefn
     }
+  }
 
   private def getTag: Int = get.toInt
 

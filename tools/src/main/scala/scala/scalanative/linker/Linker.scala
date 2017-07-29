@@ -134,6 +134,9 @@ object Linker {
 
       onComplete()
 
+      Stats.print()
+      Stats.clear()
+
       Result(unresolved.toSeq,
              links.toSeq,
              defnss.sortBy(_.name.toString),
