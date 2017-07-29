@@ -12,34 +12,65 @@ final class BinaryReader(_buffer: => ByteBuffer) {
   private lazy val buffer = _buffer
   import buffer._
 
-  private final case class Header(magic: Int, compat: Int, revision: Int,
-                                  offsets: Int, strings: Int, globals: Int,
-                                  types: Int, defns: Int, vals: Int,
+  private final case class Header(magic: Int,
+                                  compat: Int,
+                                  revision: Int,
+                                  summaries: Int,
+                                  strings: Int,
+                                  globals: Int,
+                                  types: Int,
+                                  defns: Int,
+                                  vals: Int,
                                   insts: Int) {
     assert(magic == Versions.magic, "Can't read non-NIR file.")
     assert(compat == Versions.compat && revision <= Versions.revision,
            "Can't read binary-incompatible version of NIR.")
   }
 
+  private final case class Summary(offset: Int,
+                                   inner: Seq[Global],
+                                   deps: Seq[Dep]) {
+    var touched: Boolean = false
+    def touch(): Unit =
+      if (!touched) {
+        touched = true
+        inner.foreach(summaries(_).touch())
+      }
+    lazy val defn: Defn = {
+      position(header.defns + offset)
+      getDefn
+    }
+  }
 
   private lazy val header: Header = {
     buffer.position(0)
 
-    Header(getInt, getInt, getInt, getInt, getInt,
-           getInt, getInt, getInt, getInt, getInt)
+    Header(getInt,
+           getInt,
+           getInt,
+           getInt,
+           getInt,
+           getInt,
+           getInt,
+           getInt,
+           getInt,
+           getInt)
   }
 
-  private lazy val offsets: mutable.Map[Global, Int] = {
-    buffer.position(header.offsets)
+  private lazy val summaries: mutable.Map[Global, Summary] = {
+    buffer.position(header.summaries)
 
-    val entries = mutable.Map.empty[Global, Int]
+    val entries = mutable.Map.empty[Global, Summary]
 
-    @scala.annotation.tailrec def loop(): Unit = {
+    @scala.annotation.tailrec
+    def loop(): Unit = {
       val global = getGlobal
       val offset = getLeb
+      val inner  = getGlobals
+      val deps   = getDeps
 
       if (global ne Global.None) {
-        entries(global) = offset
+        entries(global) = Summary(offset, inner, deps)
         loop()
       }
     }
@@ -65,13 +96,31 @@ final class BinaryReader(_buffer: => ByteBuffer) {
     }
   }
 
-  final lazy val globals: Set[Global] = offsets.keySet.toSet
+  final lazy val globals: Set[Global] = summaries.keySet.toSet
 
-  final def deserialize(g: Global): Option[Defn] = Stats.time("deserialize") {
-    offsets.get(g).map { offset =>
-      position(header.defns + offset)
-      getDefn
+  final def deserialize: Seq[Defn] = {
+    val res = mutable.UnrolledBuffer.empty[Defn]
+    summaries.values.foreach { summary =>
+      if (summary.touched) {
+        res += summary.defn
+      }
     }
+    res
+  }
+
+  final def touch(g: Global): Option[(Seq[Global], Seq[Dep])] =
+    summaries.get(g).map { summary =>
+      summary.touch()
+      (summary.inner, summary.deps)
+    }
+
+  private def getDeps: Seq[Dep] = getSeq(getDep)
+  private def getDep: Dep = getLeb match {
+    case T.DirectDep      => Dep.Direct(getGlobal)
+    case T.ConditionalDep => Dep.Conditional(getGlobal, getGlobal)
+    case T.WeakDep        => Dep.Weak(getGlobal)
+    case T.WildcardDep    => Dep.Wildcard(getString)
+    case T.LinkDep        => Dep.Link(getString)
   }
 
   private def getTag: Int = get.toInt

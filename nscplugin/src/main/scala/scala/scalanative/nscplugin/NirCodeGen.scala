@@ -10,6 +10,7 @@ import scala.reflect.internal.Flags._
 import util._, util.ScopedVar.scoped
 import nir.Focus, Focus.{sequenced, merged}
 import nir._
+import nir.serialization.Stats
 import NirPrimitives._
 
 abstract class NirCodeGen
@@ -115,9 +116,12 @@ abstract class NirCodeGen
       super.run()
       genIRFiles(resultDefns)
       resultDefns.clear()
+
+      Stats.print()
+      Stats.clear()
     }
 
-    override def apply(cunit: CompilationUnit): Unit = {
+    override def apply(cunit: CompilationUnit): Unit = Stats.time("compile") {
       try {
         def collectClassDefs(tree: Tree): List[ClassDef] = {
           tree match {
@@ -1179,7 +1183,7 @@ abstract class NirCodeGen
 
     lazy val jlClassName     = nir.Global.Top("java.lang.Class")
     lazy val jlClass         = nir.Type.Class(jlClassName)
-    lazy val jlClassCtorName = jlClassName member "init_ptr"
+    lazy val jlClassCtorName = jlClassName member "<init>_ptr"
     lazy val jlClassCtorSig =
       nir.Type.Function(Seq(jlClass, Type.Ptr), nir.Type.Unit)
     lazy val jlClassCtor = nir.Val.Global(jlClassCtorName, nir.Type.Ptr)

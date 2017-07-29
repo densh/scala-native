@@ -27,92 +27,131 @@ object Linker {
     import reporter._
 
     def link(entries: Seq[Global]): Result = Scope { implicit in =>
-      val resolved    = mutable.Set.empty[Global]
-      val unresolved  = mutable.Set.empty[Global]
-      val links       = mutable.Set.empty[Attr.Link]
-      val defns       = mutable.UnrolledBuffer.empty[Defn]
-      val direct      = mutable.Stack.empty[Global]
-      var conditional = mutable.UnrolledBuffer.empty[Dep.Conditional]
-      val weaks       = mutable.Set.empty[Global]
-      val signatures  = mutable.Set.empty[String]
-      val dyndefns    = mutable.Set.empty[Global]
+      val readers    = new java.util.HashSet[BinaryReader]
+      val resolved   = new java.util.HashSet[Global]
+      val unresolved = new java.util.HashSet[Global]
+      val direct     = new java.util.Stack[Global]
+      var conditional =
+        new java.util.HashMap[Global, java.util.HashSet[Global]]
+      val weaks      = new java.util.HashSet[Global]
+      val signatures = new java.util.HashSet[String]
+      val links      = new java.util.HashSet[String]
+      //val dyndefns    = mutable.Set.empty[Global]
 
-      val paths = config.paths.map(p => ClassPath(VirtualDirectory.real(p)))
-      def load(global: Global) =
+      val paths =
+        config.paths.par.map(p => ClassPath(VirtualDirectory.real(p))).seq
+
+      def processed(g: Global) =
+        resolved.contains(g) || unresolved.contains(g) || g.isIntrinsic
+
+      def findReader(global: Global) =
         paths.collectFirst {
           case path if path.contains(global) =>
-            path.load(global)
+            path.reader(global)
         }.flatten
 
-      def processDirect =
-        while (direct.nonEmpty) {
+      def foreach[T](iter: java.util.Iterator[T])(f: T => Unit): Unit = {
+        while (iter.hasNext) {
+          f(iter.next())
+        }
+      }
+
+      def toSeq[T: reflect.ClassTag](iter: java.util.Iterator[T]): Seq[T] = {
+        val buf = scala.collection.mutable.UnrolledBuffer.empty[T]
+        while (iter.hasNext) {
+          buf += iter.next
+        }
+        buf
+      }
+
+      def resolve(workitem: Global): Unit = {
+        resolved.add(workitem)
+        if (conditional.containsKey(workitem)) {
+          foreach(conditional.get(workitem).iterator)(direct.push)
+          conditional.remove(workitem)
+        }
+        onResolved(workitem)
+      }
+
+      def unresolve(workitem: Global): Unit = {
+        unresolved.add(workitem)
+        if (conditional.containsKey(workitem)) {
+          conditional.remove(workitem)
+        }
+        onUnresolved(workitem)
+      }
+
+      def process() = {
+        while (!direct.empty) {
           val workitem = direct.pop()
-          if (!workitem.isIntrinsic && !resolved.contains(workitem) &&
-              !unresolved.contains(workitem)) {
+          if (!processed(workitem)) {
+            val reader = findReader(workitem)
 
-            load(workitem).fold[Unit] {
-              unresolved += workitem
-              onUnresolved(workitem)
-            } { info =>
-              ///case (deps, newlinks, newsignatures, defn) =>
-              resolved += workitem
-              defns += info.defn
-              links ++= info.links
-              signatures ++= info.sigs
+            reader
+              .flatMap(_.touch(workitem))
+              .fold[Unit] {
+                unresolve(workitem)
+              } {
+                case (inner, deps) =>
+                  readers.add(reader.get)
+                  resolve(workitem)
+                  inner.foreach(resolve)
 
-              // Comparing new signatures with already collected weak dependencies
-              info.sigs
-                .flatMap(signature =>
-                  weaks.collect {
-                    case weak if Global.genSignature(weak) == signature =>
-                      weak
-                })
-                .foreach { global =>
-                  direct.push(global)
-                  dyndefns += global
-                }
+                  // Comparing new signatures with already collected weak dependencies
+                  //info.sigs
+                  //  .flatMap(signature =>
+                  //    weaks.collect {
+                  //      case weak if Global.genSignature(weak) == signature =>
+                  //        weak
+                  //  })
+                  //  .foreach { global =>
+                  //    direct.push(global)
+                  //    dyndefns += global
+                  //  }
 
-              onResolved(workitem)
+                  deps.foreach {
+                    case Dep.Direct(dep) =>
+                      direct.push(dep)
+                      onDirectDependency(workitem, dep)
 
-              info.deps.foreach {
-                case Dep.Direct(dep) =>
-                  direct.push(dep)
-                  onDirectDependency(workitem, dep)
+                    case Dep.Conditional(dep, cond) =>
+                      if (!processed(dep)) {
+                        if (resolved.contains(cond)) {
+                          direct.push(dep)
+                        } else if (unresolved.contains(cond)) {
+                          ()
+                        } else {
+                          val set =
+                            if (conditional.containsKey(cond)) {
+                              conditional.get(cond)
+                            } else {
+                              val newSet = new java.util.HashSet[Global]
+                              conditional.put(cond, newSet)
+                              newSet
+                            }
+                          set.add(dep)
+                        }
+                      }
+                      onConditionalDependency(workitem, dep, cond)
 
-                case cond @ Dep.Conditional(dep, condition) =>
-                  conditional += cond
-                  onConditionalDependency(workitem, dep, condition)
+                    case Dep.Weak(global) =>
+                      // comparing new dependencies with all signatures
+                      //if (signatures(Global.genSignature(global))) {
+                      //  direct.push(global)
+                      //  onDirectDependency(workitem, global)
+                      //  dyndefns += global
+                      //}
+                      weaks.add(global)
 
-                case Dep.Weak(global) =>
-                  // comparing new dependencies with all signatures
-                  if (signatures(Global.genSignature(global))) {
-                    direct.push(global)
-                    onDirectDependency(workitem, global)
-                    dyndefns += global
+                    case Dep.Wildcard(sig) =>
+                      signatures.add(sig)
+
+                    case Dep.Link(name) =>
+                      links.add(name)
                   }
-                  weaks += global
               }
-
-            }
           }
         }
-
-      def processConditional = {
-        val rest = mutable.UnrolledBuffer.empty[Dep.Conditional]
-
-        conditional.foreach {
-          case Dep.Conditional(dep, cond)
-              if resolved.contains(dep) || unresolved.contains(dep) =>
-            ()
-
-          case Dep.Conditional(dep, cond) if resolved.contains(cond) =>
-            direct.push(dep)
-
-          case dep =>
-            rest += dep
-        }
-
-        conditional = rest
       }
 
       onStart()
@@ -122,25 +161,26 @@ object Linker {
         onEntry(entry)
       }
 
-      while (direct.nonEmpty) {
-        processDirect
-        processConditional
-      }
+      process()
 
-      val reflectiveProxies =
-        genAllReflectiveProxies(dyndefns, defns)
+      //val reflectiveProxies =
+      //  genAllReflectiveProxies(dyndefns, defns)
+      //val defnss = defns ++ reflectiveProxies
 
-      val defnss = defns ++ reflectiveProxies
+      val defns =
+        toSeq(readers.iterator).par
+          .map { reader =>
+            reader.deserialize
+          }
+          .seq
+          .flatten
 
       onComplete()
 
-      Stats.print()
-      Stats.clear()
-
-      Result(unresolved.toSeq,
-             links.toSeq,
-             defnss.sortBy(_.name.toString),
-             signatures.toSeq)
+      Result(toSeq(unresolved.iterator),
+             toSeq(links.iterator).map(Attr.Link(_)),
+             defns.toSeq,
+             toSeq(signatures.iterator))
     }
   }
 }

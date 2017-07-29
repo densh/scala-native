@@ -60,7 +60,7 @@ class ModuleLowering(implicit top: Top, fresh: Fresh) extends Pass {
           Inst.None
         } else {
           val initSig = Type.Function(Seq(Type.Class(clsName)), Type.Void)
-          val init    = Val.Global(clsName member "init", Type.Ptr)
+          val init    = Val.Global(clsName member "<init>", Type.Ptr)
 
           Inst.Let(Op.Call(initSig, init, Seq(alloc), Next.None))
         }
