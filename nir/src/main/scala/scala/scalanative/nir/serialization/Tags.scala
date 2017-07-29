@@ -24,6 +24,14 @@ object Tags {
   final val PinWeakAttr      = 1 + PinIfAttr
   final val DynAttr          = 1 + PinWeakAttr
 
+  // Deps
+
+  final val DirectDep      = 1
+  final val ConditionalDep = 1 + DirectDep
+  final val WeakDep        = 1 + ConditionalDep
+  final val WildcardDep    = 1 + WeakDep
+  final val LinkDep        = 1 + WildcardDep
+
   // Binary ops
 
   final val IaddBin = 1

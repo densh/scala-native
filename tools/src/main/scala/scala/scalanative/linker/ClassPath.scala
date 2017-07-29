@@ -4,6 +4,7 @@ package linker
 import nir.{Global, Dep, Attr, Defn}
 import nir.serialization.BinaryReader
 import java.nio.file.FileSystems
+import scalanative.nir.serialization.Stats
 import scalanative.io.VirtualDirectory
 import scalanative.util.Scope
 
@@ -12,8 +13,11 @@ sealed trait ClassPath {
   /** Check if given global is present in this classpath. */
   def contains(name: Global): Boolean
 
-  /** Load given global and info about its dependencies. */
-  def load(name: Global): Option[Info]
+  /** Load dependencies for given global. */
+  def deps(name: Global): Option[Seq[Dep]]
+
+  /** Binary reader for given global. */
+  def reader(name: Global): Option[BinaryReader]
 
   /** Load all globals */
   def globals: Set[Global]
@@ -32,9 +36,9 @@ object ClassPath {
         .map { file =>
           val name = Global.Top(io.packageNameFromPath(file))
 
-          (name -> new BinaryReader({
-            directory.read(file)
-          }))
+          (name -> new BinaryReader(
+            Stats.time("read i/o")(directory.read(file))
+          ))
         }
         .toMap
     }
@@ -42,10 +46,13 @@ object ClassPath {
     def contains(name: Global) =
       entries.contains(name.top)
 
-    def load(name: Global): Option[Info] =
+    def deps(name: Global): Option[Seq[Dep]] =
       entries.get(name.top).flatMap { deserializer =>
-        deserializer.deserialize(name).map(Info(_))
+        deserializer.deps(name)
       }
+
+    def reader(name: Global): Option[BinaryReader] =
+      entries.get(name.top)
 
     def globals: Set[Global] =
       entries.values.flatMap(_.globals).toSet

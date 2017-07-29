@@ -10,6 +10,7 @@ import scala.reflect.internal.Flags._
 import util._, util.ScopedVar.scoped
 import nir.Focus, Focus.{sequenced, merged}
 import nir._
+import nir.serialization.Stats
 import NirPrimitives._
 
 abstract class NirCodeGen
@@ -115,9 +116,12 @@ abstract class NirCodeGen
       super.run()
       genIRFiles(resultDefns)
       resultDefns.clear()
+
+      Stats.print()
+      Stats.clear()
     }
 
-    override def apply(cunit: CompilationUnit): Unit = {
+    override def apply(cunit: CompilationUnit): Unit = Stats.time("compile") {
       try {
         def collectClassDefs(tree: Tree): List[ClassDef] = {
           tree match {

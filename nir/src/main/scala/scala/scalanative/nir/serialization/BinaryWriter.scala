@@ -6,12 +6,15 @@ import java.nio.ByteBuffer
 import java.nio.channels.ByteChannel
 import scala.collection.mutable
 import nir.serialization.{Tags => T}
+
 /*
 
 header: { magic, compat_version, revision_version, offsets_offset,
+          deps_offset,
           strings_offset, globals_offset, types_offset, defns_offset,
           vals_offset, insts_offset }
 offsets: [{global_offset, defn_offset}]
+deps: [dep]
 strings: [string]
 globals: [global]
 types: [type]
@@ -132,9 +135,30 @@ final class BinaryWriter {
   }
 
   private object Offsets extends BinarySectionWriter with Common {
-    def put(global: Global, defnOffset: Int): Unit = {
+    private def putDeps(deps: Seq[Dep]): Unit = putSeq(deps)(putDep)
+    private def putDep(dep: Dep): Unit = dep match {
+      case Dep.Direct(dep) =>
+        putTag(T.DirectDep)
+        putGlobal(dep)
+      case Dep.Conditional(dep, cond) =>
+        putTag(T.ConditionalDep)
+        putGlobal(dep)
+        putGlobal(cond)
+      case Dep.Weak(dep) =>
+        putTag(T.WeakDep)
+        putGlobal(dep)
+      case Dep.Wildcard(sig) =>
+        putTag(T.WildcardDep)
+        putString(sig)
+      case Dep.Link(name) =>
+        putTag(T.LinkDep)
+        putString(name)
+    }
+
+    def put(global: Global, defnOffset: Int, deps: Seq[Dep]): Unit = {
       putGlobal(global)
       putLeb(defnOffset)
+      putDeps(deps)
     }
   }
 
@@ -593,12 +617,12 @@ final class BinaryWriter {
     assembly.foreach { defn =>
       val defnOffset = Defns.position
       Defns.put(defn)
-      Offsets.put(defn.name, defnOffset)
+      Offsets.put(defn.name, defnOffset, Dep.of(defn))
     }
 
   /** Commit byte-buffer contents to the file. */
-  def write(channel: ByteChannel): Unit = {
-    Offsets.put(Global.None, -1)
+  def write(channel: ByteChannel): Unit = Stats.time("write i/o") {
+    Offsets.put(Global.None, -1, Seq.empty)
     Header.put
     Header.write(channel)
     Offsets.write(channel)
