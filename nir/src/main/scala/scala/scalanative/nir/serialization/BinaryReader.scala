@@ -27,8 +27,15 @@ final class BinaryReader(_buffer: => ByteBuffer) {
            "Can't read binary-incompatible version of NIR.")
   }
 
-  private final case class Summary(offset: Int, deps: Seq[Dep]) {
+  private final case class Summary(offset: Int,
+                                   inner: Seq[Global],
+                                   deps: Seq[Dep]) {
     var touched: Boolean = false
+    def touch(): Unit =
+      if (!touched) {
+        touched = true
+        inner.foreach(summaries(_).touch())
+      }
     lazy val defn: Defn = {
       position(header.defns + offset)
       getDefn
@@ -59,10 +66,11 @@ final class BinaryReader(_buffer: => ByteBuffer) {
     def loop(): Unit = {
       val global = getGlobal
       val offset = getLeb
+      val inner  = getGlobals
       val deps   = getDeps
 
       if (global ne Global.None) {
-        entries(global) = Summary(offset, deps)
+        entries(global) = Summary(offset, inner, deps)
         loop()
       }
     }
@@ -100,10 +108,10 @@ final class BinaryReader(_buffer: => ByteBuffer) {
     res
   }
 
-  final def deps(g: Global): Option[Seq[Dep]] =
+  final def touch(g: Global): Option[(Seq[Global], Seq[Dep])] =
     summaries.get(g).map { summary =>
-      summary.touched = true
-      summary.deps
+      summary.touch()
+      (summary.inner, summary.deps)
     }
 
   private def getDeps: Seq[Dep] = getSeq(getDep)

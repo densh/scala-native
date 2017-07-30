@@ -72,7 +72,7 @@ trait NirNameEncoding { self: NirCodeGen =>
     } else if (sym.owner.isExternModule) {
       owner member id tag "extern"
     } else if (sym.name == nme.CONSTRUCTOR) {
-      owner member ("init" +: mangledParams).mkString("_")
+      owner member ("<init>" +: mangledParams).mkString("_")
     } else {
       val mangledRetty = mangledType(tpe.resultType)
       val mangledId = id

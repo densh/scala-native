@@ -13,13 +13,13 @@ sealed trait ClassPath {
   /** Check if given global is present in this classpath. */
   def contains(name: Global): Boolean
 
-  /** Load dependencies for given global. */
-  def deps(name: Global): Option[Seq[Dep]]
+  /** Touch given global and all of its inner dependencies. */
+  def touch(name: Global): Option[(Seq[Global], Seq[Dep])]
 
   /** Binary reader for given global. */
   def reader(name: Global): Option[BinaryReader]
 
-  /** Load all globals */
+  /** All globals defined in this classpath.*/
   def globals: Set[Global]
 }
 
@@ -31,24 +31,25 @@ object ClassPath {
 
   private final class Impl(directory: VirtualDirectory) extends ClassPath {
     private val entries: Map[Global, BinaryReader] = {
-      directory.files
+      directory.files.par
         .filter(_.toString.endsWith(".nir"))
         .map { file =>
           val name = Global.Top(io.packageNameFromPath(file))
 
           (name -> new BinaryReader(
-            Stats.time("read i/o")(directory.read(file))
+            Stats.time("linker.io")(directory.read(file))
           ))
         }
+        .seq
         .toMap
     }
 
     def contains(name: Global) =
       entries.contains(name.top)
 
-    def deps(name: Global): Option[Seq[Dep]] =
+    def touch(name: Global): Option[(Seq[Global], Seq[Dep])] =
       entries.get(name.top).flatMap { deserializer =>
-        deserializer.deps(name)
+        deserializer.touch(name)
       }
 
     def reader(name: Global): Option[BinaryReader] =

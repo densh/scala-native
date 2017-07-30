@@ -155,9 +155,13 @@ final class BinaryWriter {
         putString(name)
     }
 
-    def put(global: Global, defnOffset: Int, deps: Seq[Dep]): Unit = {
+    def put(global: Global,
+            defnOffset: Int,
+            inner: Seq[Global],
+            deps: Seq[Dep]): Unit = {
       putGlobal(global)
       putLeb(defnOffset)
+      putGlobals(inner)
       putDeps(deps)
     }
   }
@@ -614,15 +618,16 @@ final class BinaryWriter {
 
   /** Serialize defns to in-memory byte buffers. */
   def put(assembly: Seq[Defn]): Unit =
-    assembly.foreach { defn =>
-      val defnOffset = Defns.position
-      Defns.put(defn)
-      Offsets.put(defn.name, defnOffset, Dep.of(defn))
+    Dep.deep(assembly).foreach {
+      case (defn, (inner, deps)) =>
+        val defnOffset = Defns.position
+        Defns.put(defn)
+        Offsets.put(defn.name, defnOffset, inner, deps)
     }
 
   /** Commit byte-buffer contents to the file. */
   def write(channel: ByteChannel): Unit = Stats.time("write i/o") {
-    Offsets.put(Global.None, -1, Seq.empty)
+    Offsets.put(Global.None, -1, Seq.empty, Seq.empty)
     Header.put
     Header.write(channel)
     Offsets.write(channel)

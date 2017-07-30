@@ -150,11 +150,56 @@ object Dep {
     }
 
     def onGlobal(g: Global): Unit =
-      if (g ne Global.None) {
+      if ((g ne Global.None) && g != defn.name) {
         deps += Dep.Direct(g)
       }
 
     onDefn(defn)
-    deps
+    deps.distinct
   }
+
+  def deep(assembly: Seq[Defn]): Map[Defn, (Seq[Global], Seq[Dep])] = {
+    val defns =
+      assembly.map { defn =>
+        defn.name -> defn
+      }
+    def isInner(dep: Dep) =
+      dep match {
+        case Dep.Direct(n) if defns.contains(n) => true
+        case _                                  => false
+      }
+    val rawDeps =
+      defns.map { case (name, defn) => name -> Dep.of(defn) }
+    val outerDeps =
+      rawDeps.map { case (name, deps) => (name, deps.filter(!isInner(_))) }.toMap
+    val innerDeps =
+      rawDeps.map {
+        case (name, deps) =>
+          (name, deps.filter(isInner).asInstanceOf[Seq[Dep.Direct]])
+      }.toMap
+    def transitiveInnerDeps(name: Global): Seq[Global] = {
+      val visited  = mutable.Set.empty[Global]
+      val worklist = mutable.Stack.empty[Global]
+      worklist.push(name)
+      while (worklist.nonEmpty) {
+        val name = worklist.pop()
+        if (!visited(name)) {
+          visited += name
+          innerDeps(name).foreach { inner =>
+            worklist.push(inner.dep)
+          }
+        }
+      }
+      visited -= name
+      visited.toSeq
+    }
+
+    defns.map {
+      case (name, defn) =>
+        val inner = transitiveInnerDeps(name)
+        val outer = (name +: inner).flatMap(outerDeps).distinct
+        (defn, (inner, outer))
+    }.toMap
+  }
+
 }
