@@ -4,9 +4,8 @@ package linker
 import nir.{Global, Dep, Attr, Defn}
 import nir.serialization.BinaryReader
 import java.nio.file.FileSystems
-import scalanative.nir.serialization.Stats
 import scalanative.io.VirtualDirectory
-import scalanative.util.Scope
+import scalanative.util.{Stats, Scope}
 
 sealed trait ClassPath {
 

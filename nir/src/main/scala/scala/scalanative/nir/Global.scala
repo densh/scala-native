@@ -25,8 +25,8 @@ sealed abstract class Global {
   final def show: String = nir.Show(this)
 
   final def normalize: Global = this match {
-    case Global.Member(Global.Top("__extern"), id) =>
-      Global.Top(id)
+    case g if g.id.startsWith("extern.") =>
+      Global.Member(Global.Top("__extern"), g.id.substring(7))
     case _ =>
       this
   }

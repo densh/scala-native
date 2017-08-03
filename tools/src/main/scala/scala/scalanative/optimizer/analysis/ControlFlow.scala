@@ -80,63 +80,64 @@ object ControlFlow {
   }
 
   object Graph {
-    def apply(insts: Seq[Inst]): Graph = {
-      assert(insts.nonEmpty)
+    def apply(insts: Seq[Inst]): Graph =
+      util.Stats.time("control-flow analysis") {
+        assert(insts.nonEmpty)
 
-      def edge(from: Block, to: Block, next: Next) = {
-        val e = new Edge(from, to, next)
-        from.outEdges += e
-        to.inEdges += e
-      }
+        def edge(from: Block, to: Block, next: Next) = {
+          val e = new Edge(from, to, next)
+          from.outEdges += e
+          to.inEdges += e
+        }
 
-      val blocks: Seq[Block] = insts.zipWithIndex.collect {
-        case (Inst.Label(n, params), k) =>
-          // copy all instruction up until and including
-          // first control-flow instruction after the label
-          val body = mutable.UnrolledBuffer.empty[Inst]
-          var i    = k
-          do {
-            i += 1
-            body += insts(i)
-          } while (!insts(i).isInstanceOf[Inst.Cf])
-          new Block(n, params, body, isEntry = k == 0)
-      }
+        val blocks: Seq[Block] = insts.zipWithIndex.collect {
+          case (Inst.Label(n, params), k) =>
+            // copy all instruction up until and including
+            // first control-flow instruction after the label
+            val body = mutable.UnrolledBuffer.empty[Inst]
+            var i    = k
+            do {
+              i += 1
+              body += insts(i)
+            } while (!insts(i).isInstanceOf[Inst.Cf])
+            new Block(n, params, body, isEntry = k == 0)
+        }
 
-      val nodes = blocks.map { b =>
-        b.name -> b
-      }.toMap
+        val nodes = blocks.map { b =>
+          b.name -> b
+        }.toMap
 
-      blocks.foreach {
-        case node @ Block(n, _, insts :+ cf, _) =>
-          insts.foreach {
-            case Inst.Let(_, op: Op.Unwind) if op.unwind ne Next.None =>
-              edge(node, nodes(op.unwind.name), op.unwind)
-            case _ =>
-              ()
-          }
-          cf match {
-            case Inst.Unreachable | _: Inst.Ret =>
-              ()
-            case Inst.Jump(next) =>
-              edge(node, nodes(next.name), next)
-            case Inst.If(_, next1, next2) =>
-              edge(node, nodes(next1.name), next1)
-              edge(node, nodes(next2.name), next2)
-            case Inst.Switch(_, default, cases) =>
-              edge(node, nodes(default.name), default)
-              cases.foreach { case_ =>
-                edge(node, nodes(case_.name), case_)
-              }
-            case Inst.Throw(_, next) =>
-              if (next ne Next.None) {
+        blocks.foreach {
+          case node @ Block(n, _, insts :+ cf, _) =>
+            insts.foreach {
+              case Inst.Let(_, op: Op.Unwind) if op.unwind ne Next.None =>
+                edge(node, nodes(op.unwind.name), op.unwind)
+              case _ =>
+                ()
+            }
+            cf match {
+              case Inst.Unreachable | _: Inst.Ret =>
+                ()
+              case Inst.Jump(next) =>
                 edge(node, nodes(next.name), next)
-              }
-            case inst =>
-              unsupported(inst)
-          }
-      }
+              case Inst.If(_, next1, next2) =>
+                edge(node, nodes(next1.name), next1)
+                edge(node, nodes(next2.name), next2)
+              case Inst.Switch(_, default, cases) =>
+                edge(node, nodes(default.name), default)
+                cases.foreach { case_ =>
+                  edge(node, nodes(case_.name), case_)
+                }
+              case Inst.Throw(_, next) =>
+                if (next ne Next.None) {
+                  edge(node, nodes(next.name), next)
+                }
+              case inst =>
+                unsupported(inst)
+            }
+        }
 
-      new Graph(nodes(blocks.head.name), blocks, nodes)
-    }
+        new Graph(nodes(blocks.head.name), blocks, nodes)
+      }
   }
 }

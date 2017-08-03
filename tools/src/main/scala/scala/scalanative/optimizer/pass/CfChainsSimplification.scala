@@ -13,18 +13,12 @@ import Inst._
 class CfChainsSimplification(implicit fresh: Fresh, top: Top) extends Pass {
   import CfChainsSimplification._
 
-  override def onDefn(defn: Defn): Defn = defn match {
-    case defn: Defn.Define =>
-      val cfg = ControlFlow.Graph(defn.insts)
+  override def onInsts(insts: Seq[Inst]): Seq[Inst] = {
+    val cfg = ControlFlow.Graph(insts)
 
-      val newInsts = cfg.all.flatMap { b =>
-        (b.label +: b.insts.dropRight(1)) ++ simplifyCf(b.insts.last, cfg)
-      }
-
-      defn.copy(insts = newInsts)
-
-    case _ =>
-      defn
+    cfg.all.flatMap { b =>
+      (b.label +: b.insts.dropRight(1)) ++ simplifyCf(b.insts.last, cfg)
+    }
   }
 
   private def simplifyCf(cfInst: Inst, cfg: ControlFlow.Graph): Seq[Inst] = {

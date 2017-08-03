@@ -48,7 +48,8 @@ object DeadCodeElimination extends PassCompanion {
     override def onNext(next: Next) = next match {
       case Next.Label(name, args) if (name != entryName) =>
         usedef(name) match {
-          case UseDef.BlockDef(_, _, _, params) =>
+          case blockdef: UseDef.BlockDef =>
+            val params = blockdef.params
             val newArgs = args.zip(params).collect {
               case (arg, param) if param.alive => arg
             }

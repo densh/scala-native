@@ -11,20 +11,8 @@ import nir._
 /** Lowers class definitions, and field accesses to structs
  *  and corresponding derived pointer computation.
  */
-class ClassLowering(implicit top: Top, fresh: Fresh) extends Pass {
-  import ClassLowering._
-
-  override def onDefns(defns: Seq[Defn]): Seq[Defn] =
-    super.onDefns(defns.filter {
-      case _: Defn.Class =>
-        false
-      case Defn.Declare(_, MethodRef(_: Class, _), _) =>
-        false
-      case Defn.Var(_, FieldRef(_: Class, _), _, _) =>
-        false
-      case defn =>
-        true
-    })
+class FieldLowering(implicit top: Top, fresh: Fresh) extends Pass {
+  import FieldLowering._
 
   override def onInst(inst: Inst) = super.onInst {
     inst match {
@@ -39,16 +27,9 @@ class ClassLowering(implicit top: Top, fresh: Fresh) extends Pass {
         inst
     }
   }
-
-  override def onType(ty: Type): Type = ty match {
-    case ty: Type.RefKind if ty != Type.Unit =>
-      Type.Ptr
-    case _ =>
-      super.onType(ty)
-  }
 }
 
-object ClassLowering extends PassCompanion {
+object FieldLowering extends PassCompanion {
   override def apply(config: tools.Config, top: Top) =
-    new ClassLowering()(top, top.fresh)
+    new FieldLowering()(top, top.fresh)
 }

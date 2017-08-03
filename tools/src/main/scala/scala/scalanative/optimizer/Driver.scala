@@ -22,6 +22,7 @@ object Driver {
     inject.ClassStruct,
     inject.ObjectArrayId,
     inject.ModuleArray,
+    inject.ModuleAccessor,
     inject.SafepointTrigger
   )
 
@@ -45,24 +46,19 @@ object Driver {
 
   private val loweringPasses = Seq(
     pass.DynmethodLowering,
-    pass.ExternHoisting,
     pass.ModuleLowering,
     pass.TypeValueLowering,
     pass.BoxingLowering,
     pass.AsLowering,
     pass.IsLowering,
     pass.MethodLowering,
-    pass.TraitLowering,
-    pass.ClassLowering,
+    pass.FieldLowering,
     pass.StringLowering,
-    pass.ConstLowering,
-    pass.UnitLowering,
     pass.NothingLowering,
     pass.AllocLowering,
     pass.SizeofLowering,
     pass.CopyPropagation,
-    pass.DeadCodeElimination
-    // pass.SafepointInsertion
+    pass.SimpleDeadCodeElimination
   )
 
   /** Create driver with default pipeline for this configuration. */

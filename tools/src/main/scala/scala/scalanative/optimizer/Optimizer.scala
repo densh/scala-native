@@ -61,12 +61,22 @@ object Optimizer {
           loop(batchId, batchDefns, rest)
 
         case (pass: Pass, passId) +: rest =>
-          val passResult = pass.onDefns(batchDefns)
+          val passResult =
+            batchDefns.map {
+              case defn: Defn.Const =>
+                defn.copy(rhs = pass.onVal(defn.rhs))
+              case defn: Defn.Var =>
+                defn.copy(rhs = pass.onVal(defn.rhs))
+              case defn: Defn.Define =>
+                defn.copy(insts = pass.onInsts(defn.insts))
+              case defn =>
+                defn
+            }
           onPass(batchId, passId, pass, passResult)
           loop(batchId, passResult, rest)
       }
 
-    partition(injected).par
+    val res = partition(injected).par
       .map {
         case (batchId, batchDefns) =>
           onStart(batchId, batchDefns)
@@ -78,5 +88,7 @@ object Optimizer {
       .seq
       .flatten
       .toSeq
+
+    res
   }
 }

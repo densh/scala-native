@@ -7,6 +7,7 @@ import java.nio.file.Paths
 import scala.collection.mutable
 import scalanative.util.{Scope, ShowBuilder, unsupported}
 import scalanative.io.{VirtualDirectory, withScratchBuffer}
+import scalanative.optimizer.analysis.ClassHierarchy.Top
 import scalanative.optimizer.analysis.ControlFlow.{Graph => CFG, Block, Edge}
 import scalanative.nir._
 
@@ -15,8 +16,15 @@ object CodeGen {
   /** Generate code for given assembly. */
   def apply(config: tools.Config, assembly: Seq[Defn]): Unit =
     Scope { implicit in =>
-      val env     = assembly.map(defn => defn.name -> defn).toMap
+      val env     = assembly.map(defn => defn.name.normalize -> defn).toMap
       val workdir = VirtualDirectory.real(config.workdir)
+
+      env.foreach {
+        case (k, v) =>
+          if (k.show.contains("free")) {
+            print(v.show)
+          }
+      }
 
       def debug(): Unit = {
         val batches = mutable.Map.empty[String, mutable.Buffer[Defn]]
@@ -76,6 +84,7 @@ object CodeGen {
 
     def gen(): ByteBuffer = {
       genDefns(defns)
+      genConsts()
       val body = builder.toString.getBytes("UTF-8")
       builder.clear
       genPrelude()
@@ -90,35 +99,42 @@ object CodeGen {
       val nn = n.normalize
       if (!generated.contains(nn)) {
         newline()
-        genDefn {
-          env(n) match {
-            case defn: Defn.Struct =>
-              defn
-            case defn @ Defn.Var(attrs, _, _, _) =>
-              defn.copy(attrs.copy(isExtern = true), rhs = Val.None)
-            case defn @ Defn.Const(attrs, _, ty, _) =>
-              defn.copy(attrs.copy(isExtern = true), rhs = Val.None)
-            case defn @ Defn.Declare(attrs, _, _) =>
-              defn.copy(attrs.copy(isExtern = true))
-            case defn @ Defn.Define(attrs, _, _, _) =>
-              defn.copy(attrs.copy(isExtern = true), insts = Seq())
-          }
+        env(nn) match {
+          case defn: Defn.Struct =>
+            genDefn(defn)
+          case defn @ Defn.Var(attrs, _, _, _) =>
+            genDefn(defn.copy(attrs.copy(isExtern = true), rhs = Val.None))
+          case defn @ Defn.Const(attrs, _, ty, _) =>
+            genDefn(defn.copy(attrs.copy(isExtern = true), rhs = Val.None))
+          case defn @ Defn.Declare(attrs, _, _) =>
+            genDefn(defn.copy(attrs.copy(isExtern = true)))
+          case defn @ Defn.Define(attrs, _, _, _) =>
+            genDefn(defn.copy(attrs.copy(isExtern = true), insts = Seq()))
         }
         generated += nn
       }
     }
 
-    def touch(n: Global): Unit =
-      deps += n
-
-    def lookup(n: Global): Type = {
-      touch(n)
-      env(n) match {
-        case Defn.Var(_, _, ty, _)     => ty
-        case Defn.Const(_, _, ty, _)   => ty
-        case Defn.Declare(_, _, sig)   => sig
-        case Defn.Define(_, _, sig, _) => sig
+    def genConsts() =
+      constMap.foreach {
+        case (v, name) =>
+          genGlobalDefn(Attrs.None, name, isConst = true, v.ty, v)
       }
+
+    def touch(n: Global): Unit =
+      deps += n.normalize
+
+    def lookup(n: Global): Type = n.normalize match {
+      case Global.Member(Global.Top("__const"), _) =>
+        constTy(n)
+      case n =>
+        touch(n)
+        env(n) match {
+          case Defn.Var(_, _, ty, _)     => ty
+          case Defn.Const(_, _, ty, _)   => ty
+          case Defn.Declare(_, _, sig)   => sig
+          case Defn.Define(_, _, sig, _) => sig
+        }
     }
 
     def genDefns(defns: Seq[Defn]): Unit =
@@ -158,16 +174,37 @@ object CodeGen {
     def genDefn(defn: Defn): Unit = defn match {
       case Defn.Struct(attrs, name, tys) =>
         genStruct(attrs, name, tys)
+      case Defn.Var(_, n, _, _) if inScalaScope(n) =>
+        ()
       case Defn.Var(attrs, name, ty, rhs) =>
         genGlobalDefn(attrs, name, isConst = false, ty, rhs)
       case Defn.Const(attrs, name, ty, rhs) =>
         genGlobalDefn(attrs, name, isConst = true, ty, rhs)
+      case Defn.Declare(_, n, _) if inScalaScope(n) =>
+        ()
       case Defn.Declare(attrs, name, sig) =>
         genFunctionDefn(attrs, name, sig, Seq())
       case Defn.Define(attrs, name, sig, blocks) =>
         genFunctionDefn(attrs, name, sig, blocks)
+      case _: Defn.Class | _: Defn.Trait | _: Defn.Module =>
+        ()
       case defn =>
         unsupported(defn)
+    }
+
+    private def inScalaScope(name: Global): Boolean = {
+      val nn = name.normalize
+      nn.top match {
+        case Global.Top("__extern") =>
+          false
+        case top =>
+          env(top) match {
+            case _: Defn.Class | _: Defn.Trait | _: Defn.Module =>
+              true
+            case _ =>
+              false
+          }
+      }
     }
 
     def genStruct(attrs: Attrs, name: Global, tys: Seq[Type]): Unit = {
@@ -206,9 +243,13 @@ object CodeGen {
       val Type.Function(argtys, retty) = sig
 
       val isDecl = insts.isEmpty
+      val retVoid = retty match {
+        case Type.Unit | Type.Nothing => true
+        case _                        => false
+      }
 
       str(if (isDecl) "declare " else "define ")
-      genType(retty)
+      genType(if (retVoid) Type.Void else retty)
       str(" @")
       genGlobal(name)
       str("(")
@@ -233,14 +274,14 @@ object CodeGen {
         str(" {")
         val cfg = CFG(insts)
         cfg.foreach { block =>
-          genBlock(block)(cfg)
+          genBlock(block, retVoid)(cfg)
         }
         newline()
         str("}")
       }
     }
 
-    def genBlock(block: Block)(implicit cfg: CFG): Unit = {
+    def genBlock(block: Block, retVoid: Boolean)(implicit cfg: CFG): Unit = {
       val Block(name, params, insts, isEntry) = block
       currentBlockName = name
       currentBlockSplit = 0
@@ -249,7 +290,7 @@ object CodeGen {
       indent()
       genBlockPrologue(block)
       rep(insts) { inst =>
-        genInst(inst)
+        genInst(inst, retVoid)
       }
       unindent()
     }
@@ -340,6 +381,8 @@ object CodeGen {
         str(" x ")
         genType(ty)
         str("]")
+      case Type.Function(params, Type.Unit | Type.Nothing) =>
+        genType(Type.Function(params, Type.Void))
       case Type.Function(args, ret) =>
         genType(ret)
         str(" (")
@@ -353,11 +396,36 @@ object CodeGen {
         touch(name)
         str("%")
         genGlobal(name)
-      case ty =>
-        unsupported(ty)
+      case _: Type.RefKind =>
+        genType(Type.Ptr)
     }
 
-    def genJustVal(v: Val): Unit = v match {
+    val constMap = mutable.Map.empty[Val, Global]
+    val constTy  = mutable.Map.empty[Global, Type]
+    def constFor(v: Val): Global =
+      if (constMap.contains(v)) {
+        constMap(v)
+      } else {
+        val idx = constMap.size
+        val name =
+          Global.Member(Global.Top("__const"),
+                        " " + this.## + "." + idx.toString)
+        constMap(v) = name
+        constTy(name) = v.ty
+        name
+      }
+    def deconstify(v: Val): Val = v match {
+      case Val.Struct(name, vals) =>
+        Val.Struct(name, vals.map(deconstify))
+      case Val.Array(elemty, vals) =>
+        Val.Array(elemty, vals.map(deconstify))
+      case Val.Const(value) =>
+        Val.Global(constFor(deconstify(value)), Type.Ptr)
+      case _ =>
+        v
+    }
+
+    def genJustVal(v: Val): Unit = deconstify(v) match {
       case Val.True      => str("true")
       case Val.False     => str("false")
       case Val.Null      => str("null")
@@ -415,6 +483,8 @@ object CodeGen {
         unsupported(g)
       case Global.Top(id) =>
         str(id)
+      case Global.Member(Global.Top("__extern"), id) =>
+        str(id)
       case Global.Member(n, id) =>
         genJustGlobal(n)
         str("::")
@@ -434,7 +504,7 @@ object CodeGen {
         str(id)
     }
 
-    def genInst(inst: Inst): Unit = inst match {
+    def genInst(inst: Inst, retVoid: Boolean): Unit = inst match {
       case inst: Inst.Let =>
         genLet(inst)
 
@@ -442,14 +512,14 @@ object CodeGen {
         newline()
         str("unreachable")
 
-      case Inst.Ret(Val.None) =>
-        newline()
-        str("ret void")
-
       case Inst.Ret(value) =>
         newline()
-        str("ret ")
-        genVal(value)
+        if ((value eq Val.None) || retVoid) {
+          str("ret void")
+        } else {
+          str("ret ")
+          genVal(value)
+        }
 
       case Inst.Jump(next) =>
         newline()

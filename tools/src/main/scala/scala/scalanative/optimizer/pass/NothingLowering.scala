@@ -31,17 +31,6 @@ class NothingLowering(implicit fresh: Fresh) extends Pass {
 
     buf.toSeq
   }
-
-  override def onType(ty: Type): Type = ty match {
-    case Type.Nothing =>
-      Type.Ptr
-
-    case Type.Function(params, Type.Nothing) =>
-      Type.Function(params, Type.Void)
-
-    case _ =>
-      super.onType(ty)
-  }
 }
 
 object NothingLowering extends PassCompanion {

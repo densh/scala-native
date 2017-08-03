@@ -5,7 +5,8 @@ package serialization
 import java.nio.ByteBuffer
 import java.nio.channels.ByteChannel
 import scala.collection.mutable
-import nir.serialization.{Tags => T}
+import scalanative.nir.serialization.{Tags => T}
+import scalanative.util.Stats
 
 /*
 
