@@ -60,9 +60,15 @@ abstract class NirGenPhase
 
   class NirCodePhase(prev: Phase) extends StdPhase(prev) {
     override def run(): Unit = {
-      scalaPrimitives.init()
-      nirPrimitives.init()
-      super.run()
+      while (true) {
+        Stats.time("gen") {
+          scalaPrimitives.init()
+          nirPrimitives.init()
+          super.run()
+        }
+        Stats.print()
+        Stats.clear()
+      }
     }
 
     override def apply(cunit: CompilationUnit): Unit = {
@@ -101,12 +107,16 @@ abstract class NirGenPhase
       scoped(
         curLazyAnonDefs := lazyAnonDefs
       ) {
-        collectClassDefs(cunit.body)
-        classDefs.foreach(genClass)
-        lazyAnonDefs.values.foreach(genClass)
-        files.par.foreach {
-          case (path, stats) =>
-            genIRFile(path, stats)
+        Stats.time("gen.classes") {
+          collectClassDefs(cunit.body)
+          classDefs.foreach(genClass)
+          lazyAnonDefs.values.foreach(genClass)
+        }
+        Stats.time("gen.files") {
+          files.par.foreach {
+            case (path, stats) =>
+              genIRFile(path, stats)
+          }
         }
       }
     }
