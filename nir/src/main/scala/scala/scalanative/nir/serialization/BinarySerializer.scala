@@ -273,8 +273,9 @@ final class BinarySerializer(buffer: ByteBuffer) {
       putVals(args)
       putNext(unwind)
 
-    case Op.Load(ty, ptr, isVolatile) =>
+    case Op.Load(ty, ptr, isVolatile, isInvariant) =>
       assert(!isVolatile, "volatile loads are not serializable")
+      assert(!isInvariant, "invariant loads are not serializable")
       putInt(T.LoadOp)
       putType(ty)
       putVal(ptr)

@@ -30,7 +30,7 @@ class SafepointInsertion extends Pass {
 
     insts.foreach {
       case inst: Inst.Ret =>
-        let(Op.Load(Type.Byte, safepointTriggerVal, isVolatile = true))
+        let(Op.volatileLoad(Type.Byte, safepointTriggerVal))
         buf += inst
 
       case inst =>

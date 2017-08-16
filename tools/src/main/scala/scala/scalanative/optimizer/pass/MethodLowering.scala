@@ -20,7 +20,7 @@ class MethodLowering(implicit top: Top) extends Pass {
       case Let(n, Op.Method(obj, MethodRef(cls: Class, meth)))
           if meth.isVirtual =>
         val vindex  = cls.vtable.index(meth)
-        val typeptr = let(Op.Load(Type.Ptr, obj))
+        val typeptr = let(Op.invariantLoad(Type.Ptr, obj))
         val methptrptr = let(
           Op.Elem(cls.rtti.struct,
                   typeptr,
@@ -28,23 +28,23 @@ class MethodLowering(implicit top: Top) extends Pass {
                       Val.Int(5), // index of vtable in type struct
                       Val.Int(vindex))))
 
-        let(n, Op.Load(Type.Ptr, methptrptr))
+        let(n, Op.invariantLoad(Type.Ptr, methptrptr))
 
       case Let(n, Op.Method(obj, MethodRef(_: Class, meth))) if meth.isStatic =>
         let(n, Op.Copy(Val.Global(meth.name, Type.Ptr)))
 
       case Let(n, Op.Method(obj, MethodRef(trt: Trait, meth))) =>
         val sigid   = top.tables.traitMethodSigs(meth.name.id)
-        val typeptr = let(Op.Load(Type.Ptr, obj))
+        val typeptr = let(Op.invariantLoad(Type.Ptr, obj))
         val idptr   = let(Op.Elem(Rt.Type, typeptr, Seq(Val.Int(0), Val.Int(0))))
-        val id      = let(Op.Load(Type.Int, idptr))
+        val id      = let(Op.invariantLoad(Type.Int, idptr))
         val rowptr = let(
           Op.Elem(Type.Ptr,
                   top.tables.dispatchVal,
                   Seq(Val.Int(top.tables.dispatchOffset(sigid)))))
         val methptrptr =
           let(Op.Elem(Type.Ptr, rowptr, Seq(id)))
-        let(n, Op.Load(Type.Ptr, methptrptr))
+        let(n, Op.invariantLoad(Type.Ptr, methptrptr))
 
       case inst =>
         buf += inst

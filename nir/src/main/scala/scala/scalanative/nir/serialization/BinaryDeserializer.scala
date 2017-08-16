@@ -230,8 +230,9 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
   }
 
   private def getOp(): Op = getInt match {
-    case T.CallOp       => Op.Call(getType, getVal, getVals, getNext)
-    case T.LoadOp       => Op.Load(getType, getVal, isVolatile = false)
+    case T.CallOp => Op.Call(getType, getVal, getVals, getNext)
+    case T.LoadOp =>
+      Op.Load(getType, getVal, isVolatile = false, isInvariant = false)
     case T.StoreOp      => Op.Store(getType, getVal, getVal, isVolatile = false)
     case T.ElemOp       => Op.Elem(getType, getVal, getVals)
     case T.ExtractOp    => Op.Extract(getVal, getInts)

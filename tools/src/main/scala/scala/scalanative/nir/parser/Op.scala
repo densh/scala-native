@@ -19,9 +19,12 @@ object Op extends Base[nir.Op] {
       case (ty, f, args, unwind) => nir.Op.Call(ty, f, args, unwind)
     }
   val Load =
-    P("volatile".!.? ~ "load[" ~ Type.parser ~ "]" ~ Val.parser map {
-      case (volatile, ty, ptr) =>
-        nir.Op.Load(ty, ptr, isVolatile = volatile.nonEmpty)
+    P("volatile".!.? ~ "invariant".!.? ~ "load[" ~ Type.parser ~ "]" ~ Val.parser map {
+      case (volatile, invariant, ty, ptr) =>
+        nir.Op.Load(ty,
+                    ptr,
+                    isVolatile = volatile.nonEmpty,
+                    isInvariant = invariant.nonEmpty)
     })
   val Store =
     P("volatile".!.? ~ "store[" ~ Type.parser ~ "]" ~ Val.parser ~ "," ~ Val.parser map {

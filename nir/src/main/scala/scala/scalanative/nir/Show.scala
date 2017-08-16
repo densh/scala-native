@@ -181,13 +181,16 @@ object Show {
           str(" ")
           next_(unwind)
         }
-      case Op.Load(ty, ptr, isVolatile) =>
-        str(if (isVolatile) "volatile load[" else "load[")
+      case Op.Load(ty, ptr, isVolatile, isInvariant) =>
+        if (isVolatile) { str("volatile ") }
+        if (isInvariant) { str("invariant ") }
+        str("load[")
         type_(ty)
         str("] ")
         val_(ptr)
       case Op.Store(ty, ptr, value, isVolatile) =>
-        str(if (isVolatile) "volatile store[" else "store[")
+        if (isVolatile) { str("volatile ") }
+        str("store[")
         type_(ty)
         str("] ")
         val_(ptr)

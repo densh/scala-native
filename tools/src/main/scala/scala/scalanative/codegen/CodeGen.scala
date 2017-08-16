@@ -78,6 +78,9 @@ object CodeGen {
 
     def gen(): ByteBuffer = {
       genDefns(defns)
+      newline()
+      line("!0 = !{ }")
+      line("!1 = !{ !\"invariant\" }")
       val body = builder.toString.getBytes("UTF-8")
       builder.clear
       genPrelude()
@@ -603,7 +606,7 @@ object CodeGen {
         case call: Op.Call =>
           genCall(genBind, call)
 
-        case Op.Load(ty, ptr, isVolatile) =>
+        case Op.Load(ty, ptr, isVolatile, isInvariant) =>
           val pointee = fresh()
 
           newline()
@@ -626,6 +629,9 @@ object CodeGen {
           genType(ty)
           str("* %")
           genLocal(pointee)
+          if (isInvariant) {
+            str(", !invariant.load !0, !invariant.group !1")
+          }
 
         case Op.Store(ty, ptr, value, isVolatile) =>
           val pointee = fresh()
