@@ -58,6 +58,7 @@ object CodeGen {
 
       config.mode match {
         case tools.Mode.Debug   if !config.enableProfiling => debug()
+        case tools.Mode.Debug                              => release()
         case tools.Mode.Release                            => release()
       }
     }

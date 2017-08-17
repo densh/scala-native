@@ -9,26 +9,18 @@ object Report extends App {
   var ids = new java.util.concurrent.atomic.AtomicInteger
 
   type CountMap    = mutable.Map[Int, Long]
-  type TransferMap = mutable.Map[(Int, Int, Int, Int, Int, Int, Int, Int), Long]
+  type TransferMap = mutable.Map[(Int, Int, Int, Int), Long]
 
   val (counts, transfers) = streams.par.map { fn =>
     val id = ids.getAndIncrement
     val start = System.nanoTime()
     val counts = mutable.Map.empty[Int, Long]
-    val transfers = mutable.Map.empty[(Int, Int, Int, Int, Int, Int, Int, Int), Long]
+    val transfers = mutable.Map.empty[(Int, Int, Int, Int), Long]
     val buffer = fn()
     var done = false
-    var last7 = buffer.getInt
-    var last6 = buffer.getInt
-    var last5 = buffer.getInt
-    var last4 = buffer.getInt
     var last3 = buffer.getInt
     var last2 = buffer.getInt
     var last1 = buffer.getInt
-    counts(last7) = 1
-    counts(last6) = 1
-    counts(last5) = 1
-    counts(last4) = 1
     counts(last3) = 1
     counts(last2) = 1
     counts(last1) = 1
@@ -36,12 +28,8 @@ object Report extends App {
       try {
         val id = buffer.getInt
         counts(id) = if (counts.contains(id)) counts(id) + 1L else 1L
-        val transfer = (last7, last6, last5, last4, last3, last2, last1, id)
+        val transfer = (last3, last2, last1, id)
         transfers(transfer) = if (transfers.contains(transfer)) transfers(transfer) + 1L else 1L
-        last7 = last6
-        last6 = last5
-        last5 = last4
-        last4 = last3
         last3 = last2
         last2 = last1
         last1 = id
@@ -90,18 +78,14 @@ object Report extends App {
   out.close
 
   out = new java.io.PrintWriter("transfers.csv")
-  out.write("c,a,b,c,d,e,f,g,h\n")
+  out.write("c,a,b,c,d\n")
   transfers.foreach {
-    case ((a, b, c, d, e, f, g, h), count) =>
+    case ((a, b, c, d), count) =>
       val aName = props.getProperty(a.toString).replace(",", ":")
       val bName = props.getProperty(b.toString).replace(",", ":")
       val cName = props.getProperty(c.toString).replace(",", ":")
       val dName = props.getProperty(d.toString).replace(",", ":")
-      val eName = props.getProperty(e.toString).replace(",", ":")
-      val fName = props.getProperty(f.toString).replace(",", ":")
-      val gName = props.getProperty(g.toString).replace(",", ":")
-      val hName = props.getProperty(h.toString).replace(",", ":")
-      out.write(s"$count,$aName,$bName,$cName,$dName,$eName,$fName,$gName,$hName\n")
+      out.write(s"$count,$aName,$bName,$cName,$dName\n")
   }
   out.close
 }
