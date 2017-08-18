@@ -22,12 +22,12 @@ class Main(entry: Global) extends Inject {
 
     val stackBottom = Val.Local(fresh(), Type.Ptr)
 
-    val argc   = Val.Local(fresh(), Type.Int)
-    val argv   = Val.Local(fresh(), Type.Ptr)
+    val argc = Val.Local(fresh(), Type.Int)
+    val argv = Val.Local(fresh(), Type.Ptr)
     val module = Val.Local(fresh(), Type.Module(entry.top))
-    val rt     = Val.Local(fresh(), Rt)
-    val arr    = Val.Local(fresh(), ObjectArray)
-    val exc    = Val.Local(fresh(), nir.Rt.Object)
+    val rt = Val.Local(fresh(), Rt)
+    val arr = Val.Local(fresh(), ObjectArray)
+    val exc = Val.Local(fresh(), nir.Rt.Object)
     val unwind = Next.Unwind(fresh())
 
     buf += Defn.Define(
@@ -79,10 +79,10 @@ object Main extends InjectCompanion {
     Val.Global(Rt.name member "loop_unit", Type.Ptr)
 
   val MainName = Global.Top("main")
-  val MainSig  = Type.Function(Seq(Type.Int, Type.Ptr), Type.Int)
+  val MainSig = Type.Function(Seq(Type.Int, Type.Ptr), Type.Int)
 
   val ThrowableName = Global.Top("java.lang.Throwable")
-  val Throwable     = Type.Class(ThrowableName)
+  val Throwable = Type.Class(ThrowableName)
 
   val PrintStackTraceSig =
     Type.Function(Seq(Throwable), Type.Unit)
@@ -91,8 +91,8 @@ object Main extends InjectCompanion {
   val PrintStackTrace =
     Val.Global(PrintStackTraceName, Type.Ptr)
 
-  val InitSig  = Type.Function(Seq(), Type.Unit)
-  val Init     = Val.Global(Global.Top("scalanative_init"), Type.Ptr)
+  val InitSig = Type.Function(Seq(), Type.Unit)
+  val Init = Val.Global(Global.Top("scalanative_init"), Type.Ptr)
   val InitDecl = Defn.Declare(Attrs.None, Init.name, InitSig)
 
   val stackBottomName = Global.Top("__stack_bottom")

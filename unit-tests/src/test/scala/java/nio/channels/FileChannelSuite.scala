@@ -7,13 +7,13 @@ import java.io.File
 object FileChannelSuite extends tests.Suite {
   test("A FileChannel can read from a file") {
     withTemporaryDirectory { dir =>
-      val f     = dir.resolve("f")
+      val f = dir.resolve("f")
       val bytes = Array.apply[Byte](1, 2, 3, 4, 5)
       Files.write(f, bytes)
       assert(Files.getAttribute(f, "size") == 5)
 
       val channel = FileChannel.open(f)
-      val buffer  = ByteBuffer.allocate(5)
+      val buffer = ByteBuffer.allocate(5)
       while (channel.read(buffer) > 0) {}
 
       buffer.rewind()
@@ -27,15 +27,15 @@ object FileChannelSuite extends tests.Suite {
 
   test("A FileChannel can write to a file") {
     withTemporaryDirectory { dir =>
-      val f     = dir.resolve("f")
+      val f = dir.resolve("f")
       val bytes = Array.apply[Byte](1, 2, 3, 4, 5)
-      val src   = ByteBuffer.wrap(bytes)
+      val src = ByteBuffer.wrap(bytes)
       val channel =
         FileChannel.open(f, StandardOpenOption.WRITE, StandardOpenOption.CREATE)
       while (src.remaining() > 0) channel.write(src)
 
       val in = Files.newInputStream(f)
-      var i  = 0
+      var i = 0
       while (i < bytes.length) {
         assert(in.read() == bytes(i))
         i += 1
@@ -50,13 +50,13 @@ object FileChannelSuite extends tests.Suite {
       Files.write(f, "hello, world".getBytes("UTF-8"))
 
       val bytes = "goodbye".getBytes("UTF-8")
-      val src   = ByteBuffer.wrap(bytes)
+      val src = ByteBuffer.wrap(bytes)
       val channel =
         FileChannel.open(f, StandardOpenOption.WRITE, StandardOpenOption.CREATE)
       while (src.remaining() > 0) channel.write(src)
 
       val in = Files.newInputStream(f)
-      var i  = 0
+      var i = 0
       while (i < bytes.length) {
         assert(in.read() == bytes(i))
         i += 1
@@ -72,7 +72,7 @@ object FileChannelSuite extends tests.Suite {
       assert(lines.size() == 1)
       assert(lines.get(0) == "abcdefgh")
 
-      val c   = FileChannel.open(f, StandardOpenOption.WRITE)
+      val c = FileChannel.open(f, StandardOpenOption.WRITE)
       val src = ByteBuffer.wrap("xyz".getBytes("UTF-8"))
       while (src.remaining() > 0) c.write(src)
 
@@ -111,8 +111,8 @@ object FileChannelSuite extends tests.Suite {
       assert(lines.size() == 1)
       assert(lines.get(0) == "hello, ")
 
-      val bytes   = "world".getBytes("UTF-8")
-      val src     = ByteBuffer.wrap(bytes)
+      val bytes = "world".getBytes("UTF-8")
+      val src = ByteBuffer.wrap(bytes)
       val channel = FileChannel.open(f, StandardOpenOption.APPEND)
       while (src.remaining() > 0) channel.write(src)
 

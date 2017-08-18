@@ -76,16 +76,16 @@ private[math] object Multiplication {
    *  @return {@code val * factor}
    */
   def multiplyByPosInt(bi: BigInteger, factor: Int): BigInteger = {
-    val resSign: Int  = bi.sign
+    val resSign: Int = bi.sign
     val aNumberLength = bi.numberLength
-    val aDigits       = bi.digits
+    val aDigits = bi.digits
 
     if (resSign == 0) {
       BigInteger.ZERO
     } else if (aNumberLength == 1) {
       val res: Long = unsignedMultAddAdd(aDigits(0), factor, 0, 0)
-      val resLo     = res.toInt
-      val resHi     = (res >>> 32).toInt
+      val resLo = res.toInt
+      val resHi = (res >>> 32).toInt
       if (resHi == 0) new BigInteger(resSign, resLo)
       else new BigInteger(resSign, 2, Array(resLo, resHi))
     } else {
@@ -131,7 +131,7 @@ private[math] object Multiplication {
     }
     BitLevel.shiftLeftOneBit(res, res, aLen << 1)
     carry = 0
-    var i     = 0
+    var i = 0
     var index = 0
     while (i < aLen) {
       val t = unsignedMultAddAdd(a(i), a(i), res(index), carry)
@@ -187,7 +187,7 @@ private[math] object Multiplication {
        * Karatsuba: u = u1*B + u0 v = v1*B + v0 u*v = (u1*v1)*B^2 +
        * ((u1-u0)*(v0-v1) + u1*v1 + u0*v0)*B + u0*v0
        */
-      val ndiv2    = (op1.numberLength & 0xFFFFFFFE) << 4
+      val ndiv2 = (op1.numberLength & 0xFFFFFFFE) << 4
       val upperOp1 = op1.shiftRight(ndiv2)
       val upperOp2 = op2.shiftRight(ndiv2)
       val lowerOp1 = op1.subtract(upperOp1.shiftLeft(ndiv2))
@@ -310,22 +310,22 @@ private[math] object Multiplication {
    *  @return a {@code BigInteger} of value {@code op1 * op2}
    */
   def multiplyPAP(a: BigInteger, b: BigInteger): BigInteger = {
-    val aLen      = a.numberLength
-    val bLen      = b.numberLength
+    val aLen = a.numberLength
+    val bLen = b.numberLength
     val resLength = aLen + bLen
     val resSign =
       if (a.sign != b.sign) -1
       else 1
 
     if (resLength == 2) {
-      val v       = unsignedMultAddAdd(a.digits(0), b.digits(0), 0, 0)
+      val v = unsignedMultAddAdd(a.digits(0), b.digits(0), 0, 0)
       val valueLo = v.toInt
       val valueHi = (v >>> 32).toInt
       if (valueHi == 0) new BigInteger(resSign, valueLo)
       else new BigInteger(resSign, 2, Array(valueLo, valueHi))
     } else {
-      val aDigits   = a.digits
-      val bDigits   = b.digits
+      val aDigits = a.digits
+      val bDigits = b.digits
       val resDigits = new Array[Int](resLength)
       multArraysPAP(aDigits, aLen, bDigits, bLen, resDigits)
       val result = new BigInteger(resSign, resLength, resDigits)
@@ -346,7 +346,7 @@ private[math] object Multiplication {
           if (acc.numberLength == 1) {
             acc.multiply(acc)
           } else {
-            val a  = new Array[Int](acc.numberLength << 1)
+            val a = new Array[Int](acc.numberLength << 1)
             val sq = square(acc.digits, acc.numberLength, a)
             new BigInteger(1, sq)
           }
@@ -378,10 +378,10 @@ private[math] object Multiplication {
       BigFivePows(1).pow(exp.toInt).shiftLeft(exp.toInt)
     } else {
       //"HUGE POWERS"
-      val powerOfFive     = BigFivePows(1).pow(Integer.MAX_VALUE)
+      val powerOfFive = BigFivePows(1).pow(Integer.MAX_VALUE)
       var res: BigInteger = powerOfFive
-      var longExp         = exp - Int.MaxValue
-      val intExp          = (exp % Int.MaxValue).toInt
+      var longExp = exp - Int.MaxValue
+      val intExp = (exp % Int.MaxValue).toInt
       while (longExp > Int.MaxValue) {
         res = res.multiply(powerOfFive)
         longExp -= Int.MaxValue
@@ -447,7 +447,7 @@ private[math] object Multiplication {
     } else {
       for (i <- 0 until aLen) {
         var carry = 0
-        val aI    = a(i)
+        val aI = a(i)
         for (j <- 0 until bLen) {
           val added = unsignedMultAddAdd(aI, b(j), t(i + j), carry.toInt)
           t(i + j) = added.toInt

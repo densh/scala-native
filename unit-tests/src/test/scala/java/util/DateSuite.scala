@@ -2,13 +2,13 @@ package java.util
 
 object DateSuite extends tests.Suite {
   // now : java.util.Date = Fri Mar 31 14:47:44 EDT 2017
-  val nowUt    = 1490986064740L
+  val nowUt = 1490986064740L
   val beforeUt = 1490986059300L
-  val afterUt  = 1490986090620L
-  val now      = new Date(nowUt)
-  val before   = new Date(beforeUt)
-  val after    = new Date(afterUt)
-  val now2     = new Date(nowUt)
+  val afterUt = 1490986090620L
+  val now = new Date(nowUt)
+  val before = new Date(beforeUt)
+  val after = new Date(afterUt)
+  val now2 = new Date(nowUt)
   test("after") {
     assert(after.after(now))
   }

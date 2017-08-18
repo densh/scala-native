@@ -22,7 +22,7 @@ object ReflectiveProxySuite extends tests.Suite {
     def f(x: ValueType): ValueType = x.value
 
     class StringValue(x: String) {
-      def value: this.type            = this
+      def value: this.type = this
       override def toString(): String = s"StringValue($x)"
     }
 
@@ -139,15 +139,15 @@ object ReflectiveProxySuite extends tests.Suite {
   }
 
   test("should work with Arrays") {
-    type UPD   = { def update(i: Int, x: String): Unit }
-    type APL   = { def apply(i: Int): String }
-    type LEN   = { def length: Int }
+    type UPD = { def update(i: Int, x: String): Unit }
+    type APL = { def apply(i: Int): String }
+    type LEN = { def length: Int }
     type CLONE = Any { def clone(): Object }
 
     def upd(obj: UPD, i: Int, x: String): Unit = obj.update(i, x)
-    def apl(obj: APL, i: Int): String          = obj.apply(i)
-    def len(obj: LEN): Int                     = obj.length
-    def clone(obj: CLONE): Object              = obj.clone
+    def apl(obj: APL, i: Int): String = obj.apply(i)
+    def len(obj: LEN): Int = obj.length
+    def clone(obj: CLONE): Object = obj.clone
 
     val x = Array("asdf", "foo", "bar")
     val y = clone(x).asInstanceOf[Array[String]]
@@ -160,15 +160,15 @@ object ReflectiveProxySuite extends tests.Suite {
   }
 
   test("should work with Arrays of primitive values") {
-    type UPD   = { def update(i: Int, x: Int): Unit }
-    type APL   = { def apply(i: Int): Int }
-    type LEN   = { def length: Int }
+    type UPD = { def update(i: Int, x: Int): Unit }
+    type APL = { def apply(i: Int): Int }
+    type LEN = { def length: Int }
     type CLONE = Any { def clone(): Object }
 
     def upd(obj: UPD, i: Int, x: Int): Unit = obj.update(i, x)
-    def apl(obj: APL, i: Int): Int          = obj.apply(i)
-    def len(obj: LEN): Int                  = obj.length
-    def clone(obj: CLONE): Object           = obj.clone
+    def apl(obj: APL, i: Int): Int = obj.apply(i)
+    def len(obj: LEN): Int = obj.length
+    def clone(obj: CLONE): Object = obj.clone
 
     val x = Array(5, 2, 8)
     val y = clone(x).asInstanceOf[Array[Int]]
@@ -251,7 +251,7 @@ object ReflectiveProxySuite extends tests.Suite {
       override def clone(): AnyRef = super.clone()
     }
 
-    val b      = new B(1)
+    val b = new B(1)
     val bClone = objCloneTest(b).asInstanceOf[B]
 
     assert(!(b eq bClone))
@@ -284,8 +284,8 @@ object ReflectiveProxySuite extends tests.Suite {
   }
 
   class AnyValWithAnyRefPrimitiveMethods(val x: Int) extends AnyVal {
-    def eq(that: AnyRef): Boolean  = (x + 1) == that
-    def ne(that: AnyRef): Boolean  = (x + 1) != that
+    def eq(that: AnyRef): Boolean = (x + 1) == that
+    def ne(that: AnyRef): Boolean = (x + 1) != that
     def synchronized[T](f: T): Any = f + "there"
   }
 
@@ -325,10 +325,10 @@ object ReflectiveProxySuite extends tests.Suite {
 
   test("should unbox all types of arguments") {
     class Foo {
-      def makeInt: Int          = 5
+      def makeInt: Int = 5
       def testInt(x: Int): Unit = assert(x == 5)
 
-      def makeRef: Option[String]          = Some("hi")
+      def makeRef: Option[String] = Some("hi")
       def testRef(x: Option[String]): Unit = assert(x == Some("hi"))
     }
 

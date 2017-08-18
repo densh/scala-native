@@ -21,8 +21,8 @@ class BasicBlocksFusion extends Pass {
   private def fuseBlocks(insts: Seq[Inst],
                          cfg: ControlFlow.Graph): Seq[Inst] = {
     val workList = mutable.Stack.empty[Block]
-    val visited  = mutable.Set.empty[Block]
-    var result   = Seq.empty[Inst]
+    val visited = mutable.Set.empty[Block]
+    var result = Seq.empty[Inst]
 
     workList.push(cfg.entry)
     while (workList.nonEmpty) {
@@ -54,9 +54,9 @@ class BasicBlocksFusion extends Pass {
       // All other cases should reduce to a Jump after CfChainsSimplification
       case Jump(Next.Label(_, args))
           if (block.succ.size == 1 && block.succ.head.pred.size == 1 && block.succ.head.name != entryBlock.name) =>
-        val nextBlock          = block.succ.head
+        val nextBlock = block.succ.head
         val (recCode, recWork) = fusedBlockCode(nextBlock, entryBlock)
-        val params             = nextBlock.params.map(_.name)
+        val params = nextBlock.params.map(_.name)
 
         // Replace the parameters of the fused block with the supplied arguments
         val paramDef = params.zip(args).map {

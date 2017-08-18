@@ -136,14 +136,14 @@ object CompletedRow {
     import completed._
 
     val successStr = if (success) "[OK]" else "[FAIL]"
-    val timesMs    = timesNs map (_ / 1e6)
-    val sortedMs   = timesMs.sorted
-    val minMs      = timesMs.min
-    val maxMs      = timesMs.max
-    val avgMs      = average(timesMs)
-    val medianMs   = percentile(50, sortedMs)
-    val p95Ms      = percentile(95, sortedMs)
-    val p05Ms      = percentile(5, sortedMs)
+    val timesMs = timesNs map (_ / 1e6)
+    val sortedMs = timesMs.sorted
+    val minMs = timesMs.min
+    val maxMs = timesMs.max
+    val avgMs = average(timesMs)
+    val medianMs = percentile(50, sortedMs)
+    val p95Ms = percentile(95, sortedMs)
+    val p05Ms = percentile(5, sortedMs)
     val iterations = timesNs.length
     val stddevMs =
       Math.sqrt(timesMs.map(t => Math.pow(t - avgMs, 2) / iterations).sum)

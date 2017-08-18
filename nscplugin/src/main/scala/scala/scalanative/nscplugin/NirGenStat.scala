@@ -39,7 +39,7 @@ trait NirGenStat { self: NirGenPhase =>
 
   class CollectMethodInfo extends Traverser {
     var mutableVars = Set.empty[Symbol]
-    var labels      = Set.empty[LabelDef]
+    var labels = Set.empty[LabelDef]
 
     override def traverse(tree: Tree) = {
       tree match {
@@ -60,7 +60,7 @@ trait NirGenStat { self: NirGenPhase =>
   }
 
   class StatBuffer {
-    private val buf          = mutable.UnrolledBuffer.empty[nir.Defn]
+    private val buf = mutable.UnrolledBuffer.empty[nir.Defn]
     def toSeq: Seq[nir.Defn] = buf
 
     def genClass(cd: ClassDef): Unit = {
@@ -73,11 +73,11 @@ trait NirGenStat { self: NirGenPhase =>
     }
 
     def genStruct(cd: ClassDef): Unit = {
-      val sym    = cd.symbol
-      val attrs  = genStructAttrs(sym)
-      val name   = genTypeName(sym)
+      val sym = cd.symbol
+      val attrs = genStructAttrs(sym)
+      val name = genTypeName(sym)
       val fields = genStructFields(sym)
-      val body   = cd.impl.body
+      val body = cd.impl.body
 
       buf += Defn.Struct(attrs, name, fields)
       genMethods(cd)
@@ -86,9 +86,9 @@ trait NirGenStat { self: NirGenPhase =>
     def genStructAttrs(sym: Symbol): Attrs = Attrs.None
 
     def genNormalClass(cd: ClassDef): Unit = {
-      val sym    = cd.symbol
-      def attrs  = genClassAttrs(cd)
-      def name   = genTypeName(sym)
+      val sym = cd.symbol
+      def attrs = genClassAttrs(cd)
+      def name = genTypeName(sym)
       def parent = genClassParent(sym)
       def traits = genClassInterfaces(sym)
 
@@ -155,7 +155,7 @@ trait NirGenStat { self: NirGenPhase =>
       val attrs = nir.Attrs(isExtern = sym.isExternModule)
 
       for (f <- sym.info.decls if f.isField) {
-        val ty   = genType(f.tpe, box = false)
+        val ty = genType(f.tpe, box = false)
         val name = genFieldName(f)
 
         buf += Defn.Var(attrs, name, ty, Val.None)
@@ -172,7 +172,7 @@ trait NirGenStat { self: NirGenPhase =>
 
     def genMethod(dd: DefDef): Unit = {
       val fresh = Fresh()
-      val env   = new MethodEnv(fresh)
+      val env = new MethodEnv(fresh)
 
       scoped(
         curMethodSym := dd.symbol,
@@ -181,13 +181,13 @@ trait NirGenStat { self: NirGenPhase =>
         curFresh := fresh,
         curUnwind := Next.None
       ) {
-        val sym      = dd.symbol
-        val owner    = curClassSym.get
-        val attrs    = genMethodAttrs(sym)
-        val name     = genMethodName(sym)
+        val sym = dd.symbol
+        val owner = curClassSym.get
+        val attrs = genMethodAttrs(sym)
+        val name = genMethodName(sym)
         val isStatic = owner.isExternModule || owner.isImplClass
-        val sig      = genMethodSig(sym, isStatic)
-        val params   = genParams(dd, isStatic)
+        val sig = genMethodSig(sym, isStatic)
+        val params = genParams(dd, isStatic)
 
         dd.rhs match {
           case EmptyTree =>
@@ -217,9 +217,9 @@ trait NirGenStat { self: NirGenPhase =>
                         rhs: Tree): Unit = {
       rhs match {
         case Apply(ref: RefTree, Seq()) if ref.symbol == ExternMethod =>
-          val moduleName  = genTypeName(curClassSym)
+          val moduleName = genTypeName(curClassSym)
           val externAttrs = Attrs(isExtern = true)
-          val externDefn  = Defn.Declare(externAttrs, name, sig)
+          val externDefn = Defn.Declare(externAttrs, name, sig)
 
           buf += externDefn
 
@@ -287,7 +287,7 @@ trait NirGenStat { self: NirGenPhase =>
       traits.foreach { trt =>
         trt.info.declarations.foreach { meth =>
           val name = genName(meth)
-          val sig  = name.id
+          val sig = name.id
           if (!traitMethods.contains(sig)) {
             traitMethods(sig) = mutable.UnrolledBuffer.empty[nir.Global]
           }
@@ -308,8 +308,8 @@ trait NirGenStat { self: NirGenPhase =>
       owner.info.members.foreach { decl =>
         if (decl.isMethod && decl.owner != ObjectClass) {
           val declname = genName(decl)
-          val sig      = declname.id
-          val methods  = traitMethods.get(sig).getOrElse(Seq.empty)
+          val sig = declname.id
+          val methods = traitMethods.get(sig).getOrElse(Seq.empty)
           methods.foreach { methname =>
             pins += Attr.PinIf(declname, methname)
           }
@@ -326,8 +326,8 @@ trait NirGenStat { self: NirGenPhase =>
           Val.Local(fresh(), genType(curClassSym.tpe, box = true))
         case Some(sym) =>
           val fresh = curFresh.get
-          val name  = fresh()
-          val ty    = genType(sym.tpe, box = false)
+          val name = fresh()
+          val ty = genType(sym.tpe, box = false)
           val param = Val.Local(name, ty)
           curMethodEnv.enter(sym, param)
           param
@@ -338,13 +338,13 @@ trait NirGenStat { self: NirGenPhase =>
                             bodyp: Tree,
                             isStatic: Boolean): Seq[nir.Inst] = {
       val fresh = curFresh.get
-      val buf   = new ExprBuffer()(fresh)
+      val buf = new ExprBuffer()(fresh)
 
       def genPrelude(): Unit = {
         val vars = curMethodInfo.mutableVars.toSeq
         buf.label(fresh(), params)
         vars.foreach { sym =>
-          val ty    = genType(sym.info, box = false)
+          val ty = genType(sym.info, box = false)
           val alloc = buf.stackalloc(ty, Val.None)
           curMethodEnv.enter(sym, alloc)
         }
@@ -355,7 +355,7 @@ trait NirGenStat { self: NirGenPhase =>
         // current method. This requires special treatment on our side.
         case Block(List(ValDef(_, nme.THIS, _, _)),
                    label @ LabelDef(name, Ident(nme.THIS) :: _, rhs)) =>
-          val local  = curMethodEnv.enterLabel(label)
+          val local = curMethodEnv.enterLabel(label)
           val values = params.take(label.params.length)
 
           buf.jump(local, values)
@@ -382,7 +382,7 @@ trait NirGenStat { self: NirGenPhase =>
 
     def genFunctionPtrForwarder(sym: Symbol): Val = {
       val anondef = consumeLazyAnonDef(sym)
-      val body    = anondef.impl.body
+      val body = anondef.impl.body
       val apply = body
         .collectFirst {
           case dd: DefDef if dd.symbol.hasFlag(SPECIALIZED) =>
@@ -401,9 +401,9 @@ trait NirGenStat { self: NirGenPhase =>
           Val.Global(genMethodName(tosym), Type.Ptr)
 
         case _ =>
-          val attrs  = Attrs(isExtern = true)
-          val name   = genAnonName(curClassSym, anondef.symbol)
-          val sig    = genMethodSig(apply.symbol, forceStatic = true)
+          val attrs = Attrs(isExtern = true)
+          val name = genAnonName(curClassSym, anondef.symbol)
+          val sig = genMethodSig(apply.symbol, forceStatic = true)
           val params = genParams(apply, isStatic = true)
           val body =
             genNormalMethodBody(apply, params, apply.rhs, isStatic = true)

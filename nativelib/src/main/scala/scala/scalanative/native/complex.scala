@@ -27,7 +27,7 @@ package native
 @extern
 object complex {
   import Nat._2
-  type CFloatComplex  = CArray[CFloat, _2]
+  type CFloatComplex = CArray[CFloat, _2]
   type CDoubleComplex = CArray[CDouble, _2]
 
   @name("scalanative_cacosf")

@@ -19,8 +19,8 @@ class RandomAccessFile private (file: File,
   def this(name: String, mode: String) = this(new File(name), mode)
 
   private var closed: Boolean = false
-  private lazy val in         = new DataInputStream(new FileInputStream(fd))
-  private lazy val out        = new DataOutputStream(new FileOutputStream(fd))
+  private lazy val in = new DataInputStream(new FileInputStream(fd))
+  private lazy val out = new DataOutputStream(new FileOutputStream(fd))
 
   override def close(): Unit = {
     closed = true
@@ -78,7 +78,7 @@ class RandomAccessFile private (file: File,
     if (getFilePointer == length) null
     else {
       val builder = new StringBuilder
-      var c       = '0'
+      var c = '0'
       do {
         c = readChar()
         builder.append(c)
@@ -125,7 +125,7 @@ class RandomAccessFile private (file: File,
     if (n <= 0) 0
     else {
       val currentPosition = getFilePointer
-      val fileLength      = length()
+      val fileLength = length()
       val toSkip =
         if (currentPosition + n > fileLength) fileLength - currentPosition
         else n
@@ -222,7 +222,7 @@ private object RandomAccessFile {
             s"""Illegal mode "${_flags}" must be one of "r", "rw", "rws" or "rwd"""")
       }
       val mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
-      val fd   = open(toCString(file.getPath), flags, mode)
+      val fd = open(toCString(file.getPath), flags, mode)
       new FileDescriptor(fd)
     }
 

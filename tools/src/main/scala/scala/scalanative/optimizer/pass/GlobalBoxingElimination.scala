@@ -20,7 +20,7 @@ class GlobalBoxingElimination extends Pass {
     val records = mutable.UnrolledBuffer.empty[Record]
 
     // Setup the dominator tree checks
-    val cfg             = ControlFlow.Graph(insts)
+    val cfg = ControlFlow.Graph(insts)
     val blockDomination = DominatorTree.build(cfg)
 
     val localToBlock =
@@ -35,7 +35,7 @@ class GlobalBoxingElimination extends Pass {
       }.toMap
 
     def isDominatedBy(dominated: Local, dominating: Local): Boolean = {
-      val dominatedBlock  = localToBlock(dominated)
+      val dominatedBlock = localToBlock(dominated)
       val dominatingBlock = localToBlock(dominating)
       blockDomination(dominatedBlock).contains(dominatingBlock)
     }

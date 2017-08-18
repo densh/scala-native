@@ -61,17 +61,17 @@ object Utilities {
         pathToClangBinary: Option[String]): Option[Seq[String]] = {
       def commandLineToListBuiltInDefines(clang: String) =
         Seq("echo", "") #| Seq(clang, "-dM", "-E", "-")
-      def splitIntoLines(s: String)      = s.split(f"%n")
+      def splitIntoLines(s: String) = s.split(f"%n")
       def removeLeadingDefine(s: String) = s.substring(s.indexOf(' ') + 1)
 
       for {
         clang <- pathToClangBinary
         output = commandLineToListBuiltInDefines(clang).!!
-        lines  = splitIntoLines(output)
+        lines = splitIntoLines(output)
       } yield lines map removeLeadingDefine
     }
 
-    val clang                = maybeFile(pathToClangBinary)
+    val clang = maybeFile(pathToClangBinary)
     val defines: Seq[String] = definesBuiltIn(clang).to[Seq].flatten
     val clangIsRecentEnough =
       defines.contains("__DECIMAL_DIG__ __LDBL_DECIMAL_DIG__")
@@ -109,8 +109,8 @@ object Utilities {
     def time[T](msg: String)(f: => T): T = {
       import java.lang.System.nanoTime
       val start = nanoTime()
-      val res   = f
-      val end   = nanoTime()
+      val res = f
+      val end = nanoTime()
       logger.info(s"$msg (${(end - start) / 1000000} ms)")
       res
     }

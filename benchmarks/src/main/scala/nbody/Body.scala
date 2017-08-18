@@ -6,25 +6,25 @@
 package nbody
 
 final class Body private () {
-  private[this] var x: Double    = 0.0
-  private[this] var y: Double    = 0.0
-  private[this] var z: Double    = 0.0
-  private[this] var vx: Double   = 0.0
-  private[this] var vy: Double   = 0.0
-  private[this] var vz: Double   = 0.0
+  private[this] var x: Double = 0.0
+  private[this] var y: Double = 0.0
+  private[this] var z: Double = 0.0
+  private[this] var vx: Double = 0.0
+  private[this] var vy: Double = 0.0
+  private[this] var vz: Double = 0.0
   private[this] var mass: Double = 0.0
 
-  def getX(): Double    = x
-  def getY(): Double    = y
-  def getZ(): Double    = z
-  def getVX(): Double   = vx
-  def getVY(): Double   = vy
-  def getVZ(): Double   = vz
+  def getX(): Double = x
+  def getY(): Double = y
+  def getZ(): Double = z
+  def getVX(): Double = vx
+  def getVY(): Double = vy
+  def getVZ(): Double = vz
   def getMass(): Double = mass
 
-  def setX(x: Double): Unit   = { this.x = x }
-  def setY(y: Double): Unit   = { this.y = y }
-  def setZ(z: Double): Unit   = { this.z = z }
+  def setX(x: Double): Unit = { this.x = x }
+  def setY(y: Double): Unit = { this.y = y }
+  def setZ(z: Double): Unit = { this.z = z }
   def setVX(vx: Double): Unit = { this.vx = vx }
   def setVY(vy: Double): Unit = { this.vy = vy }
   def setVZ(vz: Double): Unit = { this.vz = vz }
@@ -54,8 +54,8 @@ final class Body private () {
 }
 
 object Body {
-  private final val PI           = 3.141592653589793
-  private final val SOLAR_MASS   = 4 * PI * PI
+  private final val PI = 3.141592653589793
+  private final val SOLAR_MASS = 4 * PI * PI
   private final val DAYS_PER_YER = 365.24
 
   def jupiter() =

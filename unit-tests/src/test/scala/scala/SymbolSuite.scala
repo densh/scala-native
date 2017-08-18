@@ -3,7 +3,7 @@ package scala
 object SymbolSuite extends tests.Suite {
   def foo1: scala.Symbol = 'foo
   def foo2: scala.Symbol = scala.Symbol("foo")
-  def bar: scala.Symbol  = 'bar
+  def bar: scala.Symbol = 'bar
 
   test("symbols are interned") {
     assert(foo1 eq foo2)

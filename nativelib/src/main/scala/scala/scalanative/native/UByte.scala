@@ -7,18 +7,18 @@ final class UByte private[scala] (private val underlying: Byte)
     with java.io.Serializable
     with Comparable[UByte] {
 
-  @inline final def toByte: Byte     = underlying
-  @inline final def toShort: Short   = toInt.toShort
-  @inline final def toChar: Char     = toInt.toChar
-  @inline final def toInt: Int       = underlying & 0xff
-  @inline final def toLong: Long     = toInt.toLong
-  @inline final def toFloat: Float   = toInt.toFloat
+  @inline final def toByte: Byte = underlying
+  @inline final def toShort: Short = toInt.toShort
+  @inline final def toChar: Char = toInt.toChar
+  @inline final def toInt: Int = underlying & 0xff
+  @inline final def toLong: Long = toInt.toLong
+  @inline final def toFloat: Float = toInt.toFloat
   @inline final def toDouble: Double = toInt.toDouble
 
-  @inline final def toUByte: UByte   = this
+  @inline final def toUByte: UByte = this
   @inline final def toUShort: UShort = new UShort(toShort)
-  @inline final def toUInt: UInt     = new UInt(toInt)
-  @inline final def toULong: ULong   = new ULong(toLong)
+  @inline final def toUInt: UInt = new UInt(toInt)
+  @inline final def toULong: ULong = new ULong(toLong)
 
   /**
    * Returns the bitwise negation of this value.
@@ -271,8 +271,8 @@ final class UByte private[scala] (private val underlying: Byte)
     this.toUInt.min(that.toUInt).toUByte
 
   @inline final def toBinaryString: String = toUInt.toBinaryString
-  @inline final def toHexString: String    = toUInt.toHexString
-  @inline final def toOctalString: String  = toUInt.toOctalString
+  @inline final def toHexString: String = toUInt.toHexString
+  @inline final def toOctalString: String = toUInt.toOctalString
 }
 
 object UByte {
@@ -289,6 +289,6 @@ object UByte {
   /** Language mandated coercions from UByte to "wider" types. */
   import scala.language.implicitConversions
   implicit def ubyte2ushort(x: UByte): UShort = x.toUShort
-  implicit def ubyte2uint(x: UByte): UInt     = x.toUInt
-  implicit def ubyte2ulong(x: UByte): ULong   = x.toULong
+  implicit def ubyte2uint(x: UByte): UInt = x.toUInt
+  implicit def ubyte2ulong(x: UByte): ULong = x.toULong
 }

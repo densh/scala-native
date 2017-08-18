@@ -10,14 +10,14 @@ object BufferedReaderSuite extends tests.Suite {
   }
 
   test("Closing a `BufferedReader` closes its inner reader") {
-    val inner  = new MockReader
+    val inner = new MockReader
     val reader = new BufferedReader(inner)
     reader.close()
     assert(inner.isClosed)
   }
 
   test("Closing twice is harmless") {
-    val inner  = new MockReader
+    val inner = new MockReader
     val reader = new BufferedReader(inner)
     reader.close()
     reader.close()

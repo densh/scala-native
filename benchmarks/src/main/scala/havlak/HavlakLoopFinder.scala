@@ -28,14 +28,14 @@ final class HavlakLoopFinder(
 ) {
   import HavlakLoopFinder._
 
-  private val nonBackPreds                   = new Vector[Set[Integer]]()
-  private val backPreds                      = new Vector[Vector[Integer]]()
-  private val number                         = new IdentityDictionary[BasicBlock, Integer]()
-  private var maxSize: Int                   = 0
-  private var header: Array[Int]             = null
+  private val nonBackPreds = new Vector[Set[Integer]]()
+  private val backPreds = new Vector[Vector[Integer]]()
+  private val number = new IdentityDictionary[BasicBlock, Integer]()
+  private var maxSize: Int = 0
+  private var header: Array[Int] = null
   private var type_ : Array[BasicBlockClass] = null
-  private var last: Array[Int]               = null
-  private var nodes: Array[UnionFindNode]    = null
+  private var last: Array[Int] = null
+  private var nodes: Array[UnionFindNode] = null
 
   //
   // IsAncestor
@@ -60,7 +60,7 @@ final class HavlakLoopFinder(
     nodes(current).initNode(currentNode, current)
     number.atPut(currentNode, current)
 
-    var lastId      = current
+    var lastId = current
     val outerBlocks = currentNode.getOutEdges()
 
     (0 until outerBlocks.size).foreach { i =>
@@ -235,7 +235,7 @@ final class HavlakLoopFinder(
                                        workList: Vector[UnionFindNode],
                                        x: UnionFindNode): Unit = {
     nonBackPreds.at(x.getDfsNumber()).forEach { iter =>
-      val y     = nodes(iter)
+      val y = nodes(iter)
       val ydash = y.findSet()
 
       if (!isAncestor(w, ydash.getDfsNumber())) {
@@ -309,12 +309,12 @@ object HavlakLoopFinder {
    */
   type BasicBlockClass = Int
   object BasicBlockClass {
-    final val BB_TOP         = 0 // uninitialized
-    final val BB_NONHEADER   = 1 // a regular BB
-    final val BB_REDUCIBLE   = 2 // reducible loop
-    final val BB_SELF        = 3 // single BB loop
+    final val BB_TOP = 0 // uninitialized
+    final val BB_NONHEADER = 1 // a regular BB
+    final val BB_REDUCIBLE = 2 // reducible loop
+    final val BB_SELF = 3 // single BB loop
     final val BB_IRREDUCIBLE = 4 // irreducible loop
-    final val BB_DEAD        = 5 // a dead BB
-    final val BB_LAST        = 6 // Sentinel
+    final val BB_DEAD = 5 // a dead BB
+    final val BB_LAST = 6 // Sentinel
   }
 }

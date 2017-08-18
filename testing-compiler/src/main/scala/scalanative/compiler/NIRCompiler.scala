@@ -107,7 +107,7 @@ class NIRCompiler(outputDir: File) extends api.NIRCompiler {
     val outPath = outputDir.getAbsolutePath
     val arguments =
       CommandLineParser.tokenize(s"-d $outPath " + (options mkString " "))
-    val command  = new CompilerCommand(arguments.toList, reportError _)
+    val command = new CompilerCommand(arguments.toList, reportError _)
     val reporter = new TestReporter(command.settings)
 
     new Global(command.settings, reporter)

@@ -9,26 +9,26 @@ sealed abstract class Attr {
 }
 
 object Attr {
-  sealed abstract class Inline   extends Attr
-  final case object MayInline    extends Inline // no information
-  final case object InlineHint   extends Inline // user hinted at inlining
-  final case object NoInline     extends Inline // should never inline
+  sealed abstract class Inline extends Attr
+  final case object MayInline extends Inline // no information
+  final case object InlineHint extends Inline // user hinted at inlining
+  final case object NoInline extends Inline // should never inline
   final case object AlwaysInline extends Inline // should always inline
 
   final case object Dyn extends Attr
 
-  final case object Pure                  extends Attr
-  final case object Extern                extends Attr
+  final case object Pure extends Attr
+  final case object Extern extends Attr
   final case class Override(name: Global) extends Attr
 
   final case class Align(value: Int) extends Attr
 
   // Linker attributes
-  final case class Link(name: String)               extends Attr
-  sealed abstract class Pin                         extends Attr
-  final case class PinAlways(dep: Global)           extends Pin
+  final case class Link(name: String) extends Attr
+  sealed abstract class Pin extends Attr
+  final case class PinAlways(dep: Global) extends Pin
   final case class PinIf(dep: Global, cond: Global) extends Pin
-  final case class PinWeak(dep: Global)             extends Pin
+  final case class PinWeak(dep: Global) extends Pin
 }
 
 final case class Attrs(inline: Inline = MayInline,
@@ -58,14 +58,14 @@ object Attrs {
   val None = new Attrs()
 
   def fromSeq(attrs: Seq[Attr]) = {
-    var inline    = None.inline
-    var isPure    = false
-    var isExtern  = false
-    var isDyn     = false
-    var align     = Option.empty[Int]
+    var inline = None.inline
+    var isPure = false
+    var isExtern = false
+    var isDyn = false
+    var align = Option.empty[Int]
     val overrides = mutable.UnrolledBuffer.empty[Global]
-    val pins      = mutable.UnrolledBuffer.empty[Pin]
-    val links     = mutable.UnrolledBuffer.empty[Attr.Link]
+    val pins = mutable.UnrolledBuffer.empty[Pin]
+    val links = mutable.UnrolledBuffer.empty[Attr.Link]
 
     attrs.foreach {
       case attr: Inline    => inline = attr

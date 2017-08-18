@@ -204,7 +204,7 @@ private[niocharset] abstract class UTF_16_Common protected (
 
 private[niocharset] object UTF_16_Common {
   // scalastyle:ignore
-  final val AutoEndian   = 0
-  final val BigEndian    = 1
+  final val AutoEndian = 0
+  final val BigEndian = 1
   final val LittleEndian = 2
 }

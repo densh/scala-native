@@ -16,7 +16,7 @@ class StringLowering(implicit top: Top) extends Pass {
 
   /** Names of the fields of the java.lang.String in the memory layout order. */
   private val stringFieldNames = {
-    val node  = ClassRef.unapply(StringName).get
+    val node = ClassRef.unapply(StringName).get
     val names = node.layout.entries.map(_.name)
     assert(names.length == 4, "java.lang.String is expected to have 4 fields")
     names
@@ -24,10 +24,10 @@ class StringLowering(implicit top: Top) extends Pass {
 
   override def onVal(value: Val) = value match {
     case Val.String(v) =>
-      val StringCls    = ClassRef.unapply(StringName).get
+      val StringCls = ClassRef.unapply(StringName).get
       val CharArrayCls = ClassRef.unapply(CharArrayName).get
 
-      val chars       = v.toCharArray
+      val chars = v.toCharArray
       val charsLength = Val.Int(chars.length)
       val charsConst = Val.Const(
         Val.Struct(
@@ -58,8 +58,8 @@ class StringLowering(implicit top: Top) extends Pass {
       0
     } else {
       val value = s.toCharArray
-      var hash  = 0
-      var i     = 0
+      var hash = 0
+      var i = 0
       while (i < value.length) {
         hash = value(i) + ((hash << 5) - hash)
         i += 1
@@ -69,10 +69,10 @@ class StringLowering(implicit top: Top) extends Pass {
 }
 
 object StringLowering extends PassCompanion {
-  val StringName               = Rt.String.name
-  val StringValueName          = StringName member "value" tag "field"
-  val StringOffsetName         = StringName member "offset" tag "field"
-  val StringCountName          = StringName member "count" tag "field"
+  val StringName = Rt.String.name
+  val StringValueName = StringName member "value" tag "field"
+  val StringOffsetName = StringName member "offset" tag "field"
+  val StringCountName = StringName member "count" tag "field"
   val StringCachedHashCodeName = StringName member "cachedHashCode" tag "field"
 
   val CharArrayName = Global.Top("scala.scalanative.runtime.CharArray")

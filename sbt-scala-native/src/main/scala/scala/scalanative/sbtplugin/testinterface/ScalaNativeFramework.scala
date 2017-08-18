@@ -16,7 +16,7 @@ class ScalaNativeFramework(val framework: Framework,
                            envVars: Map[String, String])
     extends Framework {
 
-  private[this] lazy val frameworkInfo         = fetchFrameworkInfo()
+  private[this] lazy val frameworkInfo = fetchFrameworkInfo()
   private[this] var _runner: ScalaNativeRunner = null
 
   override def name(): String = frameworkInfo.name

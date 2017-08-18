@@ -10,18 +10,18 @@ final class UInt private[scala] (private val underlying: Int)
     with java.io.Serializable
     with Comparable[UInt] {
 
-  @inline final def toByte: Byte     = underlying.toByte
-  @inline final def toShort: Short   = underlying.toShort
-  @inline final def toChar: Char     = underlying.toChar
-  @inline final def toInt: Int       = underlying
-  @inline final def toLong: Long     = JInteger.toUnsignedLong(underlying)
-  @inline final def toFloat: Float   = toLong.toFloat
+  @inline final def toByte: Byte = underlying.toByte
+  @inline final def toShort: Short = underlying.toShort
+  @inline final def toChar: Char = underlying.toChar
+  @inline final def toInt: Int = underlying
+  @inline final def toLong: Long = JInteger.toUnsignedLong(underlying)
+  @inline final def toFloat: Float = toLong.toFloat
   @inline final def toDouble: Double = toLong.toDouble
 
-  @inline final def toUByte: UByte   = new UByte(toByte)
+  @inline final def toUByte: UByte = new UByte(toByte)
   @inline final def toUShort: UShort = new UShort(toShort)
-  @inline final def toUInt: UInt     = this
-  @inline final def toULong: ULong   = new ULong(toLong)
+  @inline final def toUInt: UInt = this
+  @inline final def toULong: ULong = new ULong(toLong)
 
   /**
    * Returns the bitwise negation of this value.
@@ -275,8 +275,8 @@ final class UInt private[scala] (private val underlying: Int)
   @inline final def min(that: UInt): UInt = if (this <= that) this else that
 
   @inline final def toBinaryString: String = toInt.toBinaryString
-  @inline final def toHexString: String    = toInt.toHexString
-  @inline final def toOctalString: String  = toInt.toOctalString
+  @inline final def toHexString: String = toInt.toHexString
+  @inline final def toOctalString: String = toInt.toOctalString
 }
 
 object UInt {

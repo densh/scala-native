@@ -95,24 +95,24 @@ class RichardsBenchmark extends benchmarks.Benchmark[(Int, Int)] {
    * the expected there must be a bug in the implementation.
    */
   final val EXPECTED_QUEUE_COUNT = 2322
-  final val EXPECTED_HOLD_COUNT  = 928
+  final val EXPECTED_HOLD_COUNT = 928
 
 }
 
 object Richards {
   final val DATA_SIZE = 4
-  final val COUNT     = 1000
+  final val COUNT = 1000
 
-  final val ID_IDLE       = 0
-  final val ID_WORKER     = 1
-  final val ID_HANDLER_A  = 2
-  final val ID_HANDLER_B  = 3
-  final val ID_DEVICE_A   = 4
-  final val ID_DEVICE_B   = 5
+  final val ID_IDLE = 0
+  final val ID_WORKER = 1
+  final val ID_HANDLER_A = 2
+  final val ID_HANDLER_B = 3
+  final val ID_DEVICE_A = 4
+  final val ID_DEVICE_B = 5
   final val NUMBER_OF_IDS = 6
 
   final val KIND_DEVICE = 0
-  final val KIND_WORK   = 1
+  final val KIND_WORK = 1
 
 }
 
@@ -123,12 +123,12 @@ object Richards {
  */
 class Scheduler {
 
-  var queueCount                   = 0
-  var holdCount                    = 0
+  var queueCount = 0
+  var holdCount = 0
   var currentTcb: TaskControlBlock = null
-  var currentId: Int               = 0
-  var list: TaskControlBlock       = null
-  val blocks                       = new Array[TaskControlBlock](Richards.NUMBER_OF_IDS)
+  var currentId: Int = 0
+  var list: TaskControlBlock = null
+  val blocks = new Array[TaskControlBlock](Richards.NUMBER_OF_IDS)
 
   /// Add an idle task to this scheduler.
   def addIdleTask(id: Int, priority: Int, queue: Packet, count: Int) {
@@ -242,7 +242,7 @@ object TaskState {
   final val HELD = 4
 
   final val SUSPENDED_RUNNABLE = SUSPENDED | RUNNABLE
-  final val NOT_HELD           = ~HELD
+  final val NOT_HELD = ~HELD
 }
 
 /**

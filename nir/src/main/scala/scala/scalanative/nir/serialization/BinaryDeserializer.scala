@@ -15,8 +15,8 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
   private lazy val header: Map[Global, Int] = {
     buffer.position(0)
 
-    val magic    = getInt
-    val compat   = getInt
+    val magic = getInt
+    val compat = getInt
     val revision = getInt
 
     assert(magic == Versions.magic, "Can't read non-NIR file.")
@@ -24,24 +24,24 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
            "Can't read binary-incompatible version of NIR.")
 
     val (_, _, _, pairs) = scoped(getSeq((getGlobal, getInt)))
-    val map              = pairs.toMap
+    val map = pairs.toMap
     this.deps = null
     map
   }
 
-  private var deps: mutable.Set[Dep]        = _
+  private var deps: mutable.Set[Dep] = _
   private var links: mutable.Set[Attr.Link] = _
-  private var dyns: mutable.Set[String]     = _
+  private var dyns: mutable.Set[String] = _
 
   private def scoped[T](f: => T)
     : (mutable.Set[Dep], mutable.Set[Attr.Link], mutable.Set[String], T) = {
     this.deps = mutable.Set.empty[Dep]
     this.links = mutable.Set.empty[Attr.Link]
     this.dyns = mutable.Set.empty[String]
-    val res   = f
-    val deps  = this.deps
+    val res = f
+    val deps = this.deps
     val links = this.links
-    val dyns  = this.dyns
+    val dyns = this.dyns
     this.deps = null
     this.links = null
     this.dyns = null
@@ -200,7 +200,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
       Defn.Module(getAttrs, getGlobal, getGlobalOpt, getGlobals)
   }
 
-  private def getGlobals(): Seq[Global]      = getSeq(getGlobal)
+  private def getGlobals(): Seq[Global] = getSeq(getGlobal)
   private def getGlobalOpt(): Option[Global] = getOpt(getGlobal)
   private def getGlobal(): Global = {
     val name = getGlobalNoDep
@@ -260,7 +260,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
   }
 
   private def getParams(): Seq[Val.Local] = getSeq(getParam)
-  private def getParam(): Val.Local       = Val.Local(getLocal, getType)
+  private def getParam(): Val.Local = Val.Local(getLocal, getType)
 
   private def getTypes(): Seq[Type] = getSeq(getType)
   private def getType(): Type = getInt match {

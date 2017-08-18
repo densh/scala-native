@@ -13,13 +13,13 @@ class Deflater(private var compressLevel: Int, noHeader: Boolean) {
     throw new IllegalArgumentException()
   }
 
-  private var flushParm                = Deflater.NO_FLUSH
-  private var isFinished               = false
-  private var strategy                 = Deflater.DEFAULT_STRATEGY
+  private var flushParm = Deflater.NO_FLUSH
+  private var isFinished = false
+  private var strategy = Deflater.DEFAULT_STRATEGY
   private var inputBuffer: Array[Byte] = null
   private var stream: zlib.z_streamp =
     Deflater.createStream(compressLevel, strategy, noHeader)
-  private var inRead: Int   = 0
+  private var inRead: Int = 0
   private var inLength: Int = 0
 
   def deflate(buf: Array[Byte]): Int =
@@ -49,7 +49,7 @@ class Deflater(private var compressLevel: Int, noHeader: Boolean) {
                           flushParam: Int): Int = {
     val inBytes = inRead
     !(stream._5) = len.toUInt
-    val sin  = (!(stream._3)).toInt
+    val sin = (!(stream._3)).toInt
     val sout = (!(stream._6)).toInt
     if (buf.length == 0) {
       !(stream._4) = Deflater.empty.asInstanceOf[ByteArray].at(off)
@@ -134,7 +134,7 @@ class Deflater(private var compressLevel: Int, noHeader: Boolean) {
       throw new IllegalStateException()
     } else if (off <= buf.length && nbytes >= 0 && off >= 0 && buf.length - off >= nbytes) {
       val bytes = buf.asInstanceOf[ByteArray].at(off)
-      val err   = zlib.deflateSetDictionary(stream, bytes, nbytes.toUInt)
+      val err = zlib.deflateSetDictionary(stream, bytes, nbytes.toUInt)
       if (err != zlib.Z_OK) {
         throw new IllegalArgumentException(err.toString)
       }
@@ -200,17 +200,17 @@ class Deflater(private var compressLevel: Int, noHeader: Boolean) {
 }
 
 object Deflater {
-  final val BEST_COMPRESSION: Int    = zlib.Z_BEST_COMPRESSION
-  final val BEST_SPEED: Int          = zlib.Z_BEST_SPEED
+  final val BEST_COMPRESSION: Int = zlib.Z_BEST_COMPRESSION
+  final val BEST_SPEED: Int = zlib.Z_BEST_SPEED
   final val DEFAULT_COMPRESSION: Int = zlib.Z_DEFAULT_COMPRESSION
-  final val DEFAULT_STRATEGY: Int    = zlib.Z_DEFAULT_STRATEGY
-  final val DEFLATED: Int            = zlib.Z_DEFLATED
-  final val FILTERED: Int            = zlib.Z_FILTERED
-  final val FULL_FLUSH: Int          = zlib.Z_FULL_FLUSH
-  final val HUFFMAN_ONLY: Int        = zlib.Z_HUFFMAN_ONLY
-  final val NO_COMPRESSION: Int      = zlib.Z_NO_COMPRESSION
-  final val NO_FLUSH: Int            = zlib.Z_NO_FLUSH
-  final val SYNC_FLUSH: Int          = zlib.Z_SYNC_FLUSH
+  final val DEFAULT_STRATEGY: Int = zlib.Z_DEFAULT_STRATEGY
+  final val DEFLATED: Int = zlib.Z_DEFLATED
+  final val FILTERED: Int = zlib.Z_FILTERED
+  final val FULL_FLUSH: Int = zlib.Z_FULL_FLUSH
+  final val HUFFMAN_ONLY: Int = zlib.Z_HUFFMAN_ONLY
+  final val NO_COMPRESSION: Int = zlib.Z_NO_COMPRESSION
+  final val NO_FLUSH: Int = zlib.Z_NO_FLUSH
+  final val SYNC_FLUSH: Int = zlib.Z_SYNC_FLUSH
 
   private final val empty: Array[Byte] = new Array[Byte](1)
 

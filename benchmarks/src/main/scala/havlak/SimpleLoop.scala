@@ -37,13 +37,13 @@ import som._
  * a candidate for transformations, and what not.
  */
 final class SimpleLoop(header: BasicBlock, isReducible: Boolean) {
-  private val basicBlocks        = new IdentitySet[BasicBlock]()
-  private val children           = new IdentitySet[SimpleLoop]()
+  private val basicBlocks = new IdentitySet[BasicBlock]()
+  private val children = new IdentitySet[SimpleLoop]()
   private var parent: SimpleLoop = null
-  private var _isRoot: Boolean   = false
-  private var nestingLevel: Int  = 0
-  private var counter: Int       = 0
-  private var depthLevel: Int    = 0
+  private var _isRoot: Boolean = false
+  private var nestingLevel: Int = 0
+  private var counter: Int = 0
+  private var depthLevel: Int = 0
 
   if (header != null) {
     basicBlocks.add(header)

@@ -32,7 +32,7 @@ object CRC32Suite extends tests.Suite {
 
   test("update(Array[Byte])") {
     val byteArray = Array[Byte](1, 2)
-    val crc       = new CRC32()
+    val crc = new CRC32()
     crc.update(byteArray)
     assert(crc.getValue() == 3066839698L)
 
@@ -44,11 +44,11 @@ object CRC32Suite extends tests.Suite {
 
   test("update(Array[Byte], Int, Int)") {
     val byteArray = Array[Byte](1, 2, 3)
-    val crc       = new CRC32()
-    val off       = 2
-    val len       = 1
-    val lenError  = 3
-    val offError  = 4
+    val crc = new CRC32()
+    val off = 2
+    val len = 1
+    val lenError = 3
+    val offError = 4
     crc.update(byteArray, off, len)
     assert(crc.getValue() == 1259060791L)
 

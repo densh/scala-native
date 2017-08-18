@@ -15,9 +15,9 @@ private[net] object SocketHelpers {
 
   def isReachableByEcho(ip: String, timeout: Int, port: Int): Boolean = {
     Zone { implicit z =>
-      val cIP   = toCString(ip)
+      val cIP = toCString(ip)
       var hints = stackalloc[addrinfo]
-      var ret   = stackalloc[Ptr[addrinfo]]
+      var ret = stackalloc[Ptr[addrinfo]]
 
       string.memset(hints.cast[Ptr[Byte]], 0, sizeof[addrinfo])
       hints.ai_family = AF_UNSPEC
@@ -51,7 +51,7 @@ private[net] object SocketHelpers {
 
         if (select(sock + 1, null, fdset, null, time) == 1) {
           val so_error = stackalloc[CInt].cast[Ptr[Byte]]
-          val len      = stackalloc[socklen_t]
+          val len = stackalloc[socklen_t]
           !len = sizeof[CInt].toUInt
           getsockopt(sock, SOL_SOCKET, SO_ERROR, so_error, len)
           if (!(so_error.cast[Ptr[CInt]]) != 0) {
@@ -67,7 +67,7 @@ private[net] object SocketHelpers {
         if (select(sock + 1, fdset, null, null, time) != 1) {
           return false
         } else {
-          val buf      = stackalloc[CChar](5)
+          val buf = stackalloc[CChar](5)
           val recBytes = recv(sock, buf, 5, 0)
           if (recBytes < 4) {
             return false
@@ -86,7 +86,7 @@ private[net] object SocketHelpers {
   def hostToIp(host: String): Option[String] = {
     Zone { implicit z =>
       var hints = stackalloc[addrinfo]
-      var ret   = stackalloc[Ptr[addrinfo]]
+      var ret = stackalloc[Ptr[addrinfo]]
 
       var ipstr = stackalloc[CChar](INET6_ADDRSTRLEN + 1)
       string.memset(hints.cast[Ptr[Byte]], 0, sizeof[addrinfo])
@@ -113,7 +113,7 @@ private[net] object SocketHelpers {
   def hostToIpArray(host: String): scala.Array[String] = {
     Zone { implicit z =>
       var hints = stackalloc[addrinfo]
-      var ret   = stackalloc[Ptr[addrinfo]]
+      var ret = stackalloc[Ptr[addrinfo]]
 
       string.memset(hints.cast[Ptr[Byte]], 0, sizeof[addrinfo])
       hints.ai_family = AF_UNSPEC
@@ -124,14 +124,14 @@ private[net] object SocketHelpers {
       hints.ai_next = null
 
       val retArray = scala.collection.mutable.ArrayBuffer[String]()
-      val status   = getaddrinfo(toCString(host), null, hints, ret)
+      val status = getaddrinfo(toCString(host), null, hints, ret)
       if (status != 0)
         return scala.Array.empty[String]
 
       var p = !ret
       while (p != null) {
         var ipstr = stackalloc[CChar](INET6_ADDRSTRLEN + 1)
-        var addr  = stackalloc[Byte]
+        var addr = stackalloc[Byte]
         if (p.ai_family == AF_INET) {
           addr = p.ai_addr.cast[Ptr[sockaddr_in]].sin_addr.cast[Ptr[Byte]]
         } else {
@@ -148,8 +148,8 @@ private[net] object SocketHelpers {
 
   def ipToHost(ip: String, isV6: Boolean): Option[String] = {
     Zone { implicit z =>
-      var status  = 0
-      val host    = stackalloc[CChar](1024)
+      var status = 0
+      val host = stackalloc[CChar](1024)
       val service = stackalloc[CChar](20)
       if (isV6) {
         val addr6 = stackalloc[sockaddr_in6]

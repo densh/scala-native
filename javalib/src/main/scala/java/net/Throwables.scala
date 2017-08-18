@@ -15,8 +15,8 @@ class URISyntaxException(private val input: String,
   if (index < -1)
     throw new IllegalArgumentException()
 
-  def getIndex(): Int     = index
-  def getInput(): String  = input
+  def getIndex(): Int = index
+  def getInput(): String = input
   def getReason(): String = reason
 
 }

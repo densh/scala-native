@@ -7,26 +7,26 @@ import ClassHierarchy._
 import nir._
 
 class TraitDispatchTables(top: Top) {
-  val dispatchName                          = Global.Top("__dispatch")
-  val dispatchVal                           = Val.Global(dispatchName, Type.Ptr)
-  var dispatchTy: Type                      = _
-  var dispatchDefn: Defn                    = _
+  val dispatchName = Global.Top("__dispatch")
+  val dispatchVal = Val.Global(dispatchName, Type.Ptr)
+  var dispatchTy: Type = _
+  var dispatchDefn: Defn = _
   var dispatchOffset: mutable.Map[Int, Int] = _
 
-  val classHasTraitName       = Global.Top("__class_has_trait")
-  val classHasTraitVal        = Val.Global(classHasTraitName, Type.Ptr)
-  var classHasTraitTy: Type   = _
+  val classHasTraitName = Global.Top("__class_has_trait")
+  val classHasTraitVal = Val.Global(classHasTraitName, Type.Ptr)
+  var classHasTraitTy: Type = _
   var classHasTraitDefn: Defn = _
 
-  val traitHasTraitName       = Global.Top("__trait_has_trait")
-  val traitHasTraitVal        = Val.Global(traitHasTraitName, Type.Ptr)
-  var traitHasTraitTy: Type   = _
+  val traitHasTraitName = Global.Top("__trait_has_trait")
+  val traitHasTraitVal = Val.Global(traitHasTraitName, Type.Ptr)
+  var traitHasTraitTy: Type = _
   var traitHasTraitDefn: Defn = _
 
   val traitMethods = top.methods.filter(_.inTrait).sortBy(_.id)
   val traitMethodSigs = {
     val sigs = mutable.Map.empty[String, Int]
-    var i    = 0
+    var i = 0
     traitMethods.foreach { meth =>
       val sig = meth.name.id
       if (!sigs.contains(sig)) {
@@ -38,9 +38,9 @@ class TraitDispatchTables(top: Top) {
   }
 
   def initDispatch(): Unit = {
-    val sigs          = traitMethodSigs
-    val sigsLength    = traitMethodSigs.size
-    val classes       = top.classes.sortBy(_.id)
+    val sigs = traitMethodSigs
+    val sigsLength = traitMethodSigs.size
+    val classes = top.classes.sortBy(_.id)
     val classesLength = classes.length
     val table =
       Array.fill[Val](classesLength * sigsLength)(Val.Null)
@@ -90,10 +90,10 @@ class TraitDispatchTables(top: Top) {
       size
     })
     var current = 0
-    var meth    = 0
+    var meth = 0
     while (meth < sigsLength) {
       val start = mins(meth)
-      val end   = maxs(meth)
+      val end = maxs(meth)
       if (start == Int.MaxValue) {
         offsets(meth) = 0
       } else {

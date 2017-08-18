@@ -45,7 +45,7 @@ class NBodySystem {
 
         val dSquared: Double = dx * dx + dy * dy + dz * dz
         val distance: Double = Math.sqrt(dSquared)
-        val mag: Double      = dt / (dSquared * distance)
+        val mag: Double = dt / (dSquared * distance)
 
         iBody.setVX(iBody.getVX() - (dx * jBody.getMass() * mag))
         iBody.setVY(iBody.getVY() - (dy * jBody.getMass() * mag))
@@ -69,11 +69,11 @@ class NBodySystem {
   }
 
   def energy(): Double = {
-    var dx: Double       = 0.0
-    var dy: Double       = 0.0
-    var dz: Double       = 0.0
+    var dx: Double = 0.0
+    var dy: Double = 0.0
+    var dz: Double = 0.0
     var distance: Double = 0.0
-    var e: Double        = 0.0
+    var e: Double = 0.0
 
     var i = 0
     while (i < bodies.length) {

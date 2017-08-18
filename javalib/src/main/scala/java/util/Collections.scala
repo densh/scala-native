@@ -137,7 +137,7 @@ object Collections {
 
   @inline
   def shuffleImpl[T](list: List[T], rnd: Random): Unit = {
-    val scalaRnd     = scala.util.Random.javaRandomToRandom(rnd)
+    val scalaRnd = scala.util.Random.javaRandomToRandom(rnd)
     val shuffledList = scalaRnd.shuffle(list.toSeq)
     list match {
       case list: RandomAccess => copyImpl(shuffledList.iterator, list)
@@ -198,7 +198,7 @@ object Collections {
   private def copyImpl[T](source: Iterator[_ <: T],
                           dest: List[T] with RandomAccess): Unit = {
     val destEnd = dest.size()
-    var i       = 0
+    var i = 0
     while (source.hasNext) {
       if (i < destEnd)
         dest.set(i, source.next())
@@ -261,7 +261,7 @@ object Collections {
                        index: Int,
                        value: T): Unit = {
           val nextValue = list(index)
-          val newCount  = count + 1
+          val newCount = count + 1
           list(index) = value
           if (index != cycleStartIndex) {
             rotateNext(cycleStartIndex,
@@ -338,7 +338,7 @@ object Collections {
       if (fromStart) 0
       else source.size
     } else {
-      val indices        = 0 to source.size - targetSize
+      val indices = 0 to source.size - targetSize
       val indicesInOrder = if (fromStart) indices else indices.reverse
       indicesInOrder
         .find { i =>

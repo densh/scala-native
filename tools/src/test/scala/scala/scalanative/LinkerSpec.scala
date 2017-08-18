@@ -31,13 +31,13 @@ abstract class LinkerSpec extends FlatSpec {
       sources: Map[String, String],
       driver: Option[Driver] = None)(f: (Config, linker.Result) => T): T =
     Scope { implicit in =>
-      val outDir     = Files.createTempDirectory("native-test-out").toFile()
-      val compiler   = NIRCompiler.getCompiler(outDir)
+      val outDir = Files.createTempDirectory("native-test-out").toFile()
+      val compiler = NIRCompiler.getCompiler(outDir)
       val sourcesDir = NIRCompiler.writeSources(sources)
-      val files      = compiler.compile(sourcesDir)
-      val config     = makeConfig(outDir, entry)
-      val driver_    = driver.fold(Driver(config))(identity)
-      val result     = tools.link(config, driver_)
+      val files = compiler.compile(sourcesDir)
+      val config = makeConfig(outDir, entry)
+      val driver_ = driver.fold(Driver(config))(identity)
+      val result = tools.link(config, driver_)
 
       f(config, result)
     }

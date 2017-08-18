@@ -111,8 +111,8 @@ object BigInteger {
     if (exp < TWO_POWS.length) {
       TWO_POWS(exp)
     } else {
-      val intCount  = exp >> 5
-      val bitN      = exp & 31
+      val intCount = exp >> 5
+      val bitN = exp & 31
       val resDigits = new Array[Int](intCount + 1)
       resDigits(intCount) = 1 << bitN
       new BigInteger(1, intCount + 1, resDigits)
@@ -356,8 +356,8 @@ class BigInteger extends Number with Comparable[BigInteger] {
       if (divisor.sign > 0) this
       else this.negate()
     } else {
-      val thisSign   = sign
-      val thisLen    = numberLength
+      val thisSign = sign
+      val thisLen = numberLength
       val divisorLen = divisor.numberLength
       if (thisLen + divisorLen == 2) {
         var bi = (digits(0) & 0xFFFFFFFFL) / (divisor.digits(0) & 0xFFFFFFFFL)
@@ -382,7 +382,7 @@ class BigInteger extends Number with Comparable[BigInteger] {
         } else {
           val resLength = thisLen - divisorLen + 1
           val resDigits = new Array[Int](resLength)
-          val resSign   = if (thisSign == divisorSign) 1 else -1
+          val resSign = if (thisSign == divisorSign) 1 else -1
           if (divisorLen == 1) {
             Division
               .divideArrayByInt(resDigits, digits, thisLen, divisor.digits(0))
@@ -410,14 +410,14 @@ class BigInteger extends Number with Comparable[BigInteger] {
     if (divisorSign == 0)
       throw new ArithmeticException("BigInteger divide by zero")
 
-    val divisorLen    = divisor.numberLength
+    val divisorLen = divisor.numberLength
     val divisorDigits = divisor.digits
     if (divisorLen == 1) {
       Division.divideAndRemainderByInteger(this, divisorDigits(0), divisorSign)
     } else {
       // res[0] is a quotient and res[1] is a remainder:
       val thisDigits = digits
-      val thisLen    = numberLength
+      val thisLen = numberLength
       val cmp = {
         if (thisLen != divisorLen) {
           if (thisLen > divisorLen) 1
@@ -430,11 +430,11 @@ class BigInteger extends Number with Comparable[BigInteger] {
       if (cmp < 0) {
         new QuotAndRem(ZERO, this)
       } else {
-        val thisSign        = sign
-        val quotientLength  = thisLen - divisorLen + 1
+        val thisSign = sign
+        val quotientLength = thisLen - divisorLen + 1
         val remainderLength = divisorLen
-        val quotientSign    = if (thisSign == divisorSign) 1 else -1
-        val quotientDigits  = new Array[Int](quotientLength)
+        val quotientSign = if (thisSign == divisorSign) 1 else -1
+        val quotientDigits = new Array[Int](quotientLength)
         val remainderDigits = Division.divide(quotientDigits,
                                               quotientLength,
                                               thisDigits,
@@ -632,7 +632,7 @@ class BigInteger extends Number with Comparable[BigInteger] {
     if (divisor.sign == 0)
       throw new ArithmeticException("BigInteger divide by zero")
 
-    val thisLen    = numberLength
+    val thisLen = numberLength
     val divisorLen = divisor.numberLength
     val cmp = {
       if (thisLen != divisorLen) {
@@ -707,19 +707,19 @@ class BigInteger extends Number with Comparable[BigInteger] {
     if (this.sign == 0)
       return Array[Byte](0) // scalastyle:ignore
 
-    val temp: BigInteger  = this
-    val bitLen            = bitLength()
+    val temp: BigInteger = this
+    val bitLen = bitLength()
     val firstNonZeroDigit = getFirstNonzeroDigit
-    var bytesLen          = (bitLen >> 3) + 1
+    var bytesLen = (bitLen >> 3) + 1
     /*
      * Puts the little-endian int array representing the magnitude of this
      * BigInteger into the big-endian byte array.
      */
-    val bytes           = new Array[Byte](bytesLen)
+    val bytes = new Array[Byte](bytesLen)
     var firstByteNumber = 0
-    var digitIndex      = firstNonZeroDigit
-    var bytesInInteger  = 4
-    var digit: Int      = 0
+    var digitIndex = firstNonZeroDigit
+    var bytesInInteger = 4
+    var digit: Int = 0
 
     val highBytes: Int = {
       if (bytesLen - (numberLength << 2) == 1) {
@@ -832,7 +832,7 @@ class BigInteger extends Number with Comparable[BigInteger] {
 
   /** Puts a big-endian byte array into a little-endian applying two complement. */
   private def putBytesNegativeToIntegers(byteValues: Array[Byte]): Unit = {
-    var bytesLen  = byteValues.length
+    var bytesLen = byteValues.length
     val highBytes = bytesLen & 3
     numberLength = (bytesLen >> 2) + (if (highBytes == 0) 0 else 1)
     digits = new Array[Int](numberLength)
@@ -889,7 +889,7 @@ class BigInteger extends Number with Comparable[BigInteger] {
 
   /** Puts a big-endian byte array into a little-endian int array. */
   private def putBytesPositiveToIntegers(byteValues: Array[Byte]): Unit = {
-    var bytesLen  = byteValues.length
+    var bytesLen = byteValues.length
     val highBytes = bytesLen & 3
     numberLength = (bytesLen >> 2) + (if (highBytes == 0) 0 else 1)
     digits = new Array[Int](numberLength)
@@ -917,7 +917,7 @@ class BigInteger extends Number with Comparable[BigInteger] {
       throw new NumberFormatException("Zero length BigInteger")
 
     val stringLength0 = s.length
-    val endChar       = stringLength0
+    val endChar = stringLength0
     val (_sign, startChar, stringLength) = {
       if (s.charAt(0) == '-') (-1, 1, stringLength0 - 1)
       else if (s.charAt(0) == '+') (1, 1, stringLength0 - 1)
@@ -938,18 +938,18 @@ class BigInteger extends Number with Comparable[BigInteger] {
      * multiplication method. See D. Knuth, The Art of Computer Programming,
      * vol. 2.
      */
-    val charsPerInt          = Conversion.DigitFitInInt(radix)
+    val charsPerInt = Conversion.DigitFitInInt(radix)
     var bigRadixDigitsLength = stringLength / charsPerInt
-    val topChars             = stringLength % charsPerInt
+    val topChars = stringLength % charsPerInt
     if (topChars != 0)
       bigRadixDigitsLength += 1
 
-    val _digits       = new Array[Int](bigRadixDigitsLength)
-    val bigRadix      = Conversion.BigRadices(radix - 2)
-    var digitIndex    = 0
-    var substrEnd     = startChar + (if (topChars == 0) charsPerInt else topChars)
+    val _digits = new Array[Int](bigRadixDigitsLength)
+    val bigRadix = Conversion.BigRadices(radix - 2)
+    var digitIndex = 0
+    var substrEnd = startChar + (if (topChars == 0) charsPerInt else topChars)
     var newDigit: Int = 0
-    var substrStart   = startChar
+    var substrStart = startChar
     while (substrStart < endChar) {
       val bigRadixDigit =
         java.lang.Integer.parseInt(s.substring(substrStart, substrEnd), radix)

@@ -38,26 +38,26 @@ private[niocharset] abstract class ISO_8859_1_And_US_ASCII_Common protected (
       extends CharsetDecoder(ISO_8859_1_And_US_ASCII_Common.this, 1.0f, 1.0f) {
     def decodeLoop(in: ByteBuffer, out: CharBuffer): CoderResult = {
       // scalastyle:off return
-      val maxValue    = ISO_8859_1_And_US_ASCII_Common.this.maxValue
+      val maxValue = ISO_8859_1_And_US_ASCII_Common.this.maxValue
       val inRemaining = in.remaining
       if (inRemaining == 0) {
         CoderResult.UNDERFLOW
       } else {
         val outRemaining = out.remaining
-        val overflow     = outRemaining < inRemaining
-        val rem          = if (overflow) outRemaining else inRemaining
+        val overflow = outRemaining < inRemaining
+        val rem = if (overflow) outRemaining else inRemaining
 
         if (in.hasArray && out.hasArray) {
-          val inArr    = in.array
+          val inArr = in.array
           val inOffset = in.arrayOffset
-          val inStart  = in.position + inOffset
-          val inEnd    = inStart + rem
+          val inStart = in.position + inOffset
+          val inEnd = inStart + rem
 
-          val outArr    = out.array
+          val outArr = out.array
           val outOffset = out.arrayOffset
-          val outStart  = out.position + outOffset
+          val outStart = out.position + outOffset
 
-          var inPos  = inStart
+          var inPos = inStart
           var outPos = outStart
           while (inPos != inEnd) {
             val c = inArr(inPos).toInt & 0xff
@@ -104,24 +104,24 @@ private[niocharset] abstract class ISO_8859_1_And_US_ASCII_Common protected (
     def encodeLoop(in: CharBuffer, out: ByteBuffer): CoderResult = {
       import java.lang.Character.{MIN_SURROGATE, MAX_SURROGATE}
 
-      val maxValue    = ISO_8859_1_And_US_ASCII_Common.this.maxValue
+      val maxValue = ISO_8859_1_And_US_ASCII_Common.this.maxValue
       val inRemaining = in.remaining
       if (inRemaining == 0) {
         CoderResult.UNDERFLOW
       } else {
         if (in.hasArray && out.hasArray) {
           val outRemaining = out.remaining
-          val overflow     = outRemaining < inRemaining
-          val rem          = if (overflow) outRemaining else inRemaining
+          val overflow = outRemaining < inRemaining
+          val rem = if (overflow) outRemaining else inRemaining
 
-          val inArr    = in.array
+          val inArr = in.array
           val inOffset = in.arrayOffset
-          val inStart  = in.position + inOffset
-          val inEnd    = inStart + rem
+          val inStart = in.position + inOffset
+          val inEnd = inStart + rem
 
-          val outArr    = out.array
+          val outArr = out.array
           val outOffset = out.arrayOffset
-          val outStart  = out.position + outOffset
+          val outStart = out.position + outOffset
 
           @inline
           @tailrec

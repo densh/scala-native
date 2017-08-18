@@ -8,10 +8,10 @@ import nir._
 
 object ClassHierarchy {
   sealed abstract class Node {
-    var id: Int   = -1
+    var id: Int = -1
     var in: Scope = _
 
-    def inTop: Boolean   = in.isInstanceOf[Top]
+    def inTop: Boolean = in.isInstanceOf[Top]
     def inClass: Boolean = in.isInstanceOf[Class]
     def inTrait: Boolean = in.isInstanceOf[Trait]
     def attrs: Attrs
@@ -23,7 +23,7 @@ object ClassHierarchy {
 
     val members = mutable.UnrolledBuffer.empty[Node]
     val methods = mutable.UnrolledBuffer.empty[Method]
-    val fields  = mutable.UnrolledBuffer.empty[Field]
+    val fields = mutable.UnrolledBuffer.empty[Field]
   }
 
   final class Struct(val attrs: Attrs, val name: Global, val tys: Seq[nir.Type])
@@ -42,14 +42,14 @@ object ClassHierarchy {
                     val traitNames: Seq[Global],
                     val isModule: Boolean)
       extends Scope {
-    val ty         = Type.Class(name)
+    val ty = Type.Class(name)
     val subclasses = mutable.UnrolledBuffer.empty[Class]
-    val traits     = mutable.UnrolledBuffer.empty[Trait]
+    val traits = mutable.UnrolledBuffer.empty[Trait]
 
-    var parent: Option[Class]  = _
-    var range: Range           = _
-    var vtable: VirtualTable   = _
-    var layout: FieldLayout    = _
+    var parent: Option[Class] = _
+    var range: Range = _
+    var vtable: VirtualTable = _
+    var layout: FieldLayout = _
     var dynmap: DynamicHashMap = _
   }
 
@@ -80,19 +80,19 @@ object ClassHierarchy {
                   override val methods: mutable.UnrolledBuffer[Method],
                   override val fields: mutable.UnrolledBuffer[Field])
       extends Scope {
-    def name                        = Global.None
-    def attrs                       = Attrs.None
+    def name = Global.None
+    def attrs = Attrs.None
     var tables: TraitDispatchTables = _
-    var moduleArray: ModuleArray    = _
+    var moduleArray: ModuleArray = _
   }
 
   def apply(defns: Seq[Defn], dyns: Seq[String]): Top = {
-    val nodes   = mutable.Map.empty[Global, Node]
+    val nodes = mutable.Map.empty[Global, Node]
     val structs = mutable.UnrolledBuffer.empty[Struct]
     val classes = mutable.UnrolledBuffer.empty[Class]
-    val traits  = mutable.UnrolledBuffer.empty[Trait]
+    val traits = mutable.UnrolledBuffer.empty[Trait]
     val methods = mutable.UnrolledBuffer.empty[Method]
-    val fields  = mutable.UnrolledBuffer.empty[Field]
+    val fields = mutable.UnrolledBuffer.empty[Field]
 
     def enter[T <: Node](name: Global, node: T): T = {
       nodes += name -> node
@@ -145,8 +145,8 @@ object ClassHierarchy {
     }
 
     def sortTraits(traits: Seq[Trait]): Seq[Trait] = {
-      var res     = mutable.UnrolledBuffer.empty[Trait]
-      val todo    = mutable.Stack.empty[Trait]
+      var res = mutable.UnrolledBuffer.empty[Trait]
+      val todo = mutable.Stack.empty[Trait]
       val visited = mutable.Set.empty[Trait]
       todo.pushAll(traits)
 
@@ -168,8 +168,8 @@ object ClassHierarchy {
     }
 
     def sortClasses(classes: Seq[Class]): Seq[Class] = {
-      var res     = mutable.UnrolledBuffer.empty[Class]
-      val todo    = mutable.Stack.empty[Class]
+      var res = mutable.UnrolledBuffer.empty[Class]
+      val todo = mutable.Stack.empty[Class]
       val visited = mutable.Set.empty[Class]
       todo.pushAll(classes)
 

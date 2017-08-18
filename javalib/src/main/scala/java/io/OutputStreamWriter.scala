@@ -93,7 +93,7 @@ class OutputStreamWriter(private[this] var out: OutputStream,
     @inline
     @tailrec
     def loopEncode(): Unit = {
-      val cbuf   = CharBuffer.wrap(inBuf)
+      val cbuf = CharBuffer.wrap(inBuf)
       val result = enc.encode(cbuf, outBuf, true)
       if (result.isUnderflow) {
         assert(

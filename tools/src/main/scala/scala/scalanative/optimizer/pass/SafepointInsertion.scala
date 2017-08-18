@@ -43,7 +43,7 @@ class SafepointInsertion extends Pass {
 
 object SafepointInsertion extends PassCompanion {
   val safepointTriggerName = Global.Top("scalanative_safepoint_trigger")
-  val safepointTriggerVal  = Val.Global(safepointTriggerName, Type.Ptr)
+  val safepointTriggerVal = Val.Global(safepointTriggerName, Type.Ptr)
 
   override def apply(config: tools.Config, top: Top) =
     new SafepointInsertion

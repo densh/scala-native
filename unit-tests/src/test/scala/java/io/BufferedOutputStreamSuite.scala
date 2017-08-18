@@ -8,13 +8,13 @@ object BufferedOutputStreamSuite extends tests.Suite {
 
   test("Constructor(OutputStream)") {
     val baos = new java.io.ByteArrayOutputStream()
-    val os   = new java.io.BufferedOutputStream(baos)
+    val os = new java.io.BufferedOutputStream(baos)
     os.write(fileString.getBytes(), 0, 500)
   }
 
   test("Constructor(OutputStream, Int)") {
     val baos = new java.io.ByteArrayOutputStream()
-    val os   = new java.io.BufferedOutputStream(baos, 1024)
+    val os = new java.io.BufferedOutputStream(baos, 1024)
     os.write(fileString.getBytes(), 0, 500)
   }
 
@@ -30,7 +30,7 @@ object BufferedOutputStreamSuite extends tests.Suite {
 
   test("flush()") {
     val baos = new ByteArrayOutputStream()
-    val os   = new java.io.BufferedOutputStream(baos, 600)
+    val os = new java.io.BufferedOutputStream(baos, 600)
     os.write(fileString.getBytes(), 0, 500)
     os.flush()
     assertEquals(500, baos.size())
@@ -38,7 +38,7 @@ object BufferedOutputStreamSuite extends tests.Suite {
 
   private class MockOutputStream(size: Int) extends OutputStream {
     val written: Array[Byte] = new Array[Byte](size)
-    var count: Int           = 0
+    var count: Int = 0
 
     def write(b: Int): Unit = {
       written(count) = b.toByte
@@ -52,7 +52,7 @@ object BufferedOutputStreamSuite extends tests.Suite {
 
   test("write(Array[Byte], Int, Int)") {
     val baos = new ByteArrayOutputStream()
-    val os   = new BufferedOutputStream(baos, 512)
+    val os = new BufferedOutputStream(baos, 512)
     os.write(fileString.getBytes(), 0, 500)
     var bais = new ByteArrayInputStream(baos.toByteArray())
     assertEquals(0, bais.available())
@@ -83,9 +83,9 @@ object BufferedOutputStreamSuite extends tests.Suite {
   }
 
   test("write(Array[Byte], Int, Int)") {
-    val bos                        = new BufferedOutputStream(new ByteArrayOutputStream())
+    val bos = new BufferedOutputStream(new ByteArrayOutputStream())
     val nullByteArray: Array[Byte] = null
-    val byteArray                  = new Array[Byte](10)
+    val byteArray = new Array[Byte](10)
 
     assertThrows[ArrayIndexOutOfBoundsException] {
       bos.write(byteArray, -1, -1)
@@ -154,7 +154,7 @@ object BufferedOutputStreamSuite extends tests.Suite {
 
   test("write(Int)") {
     val baos = new java.io.ByteArrayOutputStream()
-    val os   = new java.io.BufferedOutputStream(baos)
+    val os = new java.io.BufferedOutputStream(baos)
     os.write('t')
     var bais = new java.io.ByteArrayInputStream(baos.toByteArray())
     assertEquals(0, bais.available())
@@ -180,9 +180,9 @@ object BufferedOutputStreamSuite extends tests.Suite {
   }
 
   test("Write scenario 1") {
-    val byteArrayos                       = new ByteArrayOutputStream()
+    val byteArrayos = new ByteArrayOutputStream()
     var byteArrayis: ByteArrayInputStream = null
-    val buffer                            = "1234567890".getBytes("UTF-8")
+    val buffer = "1234567890".getBytes("UTF-8")
 
     val buffos = new BufferedOutputStream(byteArrayos, 10)
     buffos.write(buffer, 0, 10)
@@ -232,9 +232,9 @@ object BufferedOutputStreamSuite extends tests.Suite {
   }
 
   test("Write scenario 2") {
-    val byteArrayos                       = new ByteArrayOutputStream()
+    val byteArrayos = new ByteArrayOutputStream()
     var byteArrayis: ByteArrayInputStream = null
-    val buffer                            = "1234567890".getBytes("UTF-8")
+    val buffer = "1234567890".getBytes("UTF-8")
 
     val buffos = new BufferedOutputStream(byteArrayos, 20)
     buffos.write(buffer, 0, 10)
@@ -297,9 +297,9 @@ object BufferedOutputStreamSuite extends tests.Suite {
   }
 
   test("Write scenario 3") {
-    val byteArrayos                       = new ByteArrayOutputStream()
+    val byteArrayos = new ByteArrayOutputStream()
     var byteArrayis: ByteArrayInputStream = null
-    val buffer                            = "1234567890".getBytes("UTF-8")
+    val buffer = "1234567890".getBytes("UTF-8")
 
     val buffos = new BufferedOutputStream(byteArrayos, 5)
     buffos.write(buffer, 0, 4)

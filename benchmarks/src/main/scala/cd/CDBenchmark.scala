@@ -27,7 +27,7 @@ import som._
 class CDBenchmark extends benchmarks.Benchmark[(Int, Int)] {
 
   private val numAircrafts = Array(1000, 500, 250, 100, 10)
-  private var i            = 0
+  private var i = 0
 
   override val runningTime: BenchmarkRunningTime = VeryLongRunningTime
 
@@ -41,13 +41,13 @@ class CDBenchmark extends benchmarks.Benchmark[(Int, Int)] {
     check(t._2, t._1)
 
   def benchmark(numAircrafts: Int): Int = {
-    val numFrames        = 200
-    val simulator        = new Simulator(numAircrafts);
-    val detector         = new CollisionDetector();
+    val numFrames = 200
+    val simulator = new Simulator(numAircrafts);
+    val detector = new CollisionDetector();
     var actualCollisions = 0
 
     (0 until numFrames).map { i =>
-      val time       = i / 10.0
+      val time = i / 10.0
       val collisions = detector.handleNewFrame(simulator.simulate(time))
       actualCollisions += collisions.size()
     }

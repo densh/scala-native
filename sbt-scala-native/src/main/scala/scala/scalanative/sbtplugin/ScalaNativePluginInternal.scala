@@ -69,9 +69,9 @@ object ScalaNativePluginInternal {
 
   lazy val scalaNativeDependencySettings: Seq[Setting[_]] = Seq(
     libraryDependencies ++= Seq(
-      "org.scala-native" %%% "nativelib"      % nativeVersion,
-      "org.scala-native" %%% "javalib"        % nativeVersion,
-      "org.scala-native" %%% "scalalib"       % nativeVersion,
+      "org.scala-native" %%% "nativelib" % nativeVersion,
+      "org.scala-native" %%% "javalib" % nativeVersion,
+      "org.scala-native" %%% "scalalib" % nativeVersion,
       "org.scala-native" %%% "test-interface" % nativeVersion % Test
     ),
     addCompilerPlugin(
@@ -138,10 +138,10 @@ object ScalaNativePluginInternal {
   lazy val scalaNativeConfigSettings: Seq[Setting[_]] = Seq(
     nativeTarget := {
       val logger = streams.value.log
-      val cwd    = nativeWorkdir.value
-      val clang  = nativeClang.value
+      val cwd = nativeWorkdir.value
+      val clang = nativeClang.value
       // Use non-standard extension to not include the ll file when linking (#639)
-      val targetc  = cwd / "target" / "c.probe"
+      val targetc = cwd / "target" / "c.probe"
       val targetll = cwd / "target" / "ll.probe"
       val compilec =
         Seq(clang.abs,
@@ -180,8 +180,8 @@ object ScalaNativePluginInternal {
         throw new MessageOnlyException("No main class detected.")
       )
       val classpath = fullClasspath.value.map(_.data)
-      val entry     = nir.Global.Top(mainClass.toString + "$")
-      val cwd       = nativeWorkdir.value
+      val entry = nir.Global.Top(mainClass.toString + "$")
+      val cwd = nativeWorkdir.value
 
       tools.Config.empty
         .withEntry(entry)
@@ -191,8 +191,8 @@ object ScalaNativePluginInternal {
         .withMode(mode(nativeMode.value))
     },
     nativeUnpackLib := {
-      val cwd       = nativeWorkdir.value
-      val logger    = streams.value.log
+      val cwd = nativeWorkdir.value
+      val logger = streams.value.log
       val classpath = (fullClasspath in Compile).value
 
       val lib = cwd / "lib"
@@ -204,7 +204,7 @@ object ScalaNativePluginInternal {
               file(p)
           }
           .get
-      val jarhash     = Hash(jar).toSeq
+      val jarhash = Hash(jar).toSeq
       val jarhashfile = lib / "jarhash"
       def unpacked =
         lib.exists &&
@@ -220,17 +220,17 @@ object ScalaNativePluginInternal {
       lib
     },
     nativeCompileLib := {
-      val linked    = nativeLinkNIR.value
-      val cwd       = nativeWorkdir.value
-      val clang     = nativeClang.value
-      val clangpp   = nativeClangPP.value
-      val gc        = nativeGC.value
-      val opts      = "-O2" +: nativeCompileOptions.value
-      val logger    = streams.value.log
+      val linked = nativeLinkNIR.value
+      val cwd = nativeWorkdir.value
+      val clang = nativeClang.value
+      val clangpp = nativeClangPP.value
+      val gc = nativeGC.value
+      val opts = "-O2" +: nativeCompileOptions.value
+      val logger = streams.value.log
       val nativelib = nativeUnpackLib.value
-      val cpaths    = (cwd ** "*.c").get.map(_.abs)
-      val cpppaths  = (cwd ** "*.cpp").get.map(_.abs)
-      val paths     = cpaths ++ cpppaths
+      val cpaths = (cwd ** "*.c").get.map(_.abs)
+      val cpppaths = (cwd ** "*.cpp").get.map(_.abs)
+      val paths = cpaths ++ cpppaths
 
       // predicate to check if given file path shall be compiled
       // we only include sources of the current gc and exclude
@@ -263,9 +263,9 @@ object ScalaNativePluginInternal {
         path =>
           val opath = path + ".o"
           if (include(path) && !file(opath).exists) {
-            val isCpp    = path.endsWith(".cpp")
+            val isCpp = path.endsWith(".cpp")
             val compiler = if (isCpp) clangpp.abs else clang.abs
-            val flags    = (if (isCpp) Seq("-std=c++11") else Seq()) ++ opts
+            val flags = (if (isCpp) Seq("-std=c++11") else Seq()) ++ opts
             val compilec = Seq(compiler) ++ flags ++ Seq("-c",
                                                          path,
                                                          "-o",
@@ -282,9 +282,9 @@ object ScalaNativePluginInternal {
       nativelib
     },
     nativeLinkNIR := {
-      val logger   = streams.value.log
-      val driver   = nativeOptimizerDriver.value
-      val config   = nativeConfig.value
+      val logger = streams.value.log
+      val driver = nativeOptimizerDriver.value
+      val config = nativeConfig.value
       val reporter = nativeLinkerReporter.value
       val result = logger.time("Linking") {
         tools.link(config, driver, reporter)
@@ -305,20 +305,20 @@ object ScalaNativePluginInternal {
       result
     },
     nativeOptimizeNIR := {
-      val logger   = streams.value.log
-      val result   = nativeLinkNIR.value
-      val config   = nativeConfig.value
+      val logger = streams.value.log
+      val result = nativeLinkNIR.value
+      val config = nativeConfig.value
       val reporter = nativeOptimizerReporter.value
-      val driver   = nativeOptimizerDriver.value
+      val driver = nativeOptimizerDriver.value
       logger.time("Optimizing") {
         tools.optimize(config, driver, result.defns, result.dyns, reporter)
       }
     },
     nativeGenerateLL := {
-      val logger    = streams.value.log
-      val config    = nativeConfig.value
+      val logger = streams.value.log
+      val config = nativeConfig.value
       val optimized = nativeOptimizeNIR.value
-      val cwd       = nativeWorkdir.value
+      val cwd = nativeWorkdir.value
       logger.time("Generating intermediate code") {
         tools.codegen(config, optimized)
       }
@@ -326,10 +326,10 @@ object ScalaNativePluginInternal {
       (cwd ** "*.ll").get.toSeq
     },
     nativeCompileLL := {
-      val logger      = streams.value.log
-      val generated   = nativeGenerateLL.value
-      val clangpp     = nativeClangPP.value
-      val cwd         = nativeWorkdir.value
+      val logger = streams.value.log
+      val generated = nativeGenerateLL.value
+      val clangpp = nativeClangPP.value
+      val cwd = nativeWorkdir.value
       val compileOpts = nativeCompileOptions.value
       val optimizationOpt =
         mode(nativeMode.value) match {
@@ -353,19 +353,19 @@ object ScalaNativePluginInternal {
       }
     },
     nativeLinkLL := {
-      val linked      = nativeLinkNIR.value
-      val logger      = streams.value.log
-      val apppaths    = nativeCompileLL.value
-      val nativelib   = nativeCompileLib.value
-      val cwd         = nativeWorkdir.value
-      val target      = nativeTarget.value
-      val gc          = nativeGC.value
+      val linked = nativeLinkNIR.value
+      val logger = streams.value.log
+      val apppaths = nativeCompileLL.value
+      val nativelib = nativeCompileLib.value
+      val cwd = nativeWorkdir.value
+      val target = nativeTarget.value
+      val gc = nativeGC.value
       val linkingOpts = nativeLinkingOptions.value
-      val clangpp     = nativeClangPP.value
-      val outpath     = (artifactPath in nativeLink).value
+      val clangpp = nativeClangPP.value
+      val outpath = (artifactPath in nativeLink).value
 
       val links = {
-        val os   = Option(sys props "os.name").getOrElse("")
+        val os = Option(sys props "os.name").getOrElse("")
         val arch = target.split("-").head
         // we need re2 to link the re2 c wrapper (cre2.h)
         val librt = os match {
@@ -379,12 +379,12 @@ object ScalaNativePluginInternal {
         librt ++ libunwind ++ linked.links
           .map(_.name) ++ garbageCollector(gc).links
       }
-      val linkopts  = links.map("-l" + _) ++ linkingOpts
+      val linkopts = links.map("-l" + _) ++ linkingOpts
       val targetopt = Seq("-target", target)
-      val flags     = Seq("-o", outpath.abs) ++ linkopts ++ targetopt
-      val opaths    = (nativelib ** "*.o").get.map(_.abs)
-      val paths     = apppaths.map(_.abs) ++ opaths
-      val compile   = clangpp.abs +: (flags ++ paths)
+      val flags = Seq("-o", outpath.abs) ++ linkopts ++ targetopt
+      val opaths = (nativelib ** "*.o").get.map(_.abs)
+      val paths = apppaths.map(_.abs) ++ opaths
+      val compile = clangpp.abs +: (flags ++ paths)
 
       logger.time("Linking native code") {
         logger.running(compile)
@@ -406,10 +406,10 @@ object ScalaNativePluginInternal {
       nativeLinkLL.value
     },
     run := {
-      val env    = (envVars in run).value.toSeq
+      val env = (envVars in run).value.toSeq
       val logger = streams.value.log
       val binary = nativeLink.value.abs
-      val args   = spaceDelimited("<arg>").parsed
+      val args = spaceDelimited("<arg>").parsed
 
       logger.running(binary +: args)
       val exitCode = Process(binary +: args, None, env: _*)
@@ -437,8 +437,8 @@ object ScalaNativePluginInternal {
     },
     nativeExternalDependencies := ResourceScope { implicit scope =>
       val forceCompile = compile.value
-      val classDir     = classDirectory.value
-      val globals      = linker.ClassPath(VirtualDirectory.real(classDir)).globals
+      val classDir = classDirectory.value
+      val globals = linker.ClassPath(VirtualDirectory.real(classDir)).globals
 
       val config = tools.Config.empty.withPaths(Seq(classDir))
       val result = (linker.Linker(config)).link(globals.toSeq)
@@ -467,16 +467,16 @@ object ScalaNativePluginInternal {
       parallelExecution in test := false,
       sourceGenerators += Def.task {
         val frameworks = (loadedTestFrameworks in Test).value.map(_._2).toSeq
-        val tests      = (definedTests in Test).value
-        val output     = sourceManaged.value / "FrameworksMap.scala"
+        val tests = (definedTests in Test).value
+        val output = sourceManaged.value / "FrameworksMap.scala"
         IO.write(output, makeTestMain(frameworks, tests))
         Seq(output)
       }.taskValue,
       loadedTestFrameworks := {
         val frameworks = (loadedTestFrameworks in Test).value
-        val logger     = streams.value.log
+        val logger = streams.value.log
         val testBinary = nativeLink.value
-        val envVars    = (Keys.envVars in (Test, test)).value
+        val envVars = (Keys.envVars in (Test, test)).value
         (frameworks.zipWithIndex).map {
           case ((tf, f), id) =>
             (tf, new ScalaNativeFramework(f, id, logger, testBinary, envVars))

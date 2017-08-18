@@ -88,7 +88,7 @@ class DecimalFormat extends NumberFormat {
         else
           roundedDigits
       }
-      val negative  = groupedDigits.negative
+      val negative = groupedDigits.negative
       val wholePart = groupedDigits.whole
       val fracPart = groupedDigits.frac
         .padTo(getMinimumFractionDigits(), dfsym.getZeroDigit())
@@ -104,21 +104,21 @@ class DecimalFormat extends NumberFormat {
 
     def scaleDigits(unscaled: Digits): (Digits, Int) = {
       val Digits(negative, wholeDigits, fracDigits) = unscaled
-      val allDigits                                 = (wholeDigits ++ fracDigits).dropWhile(_ == '0')
+      val allDigits = (wholeDigits ++ fracDigits).dropWhile(_ == '0')
       val wholeDigitNum =
         if (getMaximumIntegerDigits() > getMinimumIntegerDigits() && getMaximumIntegerDigits() > 1)
           allDigits.length % getMaximumIntegerDigits()
         else
           getMinimumIntegerDigits() max 1
       val (wholePart, fracPartNotCutoff) = allDigits.splitAt(wholeDigitNum)
-      val exp                            = fracPartNotCutoff.length - fracDigits.length
+      val exp = fracPartNotCutoff.length - fracDigits.length
       (Digits(negative, wholePart, fracPartNotCutoff), exp)
     }
 
     def formatScientific(number: A): String = {
       val (roundedDigits, exp) = {
-        val unscaledDigits                = toDigits(number)
-        val (scaledDigits, exp)           = scaleDigits(unscaledDigits)
+        val unscaledDigits = toDigits(number)
+        val (scaledDigits, exp) = scaleDigits(unscaledDigits)
         val Digits(negative, whole, frac) = scaledDigits
         if (frac.length > getMaximumFractionDigits()) {
           val rounded = roundAt(scaledDigits, getMaximumFractionDigits())
@@ -270,7 +270,7 @@ class DecimalFormat extends NumberFormat {
   implicit private object BigDecimalFormatting extends Formatting[BigDecimal] {
     def toDigits(number: BigDecimal): Digits = {
       val numabs = number.abs
-      val s      = numabs.toPlainString
+      val s = numabs.toPlainString
       val (whole, frac) = s.indexOf('.') match {
         case -1 => (s, "")
         case dp =>

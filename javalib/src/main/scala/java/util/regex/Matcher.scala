@@ -12,7 +12,7 @@ object Matcher {
       s
     } else {
       val sb = new StringBuilder()
-      var i  = 0
+      var i = 0
       while (i < s.length) {
         val c = s.charAt(i)
         if (c == '\\' || c == '$') {
@@ -32,7 +32,7 @@ final class Matcher private[regex] (var _pattern: Pattern,
 
   private val regex = _pattern.regex
 
-  private var hasMatch  = false
+  private var hasMatch = false
   private var hasGroups = false
   private var appendPos = 0
 
@@ -66,9 +66,9 @@ final class Matcher private[regex] (var _pattern: Pattern,
                       nMatches: Int,
                       anchor: cre2.anchor_t): Boolean =
     Zone { implicit z =>
-      val n       = nMatches
+      val n = nMatches
       val matches = alloc[cre2.string_t](n)
-      val in      = toCString(inputSequence.toString)
+      val in = toCString(inputSequence.toString)
 
       val ok = cre2.matches(
         regex = regex,
@@ -84,9 +84,9 @@ final class Matcher private[regex] (var _pattern: Pattern,
       if (ok) {
         var i = 0
         while (i < nMatches) {
-          val m     = matches + i
+          val m = matches + i
           val start = if (m.length == 0) -1 else (m.data - in).toInt
-          val end   = if (m.length == 0) -1 else start + m.length
+          val end = if (m.length == 0) -1 else start + m.length
           groups(i) = ((start, end))
 
           i += 1
@@ -133,7 +133,7 @@ final class Matcher private[regex] (var _pattern: Pattern,
 
   def group(group: Int): String = {
     val startIndex = start(group)
-    val endIndex   = end(group)
+    val endIndex = end(group)
 
     if (startIndex < 0 && endIndex < 0) {
       null
@@ -234,7 +234,7 @@ final class Matcher private[regex] (var _pattern: Pattern,
 
       while (m.find()) {
         val digitGroup = m.group(2)
-        val nameGroup  = m.group(3)
+        val nameGroup = m.group(3)
 
         if (digitGroup != null && !digitGroup.isEmpty) {
           m.appendReplacement2(sb2, group(digitGroup.toInt), doGroups = false)

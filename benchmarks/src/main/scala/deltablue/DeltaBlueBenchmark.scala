@@ -75,9 +75,9 @@ class DeltaBlueBenchmark extends benchmarks.Benchmark[Unit] {
    */
   def chainTest(n: Int) {
     implicit val planner = new Planner()
-    var prev: Variable   = null
-    var first: Variable  = null
-    var last: Variable   = null
+    var prev: Variable = null
+    var first: Variable = null
+    var last: Variable = null
 
     // Build chain of n equality constraints.
     for (i <- 0 to n) {
@@ -107,10 +107,10 @@ class DeltaBlueBenchmark extends benchmarks.Benchmark[Unit] {
    */
   def projectionTest(n: Int) {
     implicit val planner = new Planner()
-    val scale            = new Variable("scale", 10)
-    val offset           = new Variable("offset", 1000)
-    var src: Variable    = null
-    var dst: Variable    = null
+    val scale = new Variable("scale", 10)
+    val offset = new Variable("offset", 1000)
+    var src: Variable = null
+    var dst: Variable = null
 
     val dests = new ArrayBuffer[Variable](n)
     for (i <- 0 until n) {
@@ -162,13 +162,13 @@ sealed class Strength(val value: Int, val name: String) {
   }
 }
 
-case object REQUIRED         extends Strength(0, "required")
+case object REQUIRED extends Strength(0, "required")
 case object STRONG_PREFERRED extends Strength(1, "strongPreferred")
-case object PREFERRED        extends Strength(2, "preferred")
-case object STRONG_DEFAULT   extends Strength(3, "strongDefault")
-case object NORMAL           extends Strength(4, "normal")
-case object WEAK_DEFAULT     extends Strength(5, "weakDefault")
-case object WEAKEST          extends Strength(6, "weakest")
+case object PREFERRED extends Strength(2, "preferred")
+case object STRONG_DEFAULT extends Strength(3, "strongDefault")
+case object NORMAL extends Strength(4, "normal")
+case object WEAK_DEFAULT extends Strength(5, "weakDefault")
+case object WEAKEST extends Strength(6, "weakest")
 
 // Compile time computed constants.
 object Strength {
@@ -221,7 +221,7 @@ abstract class Constraint(val strength: Strength)(implicit planner: Planner) {
       null
     } else {
       markInputs(mark)
-      val out        = output()
+      val out = output()
       val overridden = out.determinedBy
       if (overridden != null)
         overridden.markUnsatisfied()
@@ -333,8 +333,8 @@ class EditConstraint(v: Variable, str: Strength)(implicit planner: Planner)
 }
 
 object Direction {
-  final val NONE     = 1
-  final val FORWARD  = 2
+  final val NONE = 1
+  final val FORWARD = 2
   final val BACKWARD = 0
 }
 
@@ -513,11 +513,11 @@ class EqualityConstraint(v1: Variable, v2: Variable, strength: Strength)(
  */
 class Variable(val name: String, var value: Int) {
 
-  val constraints              = new ListBuffer[Constraint]()
+  val constraints = new ListBuffer[Constraint]()
   var determinedBy: Constraint = null
-  var mark                     = 0
-  var walkStrength: Strength   = WEAKEST
-  var stay                     = true
+  var mark = 0
+  var walkStrength: Strength = WEAKEST
+  var stay = true
 
   /**
    * Add the given constraint to the set of all constraints that refer
@@ -553,7 +553,7 @@ class Planner {
    * constraint graph has an inadvertent cycle.
    */
   def incrementalAdd(c: Constraint) {
-    val mark       = newMark()
+    val mark = newMark()
     var overridden = c.satisfy(mark)
     while (overridden != null) overridden = overridden.satisfy(mark)
   }
@@ -573,7 +573,7 @@ class Planner {
     val out = c.output()
     c.markUnsatisfied()
     c.removeFromGraph()
-    val unsatisfied        = removePropagateFrom(out)
+    val unsatisfied = removePropagateFrom(out)
     var strength: Strength = REQUIRED
     do {
       for (u <- unsatisfied) {
@@ -673,7 +673,7 @@ class Planner {
     out.walkStrength = WEAKEST
     out.stay = true
     val unsatisfied = new ListBuffer[Constraint]()
-    val todo        = new Stack[Variable]().push(out)
+    val todo = new Stack[Variable]().push(out)
     while (!todo.isEmpty) {
       val v = todo.pop()
       for (c <- v.constraints) {

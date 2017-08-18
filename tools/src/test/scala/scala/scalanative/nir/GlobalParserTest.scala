@@ -7,13 +7,13 @@ import org.scalatest._
 class GlobalParserTest extends FlatSpec with Matchers {
 
   "The NIR parser" should "parse `Global.Top`" in {
-    val top: Global               = Global.Top("java.lang.String")
+    val top: Global = Global.Top("java.lang.String")
     val Parsed.Success(result, _) = parser.Global.Top.parse(top.show)
     result should be(top)
   }
 
   it should "parse `Global.Member`" in {
-    val member: Global            = Global.Top("java.lang.String") member "foobar"
+    val member: Global = Global.Top("java.lang.String") member "foobar"
     val Parsed.Success(result, _) = parser.Global.Member.parse(member.show)
     result should be(member)
   }

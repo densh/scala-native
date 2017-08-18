@@ -27,11 +27,11 @@ class Throwable(s: String, private var e: Throwable)
   def getLocalizedMessage(): String = getMessage()
 
   def fillInStackTrace(): Throwable = {
-    val cursor  = stackalloc[scala.Byte](2048)
+    val cursor = stackalloc[scala.Byte](2048)
     val context = stackalloc[scala.Byte](2048)
-    val offset  = stackalloc[scala.Byte](8)
-    val name    = stackalloc[CChar](256)
-    var buffer  = mutable.ArrayBuffer.empty[StackTraceElement]
+    val offset = stackalloc[scala.Byte](8)
+    val name = stackalloc[CChar](256)
+    var buffer = mutable.ArrayBuffer.empty[StackTraceElement]
 
     unwind.get_context(context)
     unwind.init_local(cursor, context)
@@ -89,14 +89,14 @@ class Throwable(s: String, private var e: Throwable)
 
     // Print causes
     var parentStack = stackTrace
-    var throwable   = getCause()
+    var throwable = getCause()
     while (throwable != null) {
       println("Caused by: " + throwable)
 
       val currentStack = throwable.stackTrace
       if (currentStack.nonEmpty) {
         val duplicates = countDuplicates(currentStack, parentStack)
-        var i          = 0
+        var i = 0
         while (i < currentStack.length - duplicates) {
           println("\tat " + currentStack(i))
           i += 1
@@ -115,9 +115,9 @@ class Throwable(s: String, private var e: Throwable)
 
   private def countDuplicates(currentStack: Array[StackTraceElement],
                               parentStack: Array[StackTraceElement]): Int = {
-    var duplicates  = 0
+    var duplicates = 0
     var parentIndex = parentStack.length - 1
-    var i           = currentStack.length - 1
+    var i = currentStack.length - 1
     while (i >= 0 && parentIndex >= 0) {
       val parentFrame = parentStack(parentIndex)
       if (parentFrame == currentStack(i)) {
@@ -133,7 +133,7 @@ class Throwable(s: String, private var e: Throwable)
 
   override def toString(): String = {
     val className = getClass.getName
-    val message   = getMessage()
+    val message = getMessage()
     if (message eq null) className
     else className + ": " + message
   }
@@ -183,7 +183,7 @@ class ExceptionInInitializerError private (s: String, private val e: Throwable)
   def this(thrown: Throwable) = this(null, thrown)
   def this(s: String) = this(s, null)
   def this() = this(null, null)
-  def getException(): Throwable      = e
+  def getException(): Throwable = e
   override def getCause(): Throwable = e
 }
 
@@ -271,7 +271,7 @@ class ClassNotFoundException(s: String, e: Throwable)
     extends ReflectiveOperationException(s) {
   def this(s: String) = this(s, null)
   def this() = this(null, null)
-  def getException(): Throwable      = e
+  def getException(): Throwable = e
   override def getCause(): Throwable = e
 }
 
@@ -282,7 +282,7 @@ class CloneNotSupportedException(s: String) extends Exception(s) {
 class EnumConstantNotPresentException(e: Class[_ <: Enum[_]], c: String)
     extends RuntimeException(e.getName() + "." + c) {
   def enumType(): Class[_ <: Enum[_]] = e
-  def constantName(): String          = c
+  def constantName(): String = c
 }
 
 class Exception(s: String, e: Throwable) extends Throwable(s, e) {

@@ -236,7 +236,7 @@ object Arrays {
               iA = ix
           }
           val ix = iA + (if (ord.compare(next, a(iA)) < 0) 0 else 1)
-          var i  = i0 + m
+          var i = i0 + m
           while (i > ix) {
             a(i) = a(i - 1)
             i -= 1
@@ -366,7 +366,7 @@ object Arrays {
               iA = ix
           }
           val ix = iA + (if (ord.compare(next, a(iA)) < 0) 0 else 1)
-          var i  = i0 + m
+          var i = i0 + m
           while (i > ix) {
             a(i) = a(i - 1)
             i -= 1
@@ -504,7 +504,7 @@ object Arrays {
       -startIndex - 1
     } else {
       // Indices are unsigned 31-bit integer, so this does not overflow
-      val mid  = (startIndex + endIndex) >>> 1
+      val mid = (startIndex + endIndex) >>> 1
       val elem = a(mid)
       if (lt(key, elem)) {
         binarySearchImpl(a, startIndex, mid, key, lt)
@@ -707,7 +707,7 @@ object Arrays {
                                          newLength: Int): Array[T] = {
     checkArrayLength(newLength)
     val copyLength = Math.min(newLength, original.length)
-    val ret        = new Array[T](newLength)
+    val ret = new Array[T](newLength)
     System.arraycopy(original, 0, ret, 0, copyLength)
     ret
   }
@@ -771,9 +771,9 @@ object Arrays {
                                            start: Int,
                                            end: Int): Array[T] = {
     checkIndicesForCopyOfRange(original.length, start, end)
-    val retLength  = end - start
+    val retLength = end - start
     val copyLength = Math.min(retLength, original.length - start)
-    val ret        = new Array[T](retLength)
+    val ret = new Array[T](retLength)
     System.arraycopy(original, start, ret, 0, copyLength)
     ret
   }

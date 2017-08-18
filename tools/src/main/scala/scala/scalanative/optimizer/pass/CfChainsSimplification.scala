@@ -22,13 +22,13 @@ class CfChainsSimplification(implicit top: Top) extends Pass {
   }
 
   private def simplifyCf(cfInst: Inst, cfg: ControlFlow.Graph): Seq[Inst] = {
-    var nonCf     = Seq.empty[Inst]
+    var nonCf = Seq.empty[Inst]
     var currentCf = cfInst
-    var continue  = true
+    var continue = true
 
     while (continue) {
       val wholeOptSeq = simplifyCfOnce(currentCf, cfg)
-      val newCf       = wholeOptSeq.last
+      val newCf = wholeOptSeq.last
 
       // stop when convergence has been reached
       continue = (newCf != currentCf)
@@ -51,7 +51,7 @@ class CfChainsSimplification(implicit top: Top) extends Pass {
 
           case Seq(nextCf: Cf) =>
             val nextBlockParams = targetBlock.params.map(_.name)
-            val usedef          = UseDef(cfg)
+            val usedef = UseDef(cfg)
 
             /* Ensures that the parameters of the target block are only used locally.
              * If this is not the case, this parameter has to be defined, and can't be ignored
@@ -65,7 +65,7 @@ class CfChainsSimplification(implicit top: Top) extends Pass {
 
             if (canSkip) {
               val evaluation = nextBlockParams.zip(args).toMap
-              val replacer   = new ArgumentReplacer(evaluation)
+              val replacer = new ArgumentReplacer(evaluation)
               replacer.onInst(nextCf)
             } else {
               cfInst
@@ -127,7 +127,7 @@ class CfChainsSimplification(implicit top: Top) extends Pass {
             .zip(elseArgs)
             .map {
               case (thenV, elseV) =>
-                val freshVar   = fresh()
+                val freshVar = fresh()
                 val selectInst = Let(freshVar, Op.Select(cond, thenV, elseV))
                 (Val.Local(freshVar, thenV.ty), selectInst)
             }
@@ -144,9 +144,9 @@ class CfChainsSimplification(implicit top: Top) extends Pass {
    * the latter. After that, keep the most optimized `jump` instruction, and get its next
    */
   private def simplifyIfBranch(branch: Next, cfg: ControlFlow.Graph): Next = {
-    var newBranch       = branch
+    var newBranch = branch
     var currentCf: Inst = Jump(branch)
-    var continue        = true
+    var continue = true
 
     while (continue) {
       val optSeq = simplifyCfOnce(currentCf, cfg)
@@ -172,9 +172,9 @@ class CfChainsSimplification(implicit top: Top) extends Pass {
   private def simplifySwitchCase(swCase: Next, cfg: ControlFlow.Graph): Next = {
     swCase match {
       case Next.Case(value, name) => {
-        var newLocalJump    = name
+        var newLocalJump = name
         var currentCf: Inst = Jump(Next.Label(name, Seq.empty))
-        var continue        = true
+        var continue = true
 
         while (continue) {
           val optSeq = simplifyCfOnce(currentCf, cfg)

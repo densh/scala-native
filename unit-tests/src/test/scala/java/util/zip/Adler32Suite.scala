@@ -48,7 +48,7 @@ object Adler32Suite extends tests.Suite {
 
   test("update(Array[Byte])") {
     val byteArray = Array[Byte](1, 2)
-    val adl       = new Adler32()
+    val adl = new Adler32()
     adl.update(byteArray)
     assert(adl.getValue() == 393220)
 
@@ -60,11 +60,11 @@ object Adler32Suite extends tests.Suite {
 
   test("updateArray(Byte, Int, Int)") {
     val byteArray = Array[Byte](1, 2, 3)
-    val adl       = new Adler32()
-    val off       = 2
-    val len       = 1
-    val lenError  = 3
-    val offError  = 4
+    val adl = new Adler32()
+    val off = 2
+    val len = 1
+    val lenError = 3
+    val offError = 4
     adl.update(byteArray, off, len)
     assert(adl.getValue() == 262148)
 

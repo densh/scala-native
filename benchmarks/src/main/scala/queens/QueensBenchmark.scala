@@ -28,7 +28,7 @@ class QueensBenchmark extends benchmarks.Benchmark[Boolean] {
   var freeMaxs: Array[Boolean] = _
   var freeRows: Array[Boolean] = _
   var freeMins: Array[Boolean] = _
-  var queenRows: Array[Int]    = _
+  var queenRows: Array[Int] = _
 
   override val runningTime: BenchmarkRunningTime = MediumRunningTime
 

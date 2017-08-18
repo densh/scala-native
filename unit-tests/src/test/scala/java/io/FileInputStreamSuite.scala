@@ -5,7 +5,7 @@ import scala.util.Try
 object FileInputStreamSuite extends tests.Suite {
   test("read null") {
     val file = new File(".")
-    val fis  = new FileInputStream(file)
+    val fis = new FileInputStream(file)
     assertThrows[NullPointerException] {
       fis.read(null)
     }
@@ -16,8 +16,8 @@ object FileInputStreamSuite extends tests.Suite {
 
   test("read out of bounds negative count") {
     val file = new File(".")
-    val fis  = new FileInputStream(file)
-    val arr  = new Array[Byte](8)
+    val fis = new FileInputStream(file)
+    val arr = new Array[Byte](8)
     assertThrows[IndexOutOfBoundsException] {
       fis.read(arr, 0, -1)
     }
@@ -25,8 +25,8 @@ object FileInputStreamSuite extends tests.Suite {
 
   test("read out of bounds negative offset") {
     val file = new File(".")
-    val fis  = new FileInputStream(file)
-    val arr  = new Array[Byte](8)
+    val fis = new FileInputStream(file)
+    val arr = new Array[Byte](8)
     assertThrows[IndexOutOfBoundsException] {
       fis.read(arr, -1, 0)
     }
@@ -34,8 +34,8 @@ object FileInputStreamSuite extends tests.Suite {
 
   test("read out of bounds array too small") {
     val file = new File(".")
-    val fis  = new FileInputStream(file)
-    val arr  = new Array[Byte](8)
+    val fis = new FileInputStream(file)
+    val arr = new Array[Byte](8)
     assertThrows[IndexOutOfBoundsException] {
       fis.read(arr, 0, 16)
     }
@@ -46,8 +46,8 @@ object FileInputStreamSuite extends tests.Suite {
 
   test("valid file descriptor and sync success") {
     val file = File.createTempFile("fisfdtest", "")
-    val fis  = new FileInputStream(file)
-    val fd   = fis.getFD
+    val fis = new FileInputStream(file)
+    val fd = fis.getFD
     assert(fd.valid())
     assert(Try(fd.sync()).isSuccess)
     fis.close()
@@ -55,7 +55,7 @@ object FileInputStreamSuite extends tests.Suite {
 
   test("can read 0xFF correctly") {
     val file = File.createTempFile("file", ".tmp")
-    val fos  = new FileOutputStream(file)
+    val fos = new FileOutputStream(file)
     fos.write(0xFF)
     fos.close()
 

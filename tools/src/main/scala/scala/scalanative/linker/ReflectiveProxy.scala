@@ -12,17 +12,17 @@ object ReflectiveProxy {
 
   private def genReflProxy(defn: Defn.Define): Defn.Define = {
     val Global.Member(owner, id) = defn.name
-    val defnType                 = defn.ty.asInstanceOf[Type.Function]
+    val defnType = defn.ty.asInstanceOf[Type.Function]
 
     val proxyArgs = genProxyArgs(defnType)
-    val proxyTy   = genProxyTy(defnType, proxyArgs)
+    val proxyTy = genProxyTy(defnType, proxyArgs)
 
-    val label      = genProxyLabel(proxyArgs)
+    val label = genProxyLabel(proxyArgs)
     val unboxInsts = genArgUnboxes(label)
-    val method     = Inst.Let(Op.Method(label.params.head, defn.name))
-    val call       = genCall(defnType, method, label.params, unboxInsts)
-    val box        = genRetValBox(call.name, defnType.ret, proxyTy.ret)
-    val retInst    = genRet(box.name, proxyTy.ret)
+    val method = Inst.Let(Op.Method(label.params.head, defn.name))
+    val call = genCall(defnType, method, label.params, unboxInsts)
+    val box = genRetValBox(call.name, defnType.ret, proxyTy.ret)
+    val retInst = genRet(box.name, proxyTy.ret)
 
     Defn.Define(
       Attrs.fromSeq(Seq(Attr.Dyn)),

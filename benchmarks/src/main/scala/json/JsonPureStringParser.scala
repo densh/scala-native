@@ -22,12 +22,12 @@
 package json
 
 final class JsonPureStringParser(input: String) {
-  var index           = -1
-  var line            = 1
-  var column          = 0
+  var index = -1
+  var line = 1
+  var column = 0
   var current: String = null
-  var captureBuffer   = ""
-  var captureStart    = -1
+  var captureBuffer = ""
+  var captureStart = -1
 
   def parse() = {
     read()
@@ -272,7 +272,7 @@ final class JsonPureStringParser(input: String) {
   }
 
   def endCapture() = {
-    val end              = if (current == null) index else index - 1
+    val end = if (current == null) index else index - 1
     var captured: String = null
     if ("".equals(captureBuffer)) {
       captured = input.substring(captureStart, end + 1)

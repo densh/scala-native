@@ -102,8 +102,8 @@ private[math] object Primality {
       BiPrimes(rp._1 + rnd.nextInt(rp._2))
     } else {
       val shiftCount = (-bitLength) & 31
-      val count      = (bitLength + 31) >> 5
-      val n          = new BigInteger(1, count, new Array[Int](count))
+      val count = (bitLength + 31) >> 5
+      val n = new BigInteger(1, count, new Array[Int](count))
 
       val last = count - 1
       do {
@@ -146,7 +146,7 @@ private[math] object Primality {
       }
 
       // To set the number of iterations necessary for Miller-Rabin test
-      var i: Int    = 0
+      var i: Int = 0
       val bitLength = n.bitLength()
       i = 2
       while (bitLength < Bits(i)) {
@@ -171,8 +171,8 @@ private[math] object Primality {
   def nextProbablePrime(n: BigInteger): BigInteger = {
     // scalastyle:off return
     // PRE: n >= 0
-    val gapSize     = 1024 // for searching of the next probable prime number
-    val modules     = new Array[Int](Primes.length)
+    val gapSize = 1024 // for searching of the next probable prime number
+    val modules = new Array[Int](Primes.length)
     val isDivisible = new Array[Boolean](gapSize)
 
     // If n < "last prime of table" searches next prime in the table
@@ -189,7 +189,7 @@ private[math] object Primality {
      * Creates a "N" enough big to hold the next probable prime Note that: N <
      * "next prime" < 2*N
      */
-    val a                      = new Array[Int](n.numberLength + 1)
+    val a = new Array[Int](n.numberLength + 1)
     val startPoint: BigInteger = new BigInteger(1, n.numberLength, a)
     System.arraycopy(n.digits, 0, startPoint.digits, 0, n.numberLength)
 
@@ -252,11 +252,11 @@ private[math] object Primality {
     // PRE: n >= 0, t >= 0
     var x: BigInteger = null
     var y: BigInteger = null
-    val nMinus1       = n.subtract(BigInteger.ONE)
-    val bitLength     = nMinus1.bitLength()
-    val k             = nMinus1.getLowestSetBit
-    val q             = nMinus1.shiftRight(k)
-    val rnd           = new Random()
+    val nMinus1 = n.subtract(BigInteger.ONE)
+    val bitLength = nMinus1.bitLength()
+    val k = nMinus1.getLowestSetBit
+    val q = nMinus1.shiftRight(k)
+    val rnd = new Random()
     for (i <- 0 until t) {
       // To generate a witness 'x', first it use the primes of table
       if (i < Primes.length) {

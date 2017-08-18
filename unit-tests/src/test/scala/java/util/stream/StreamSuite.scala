@@ -4,19 +4,19 @@ import java.util.function.Function
 
 object StreamSuite extends tests.Suite {
   test("Stream.builder can build an empty stream") {
-    val s  = Stream.builder().build()
+    val s = Stream.builder().build()
     val it = s.iterator()
     assert(!it.hasNext())
   }
 
   test("Stream.empty is empty") {
-    val s  = Stream.empty[Int]()
+    val s = Stream.empty[Int]()
     val it = s.iterator()
     assert(!it.hasNext())
   }
 
   test("Stream.of can put elements in a stream") {
-    val s  = Stream.of(1, 2, 3)
+    val s = Stream.of(1, 2, 3)
     val it = s.iterator()
     assert(it.next() == 1)
     assert(it.next() == 2)
@@ -56,7 +56,7 @@ object StreamSuite extends tests.Suite {
     val expected =
       Seq(5, 4, 3, 2, 1, 5, 4, 3, 2, 5, 4, 3, 5, 4, 3, 2, 5, 4, 3, 5, 4, 3)
     val result = scala.collection.mutable.ArrayBuffer.empty[Int]
-    val it     = s2.iterator()
+    val it = s2.iterator()
     while (it.hasNext()) {
       result += it.next()
     }
@@ -66,7 +66,7 @@ object StreamSuite extends tests.Suite {
   test("Stream.onClose works") {
     var success = false
     val handler = new Runnable { override def run(): Unit = success = true }
-    val s       = Stream.empty[Int]().onClose(handler)
+    val s = Stream.empty[Int]().onClose(handler)
     assert(!success)
     s.close()
     assert(success)

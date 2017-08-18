@@ -14,10 +14,10 @@ class HasTrait(implicit top: Top) extends Inject {
   import top.tables
 
   def classHasTrait: Defn.Define = {
-    implicit val fresh   = Fresh()
+    implicit val fresh = Fresh()
     val classid, traitid = Val.Local(fresh(), Type.Int)
-    val boolptr          = Val.Local(fresh(), Type.Ptr)
-    val result           = Val.Local(fresh(), Type.Bool)
+    val boolptr = Val.Local(fresh(), Type.Ptr)
+    val result = Val.Local(fresh(), Type.Bool)
 
     Defn.Define(
       Attrs(isExtern = true, inline = Attr.AlwaysInline),
@@ -36,10 +36,10 @@ class HasTrait(implicit top: Top) extends Inject {
   }
 
   def traitHasTrait: Defn.Define = {
-    implicit val fresh  = Fresh()
+    implicit val fresh = Fresh()
     val leftid, rightid = Val.Local(fresh(), Type.Int)
-    val boolptr         = Val.Local(fresh(), Type.Ptr)
-    val result          = Val.Local(fresh(), Type.Bool)
+    val boolptr = Val.Local(fresh(), Type.Ptr)
+    val result = Val.Local(fresh(), Type.Bool)
 
     Defn.Define(
       Attrs(isExtern = true, inline = Attr.AlwaysInline),

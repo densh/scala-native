@@ -70,7 +70,7 @@ abstract class CharsetDecoder protected (cs: Charset,
     ()
 
   final def averageCharsPerByte(): Float = _averageCharsPerByte
-  final def maxCharsPerByte(): Float     = _maxCharsPerByte
+  final def maxCharsPerByte(): Float = _maxCharsPerByte
 
   final def decode(in: ByteBuffer,
                    out: CharBuffer,
@@ -201,7 +201,7 @@ abstract class CharsetDecoder protected (cs: Charset,
 
     reset()
     val initLength = (in.remaining.toDouble * averageCharsPerByte).toInt
-    val out        = loopFlush(loopDecode(CharBuffer.allocate(initLength)))
+    val out = loopFlush(loopDecode(CharBuffer.allocate(initLength)))
     out.flip()
     out
   }
@@ -216,8 +216,8 @@ abstract class CharsetDecoder protected (cs: Charset,
 }
 
 object CharsetDecoder {
-  private final val INIT    = 1
+  private final val INIT = 1
   private final val ONGOING = 2
-  private final val END     = 3
+  private final val END = 3
   private final val FLUSHED = 4
 }

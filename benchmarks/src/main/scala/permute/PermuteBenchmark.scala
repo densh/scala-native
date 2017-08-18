@@ -25,7 +25,7 @@ package permute
 import benchmarks.{BenchmarkRunningTime, ShortRunningTime}
 
 class PermuteBenchmark extends benchmarks.Benchmark[Int] {
-  var count: Int    = _
+  var count: Int = _
   var v: Array[Int] = _
 
   override val runningTime: BenchmarkRunningTime = ShortRunningTime

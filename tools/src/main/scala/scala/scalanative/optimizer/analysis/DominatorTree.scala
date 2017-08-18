@@ -15,7 +15,7 @@ object DominatorTree {
    */
   def build(cfg: ControlFlow.Graph): Map[Block, Set[Block]] = {
     val domination = mutable.HashMap.empty[Block, Set[Block]]
-    var workList   = immutable.Queue(cfg.entry)
+    var workList = immutable.Queue(cfg.entry)
 
     while (workList.nonEmpty) {
       val (block, dequeued) = workList.dequeue

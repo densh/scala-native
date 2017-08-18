@@ -4,7 +4,7 @@ final class Opts(val format: Format = TextFormat, val test: Boolean = false) {
   private def copy(format: Format = this.format, test: Boolean = this.test) =
     new Opts(format, test)
   def withFormat(value: Format) = copy(format = value)
-  def withTest(value: Boolean)  = copy(test = value)
+  def withTest(value: Boolean) = copy(test = value)
 }
 
 object Opts {

@@ -21,7 +21,7 @@ abstract class Reader private[this] (_lock: Option[Object])
         target.position(target.position + charsRead)
       charsRead
     } else {
-      val buf       = new Array[Char](target.remaining)
+      val buf = new Array[Char](target.remaining)
       val charsRead = read(buf)
       if (charsRead != -1)
         target.put(buf, 0, charsRead)

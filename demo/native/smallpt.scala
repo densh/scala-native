@@ -6,12 +6,12 @@ import java.lang.Math.{PI, sin, cos, abs, pow, sqrt}
 
 @struct
 class Vec(val x: Double = 0, val y: Double = 0, val z: Double = 0) {
-  @inline def +(v: Vec)    = new Vec(x + v.x, y + v.y, z + v.z)
-  @inline def -(v: Vec)    = new Vec(x - v.x, y - v.y, z - v.z)
+  @inline def +(v: Vec) = new Vec(x + v.x, y + v.y, z + v.z)
+  @inline def -(v: Vec) = new Vec(x - v.x, y - v.y, z - v.z)
   @inline def *(v: Double) = new Vec(x * v, y * v, z * v)
   @inline def mult(v: Vec) = new Vec(x * v.x, y * v.y, z * v.z)
-  @inline def norm()       = this * (1d / sqrt(x * x + y * y + z * z))
-  @inline def dot(v: Vec)  = x * v.x + y * v.y + z * v.z
+  @inline def norm() = this * (1d / sqrt(x * x + y * y + z * z))
+  @inline def dot(v: Vec) = x * v.x + y * v.y + z * v.z
   @inline def %(v: Vec) =
     new Vec(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x)
 }
@@ -33,10 +33,10 @@ class Sphere(val rad: Double,
              val c: Vec,
              val refl: Refl.Type) {
   def intersect(r: Ray): Double = {
-    val op  = p - r.o
-    var t   = 0.0d
+    val op = p - r.o
+    var t = 0.0d
     val eps = 1e-4d
-    val b   = op.dot(r.d)
+    val b = op.dot(r.d)
     var det = b * b - op.dot(op) + rad * rad
     if (det < 0) return 0
     else det = sqrt(det)
@@ -58,7 +58,7 @@ import Erand48._
 
 object Main {
   final val SPHERES = 9
-  val spheres       = malloc(sizeof[Sphere] * SPHERES).cast[Ptr[Sphere]]
+  val spheres = malloc(sizeof[Sphere] * SPHERES).cast[Ptr[Sphere]]
   spheres(0) = new Sphere(1e5,
                           new Vec(1e5 + 1, 40.8, 81.6),
                           new Vec(),
@@ -131,15 +131,15 @@ object Main {
 
   def radiance(r: Ray, _depth: Int, Xi: Ptr[Short]): Vec = {
     var depth = _depth
-    val t     = stackalloc[Double]
-    val id    = stackalloc[Int]
+    val t = stackalloc[Double]
+    val id = stackalloc[Int]
     !id = 0
     if (!intersect(r, t, id)) return new Vec()
     val obj = spheres(!id)
-    val x   = r.o + r.d * !t
-    val n   = (x - obj.p).norm
-    val nl  = if (n.dot(r.d) < 0) n else n * -1
-    var f   = obj.c
+    val x = r.o + r.d * !t
+    val n = (x - obj.p).norm
+    val nl = if (n.dot(r.d) < 0) n else n * -1
+    var f = obj.c
     val p =
       if (f.x > f.y && f.x > f.z) f.x
       else if (f.y > f.z) f.y
@@ -152,13 +152,13 @@ object Main {
     }
 
     if (obj.refl == Refl.DIFF) {
-      val r1  = 2 * PI * erand48(Xi)
-      val r2  = erand48(Xi)
+      val r1 = 2 * PI * erand48(Xi)
+      val r2 = erand48(Xi)
       val r2s = sqrt(r2)
-      val w   = nl
-      val u   = ((if (abs(w.x) > .1) new Vec(0, 1) else new Vec(1)) % w).norm()
-      val v   = w % u
-      val d   = (u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2)).norm()
+      val w = nl
+      val u = ((if (abs(w.x) > .1) new Vec(0, 1) else new Vec(1)) % w).norm()
+      val v = w % u
+      val d = (u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2)).norm()
       return obj.e + f.mult(radiance(new Ray(x, d), depth, Xi))
     } else if (obj.refl == Refl.SPEC) {
       return obj.e + f.mult(
@@ -166,24 +166,24 @@ object Main {
     }
 
     val reflRay = new Ray(x, r.d - n * 2 * n.dot(r.d))
-    val into    = n.dot(nl) > 0
-    val nc      = 1d
-    val nt      = 1.5d
-    val nnt     = if (into) nc / nt else nt / nc
-    val ddn     = r.d.dot(nl)
-    val cos2t   = 1 - nnt * nnt * (1 - ddn * ddn)
+    val into = n.dot(nl) > 0
+    val nc = 1d
+    val nt = 1.5d
+    val nnt = if (into) nc / nt else nt / nc
+    val ddn = r.d.dot(nl)
+    val cos2t = 1 - nnt * nnt * (1 - ddn * ddn)
     if (cos2t < 0)
       return obj.e + f.mult(radiance(reflRay, depth, Xi))
     val tdir =
       (r.d * nnt - n * ((if (into) 1 else -1) * (ddn * nnt + sqrt(cos2t))))
         .norm();
-    val a  = nt - nc
-    val b  = nt + nc
+    val a = nt - nc
+    val b = nt + nc
     val R0 = (a * a) / (b * b)
-    val c  = 1 - (if (into) -ddn else tdir.dot(n))
+    val c = 1 - (if (into) -ddn else tdir.dot(n))
     val Re = R0 + (1 - R0) * c * c * c * c * c
     val Tr = 1 - Re
-    val P  = .25d + .5d * Re
+    val P = .25d + .5d * Re
     val RP = Re / P
     val TP = Tr / (1 - P)
     return obj.e + f.mult(
@@ -197,18 +197,18 @@ object Main {
     )
   }
 
-  final val W       = 800
-  final val H       = 600
+  final val W = 800
+  final val H = 600
   final val SAMPLES = 2
   def main(args: Array[String]): Unit = {
     val cam =
       new Ray(new Vec(50d, 52d, 295.6), new Vec(0d, -0.042612d, -1d).norm())
     val cx = new Vec(W * .5135d / H)
     val cy = (cx % cam.d).norm() * .5135d
-    var r  = new Vec()
-    val c  = malloc(sizeof[Vec] * W * H).cast[Ptr[Vec]]
+    var r = new Vec()
+    val c = malloc(sizeof[Vec] * W * H).cast[Ptr[Vec]]
     val Xi = malloc(sizeof[Short] * 3).cast[Ptr[Short]]
-    var y  = 0
+    var y = 0
     while (y < H) {
       fprintf(stderr,
               c"\rRendering (%d spp) %5.2f%%",
@@ -219,7 +219,7 @@ object Main {
       Xi(2) = (y * y * y).toShort
       var x = 0
       while (x < W) {
-        val i  = (H - y - 1) * W + x
+        val i = (H - y - 1) * W + x
         var sy = 0
         while (sy < 2) {
           var sx = 0

@@ -125,10 +125,10 @@ final class UUID private (private val i1: Int,
 }
 
 object UUID {
-  private final val TimeBased   = 1
+  private final val TimeBased = 1
   private final val DCESecurity = 2
-  private final val NameBased   = 3
-  private final val Random      = 4
+  private final val NameBased = 3
+  private final val Random = 4
 
   private lazy val rng = new Random() // TODO Use java.security.SecureRandom
 

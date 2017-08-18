@@ -76,7 +76,7 @@ object PerfectHashMap {
             case Some((d, slots)) =>
               val newValues = bucket.foldLeft(Map[Int, Option[V]]()) {
                 case (acc, key) =>
-                  val value      = entries(key)
+                  val value = entries(key)
                   val valueIndex = mod(hashFunc(key, d), hashMapSize)
                   acc + (valueIndex -> Some(value))
               }
@@ -93,7 +93,7 @@ object PerfectHashMap {
       placeBuckets(buckets, Map(), Map()) match {
         case Some((keys, values)) =>
           val valueKeySet = values.keySet
-          val freeList    = (0 until hashMapSize).filterNot(valueKeySet)
+          val freeList = (0 until hashMapSize).filterNot(valueKeySet)
 
           Some(
             buckets
@@ -101,12 +101,12 @@ object PerfectHashMap {
               .zip(freeList)
               .foldLeft((keys, values)) {
                 case ((accKeys, accValues), (Seq(elem), freeValue)) =>
-                  val keyIndex   = mod(hashFunc(elem, 0), hashMapSize)
-                  val keyValue   = -freeValue - 1
+                  val keyIndex = mod(hashFunc(elem, 0), hashMapSize)
+                  val keyValue = -freeValue - 1
                   val valueIndex = freeValue
                   val valueValue = Some(entries(elem))
 
-                  (accKeys + (keyIndex     -> keyValue),
+                  (accKeys + (keyIndex -> keyValue),
                    accValues + (valueIndex -> valueValue))
               })
         case None => None
@@ -146,7 +146,7 @@ class PerfectHashMap[K, V](val keys: Seq[Int],
 
   def perfectLookup(key: K): V = {
     val h1 = PerfectHashMap.mod(hashFunc(key, 0), size)
-    val d  = keys(h1)
+    val d = keys(h1)
 
     if (d < 0) {
       values(-d - 1).get

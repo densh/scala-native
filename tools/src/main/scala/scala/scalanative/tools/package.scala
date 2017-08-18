@@ -39,7 +39,7 @@ package object tools {
   def link(config: Config,
            driver: OptimizerDriver,
            reporter: LinkerReporter = LinkerReporter.empty): LinkerResult = {
-    val deps    = driver.passes.flatMap(_.depends).distinct
+    val deps = driver.passes.flatMap(_.depends).distinct
     val injects = driver.passes.flatMap(_.injects).distinct
     val entry =
       nir.Global

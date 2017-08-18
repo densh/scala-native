@@ -12,8 +12,8 @@ object Optimizer {
   private def time[T](msg: String)(f: => T): T = {
     import java.lang.System.nanoTime
     val start = nanoTime()
-    val res   = f
-    val end   = nanoTime()
+    val res = f
+    val end = nanoTime()
     println(s"[info] $msg (${(end - start) / 1000000} ms)")
     res
   }
@@ -33,9 +33,9 @@ object Optimizer {
             reporter: Reporter): Seq[Defn] = {
     import reporter._
 
-    val injects    = driver.passes.filter(_.isInjectionPass)
+    val injects = driver.passes.filter(_.isInjectionPass)
     val transforms = driver.passes.filterNot(_.isInjectionPass)
-    val world      = analysis.ClassHierarchy(assembly, dyns)
+    val world = analysis.ClassHierarchy(assembly, dyns)
 
     val injected = {
       val buf = mutable.UnrolledBuffer.empty[Defn]
@@ -71,7 +71,7 @@ object Optimizer {
         case (batchId, batchDefns) =>
           onStart(batchId, batchDefns)
           val passes = transforms.map(_.apply(config, world))
-          val res    = loop(batchId, batchDefns, passes.zipWithIndex)
+          val res = loop(batchId, batchDefns, passes.zipWithIndex)
           onComplete(batchId, res)
           res
       }

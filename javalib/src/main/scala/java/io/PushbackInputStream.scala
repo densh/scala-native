@@ -52,8 +52,8 @@ class PushbackInputStream(_in: InputStream, size: Int)
       throw new ArrayIndexOutOfBoundsException(s"Length out of bounds: $length")
     } else {
       var copiedBytes = 0
-      var copyLength  = 0
-      var newOffset   = offset
+      var copyLength = 0
+      var newOffset = offset
 
       if (pos < buf.length) {
         copyLength =

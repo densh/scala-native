@@ -23,7 +23,7 @@ final case class ScalaNativeTask private (
                        loggers: Array[Logger]): Array[Task] = {
 
     val colorSupport = loggers.map(_.ansiCodesSupported).toSeq
-    val command      = Command.Execute(taskId, colorSupport)
+    val command = Command.Execute(taskId, colorSupport)
 
     runner.send(command)
 

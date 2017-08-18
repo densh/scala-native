@@ -9,21 +9,21 @@ object unistd {
 
   type off_t = CLongLong
 
-  def sleep(seconds: CUnsignedInt): CInt                          = extern
-  def usleep(usecs: CUnsignedInt): CInt                           = extern
-  def unlink(path: CString): CInt                                 = extern
-  def access(pathname: CString, mode: CInt): CInt                 = extern
+  def sleep(seconds: CUnsignedInt): CInt = extern
+  def usleep(usecs: CUnsignedInt): CInt = extern
+  def unlink(path: CString): CInt = extern
+  def access(pathname: CString, mode: CInt): CInt = extern
   def readlink(path: CString, buf: CString, bufsize: CSize): CInt = extern
-  def getcwd(buf: CString, size: CSize): CString                  = extern
-  def write(fildes: CInt, buf: Ptr[_], nbyte: CSize): CInt        = extern
-  def read(fildes: CInt, buf: Ptr[_], nbyte: CSize): CInt         = extern
-  def close(fildes: CInt): CInt                                   = extern
-  def fsync(fildes: CInt): CInt                                   = extern
-  def lseek(fildes: CInt, offset: off_t, whence: CInt): off_t     = extern
-  def ftruncate(fildes: CInt, length: off_t): CInt                = extern
-  def truncate(path: CString, length: off_t): CInt                = extern
-  def gethostname(name: CString, len: CSize): CInt                = extern
-  def sethostname(name: CString, len: CSize): CInt                = extern
+  def getcwd(buf: CString, size: CSize): CString = extern
+  def write(fildes: CInt, buf: Ptr[_], nbyte: CSize): CInt = extern
+  def read(fildes: CInt, buf: Ptr[_], nbyte: CSize): CInt = extern
+  def close(fildes: CInt): CInt = extern
+  def fsync(fildes: CInt): CInt = extern
+  def lseek(fildes: CInt, offset: off_t, whence: CInt): off_t = extern
+  def ftruncate(fildes: CInt, length: off_t): CInt = extern
+  def truncate(path: CString, length: off_t): CInt = extern
+  def gethostname(name: CString, len: CSize): CInt = extern
+  def sethostname(name: CString, len: CSize): CInt = extern
 
   @name("scalanative_stdin_fileno")
   def STDIN_FILENO: CInt = extern

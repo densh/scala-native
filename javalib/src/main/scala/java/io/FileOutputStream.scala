@@ -41,7 +41,7 @@ class FileOutputStream(fd: FileDescriptor) extends OutputStream {
 
     // we use the runtime knowledge of the array layout to avoid
     // intermediate buffer, and read straight from the array memory
-    val buf        = buffer.asInstanceOf[runtime.ByteArray].at(offset)
+    val buf = buffer.asInstanceOf[runtime.ByteArray].at(offset)
     val writeCount = unistd.write(fd.fd, buf, count)
 
     if (writeCount < 0) {
@@ -63,8 +63,8 @@ object FileOutputStream {
       import fcntl._
       import stat._
       val flags = O_CREAT | O_WRONLY | (if (append) O_APPEND else O_TRUNC)
-      val mode  = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
-      val fd    = open(toCString(file.getPath), flags, mode)
+      val mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
+      val fd = open(toCString(file.getPath), flags, mode)
       if (fd == -1)
         throw new FileNotFoundException(
           s"$file (${fromCString(string.strerror(errno.errno))})")

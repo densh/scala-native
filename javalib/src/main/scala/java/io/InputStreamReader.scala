@@ -87,7 +87,7 @@ class InputStreamReader(private[this] var in: InputStream,
     } else if (!endOfInput) {
       // Try and decode directly into the destination array
       val directOut = CharBuffer.wrap(cbuf, off, len)
-      val result    = readImpl(directOut)
+      val result = readImpl(directOut)
       if (result != InputStreamReader.Overflow) {
         result
       } else {
@@ -138,7 +138,7 @@ class InputStreamReader(private[this] var in: InputStream,
   @tailrec
   private def readImpl(out: CharBuffer): Int = {
     val initPos = out.position
-    val result  = decoder.decode(inBuf, out, endOfInput)
+    val result = decoder.decode(inBuf, out, endOfInput)
 
     if (out.position != initPos) {
       /* Good, we made progress, so we can return.

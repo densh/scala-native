@@ -1,20 +1,20 @@
 package scala
 
 object PrimitiveSuite extends tests.Suite {
-  val char   = 1.toChar
-  val byte   = 1.toByte
-  val short  = 1.toShort
-  val int    = 1
-  val long   = 1L
-  val float  = 1F
+  val char = 1.toChar
+  val byte = 1.toByte
+  val short = 1.toShort
+  val int = 1
+  val long = 1L
+  val float = 1F
   val double = 1D
 
-  val negint    = -1
-  val neglong   = -1L
-  val negfloat  = -1F
+  val negint = -1
+  val neglong = -1L
+  val negfloat = -1F
   val negdouble = -1D
 
-  val notint  = -2
+  val notint = -2
   val notlong = -2
 
   test("-x") {

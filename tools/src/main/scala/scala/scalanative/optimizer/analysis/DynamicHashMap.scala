@@ -7,7 +7,7 @@ import nir._
 
 class DynamicHashMap(cls: Class, dyns: Seq[String]) {
   val methods: Seq[Method] = {
-    val own  = cls.methods.filter(_.attrs.isDyn)
+    val own = cls.methods.filter(_.attrs.isDyn)
     val sigs = own.map(m => m.name.id).toSet
     cls.parent
       .fold(Seq.empty[Method])(_.dynmap.methods)

@@ -21,10 +21,10 @@ import java.math.MathContext
 import java.nio.charset.Charset
 
 object FormatterUSSuite extends tests.Suite {
-  private var root: Boolean             = false
-  private var notExist: File            = _
-  private var fileWithContent: File     = _
-  private var readOnly: File            = _
+  private var root: Boolean = false
+  private var notExist: File = _
+  private var fileWithContent: File = _
+  private var readOnly: File = _
   private var defaultTimeZone: TimeZone = _
 
   // setup resource files for testing
@@ -355,7 +355,7 @@ object FormatterUSSuite extends tests.Suite {
       new Formatter(null.asInstanceOf[PrintStream]))
 
     val ps = new PrintStream(notExist, "UTF-16BE")
-    val f  = new Formatter(ps)
+    val f = new Formatter(ps)
     assertEquals(Locale.getDefault(), f.locale())
     f.close()
   }
@@ -365,7 +365,7 @@ object FormatterUSSuite extends tests.Suite {
       new Formatter(null.asInstanceOf[OutputStream]))
 
     val os = new FileOutputStream(notExist)
-    val f  = new Formatter(os)
+    val f = new Formatter(os)
     assertEquals(Locale.getDefault(), f.locale())
     f.close()
   }
@@ -388,7 +388,7 @@ object FormatterUSSuite extends tests.Suite {
 
     locally {
       val os = new FileOutputStream(fileWithContent)
-      val f  = new Formatter(os, "UTF-16BE")
+      val f = new Formatter(os, "UTF-16BE")
       assertEquals(Locale.getDefault, f.locale())
       f.close()
     }
@@ -405,7 +405,7 @@ object FormatterUSSuite extends tests.Suite {
 
     locally {
       val os = new FileOutputStream(notExist)
-      val f  = new Formatter(os, Charset.defaultCharset().name(), null)
+      val f = new Formatter(os, Charset.defaultCharset().name(), null)
       f.close()
     }
 
@@ -420,7 +420,7 @@ object FormatterUSSuite extends tests.Suite {
 
     locally {
       val os = new FileOutputStream(fileWithContent)
-      val f  = new Formatter(os, "UTF-16BE", Locale.US)
+      val f = new Formatter(os, "UTF-16BE", Locale.US)
       assertEquals(Locale.US, f.locale())
       f.close()
     }
@@ -486,7 +486,7 @@ object FormatterUSSuite extends tests.Suite {
 
     locally {
       val md = new MockDestination()
-      val f  = new Formatter(md)
+      val f = new Formatter(md)
       f.format("%s%s", "1", "2")
       // format stop working after IOException
       assertNotNull(f.ioException())
@@ -884,9 +884,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(null.asInstanceOf[Object], "%.2b", "fa")
     )
 
-    val input   = 0
+    val input = 0
     val pattern = 1
-    val output  = 2
+    val output = 2
     for (i <- 0 until triple.length) {
       locally {
         val f = new Formatter(Locale.US)
@@ -918,9 +918,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(1.1d, "%.5s", "1.1")
     )
 
-    val input   = 0
+    val input = 0
     val pattern = 1
-    val output  = 2
+    val output = 2
     for (i <- (0 until triple.length)) {
       locally {
         val f = new Formatter(Locale.US)
@@ -982,9 +982,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(null.asInstanceOf[Object], "%.5s", "null")
     )
 
-    val input   = 0
+    val input = 0
     val pattern = 1
-    val output  = 2
+    val output = 2
     for (i <- (0 until triple.length)) {
       locally {
         val f = new Formatter(Locale.US)
@@ -1144,7 +1144,7 @@ object FormatterUSSuite extends tests.Suite {
   }
 
   test("format(String, Array[Object]) for Character conversion") {
-    val f       = new Formatter(Locale.US)
+    val f = new Formatter(Locale.US)
     val illArgs = Array(true, 1.1f, 1.1d, "string content", 1.1f, new Date())
     for (i <- (0 until illArgs.length)) {
       assertThrows[IllegalFormatConversionException](
@@ -1170,9 +1170,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(0x11, "%-2c", "\u0011 ")
     )
 
-    val input   = 0
+    val input = 0
     val pattern = 1
-    val output  = 2
+    val output = 2
     for (i <- 0 until triple.length) {
       val f = new Formatter(Locale.US)
       f.format(triple(i)(pattern).asInstanceOf[String],
@@ -1281,9 +1281,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(-1L, "%0 ,(11d", "(000000001)")
     )
 
-    val input   = 0
+    val input = 0
     val pattern = 1
-    val output  = 2
+    val output = 2
     for (i <- 0 until triple.length) {
       val f = new Formatter(Locale.US)
       f.format(triple(i)(pattern).asInstanceOf[String],
@@ -1339,9 +1339,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(-1L, "%-#9o", "01777777777777777777777")
     )
 
-    val input   = 0
+    val input = 0
     val pattern = 1
-    val output  = 2
+    val output = 2
     for (i <- 0 until triple.length) {
       val f = new Formatter(Locale.US)
       f.format(triple(i)(pattern).asInstanceOf[String],
@@ -1397,9 +1397,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(-1L, "%-#9x", "0xffffffffffffffff")
     )
 
-    val input   = 0
+    val input = 0
     val pattern = 1
-    val output  = 2
+    val output = 2
     for (i <- 0 until triple.length) {
       locally {
         val f = new Formatter(Locale.US)
@@ -1526,12 +1526,12 @@ object FormatterUSSuite extends tests.Suite {
       Array(china, 'z', "-0800")
     )
 
-    val input   = 0
+    val input = 0
     val pattern = 1
-    val output  = 2
+    val output = 2
     for (i <- 0 until 90) {
       // go through legal conversion
-      val formatSpecifier      = "%t" + lowerCaseUSTriple(i)(pattern)
+      val formatSpecifier = "%t" + lowerCaseUSTriple(i)(pattern)
       val formatSpecifierUpper = "%T" + lowerCaseUSTriple(i)(pattern)
       // test '%t'
       locally {
@@ -1653,7 +1653,7 @@ object FormatterUSSuite extends tests.Suite {
     )
 
     for (i <- 0 until 96) {
-      val formatSpecifier      = "%t" + upperCaseUSTriple(i)(pattern)
+      val formatSpecifier = "%t" + upperCaseUSTriple(i)(pattern)
       val formatSpecifierUpper = "%T" + upperCaseUSTriple(i)(pattern)
       if (upperCaseUSTriple(i)(pattern).asInstanceOf[Char] == 'N') {
         // result can't be predicted on RI, so skip this test
@@ -1790,9 +1790,9 @@ object FormatterUSSuite extends tests.Suite {
             "(9,876,543,210,987,654,321,098,765,432,100,000)")
     )
 
-    val input   = 0
+    val input = 0
     val pattern = 1
-    val output  = 2
+    val output = 2
     for (i <- 0 until tripleD.length) {
       val f = new Formatter(Locale.US)
       f.format(tripleD(i)(pattern).asInstanceOf[String], tripleD(i)(input))
@@ -2200,9 +2200,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(java.lang.Double.POSITIVE_INFINITY, "% 0(12e", "    Infinity")
     )
 
-    val input   = 0
+    val input = 0
     val pattern = 1
-    val output  = 2
+    val output = 2
     for (i <- 0 until tripleE.length) {
       locally {
         val f = new Formatter(Locale.US)
@@ -2363,9 +2363,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(java.lang.Double.POSITIVE_INFINITY, "% 0(,12.0g", "    Infinity")
     )
 
-    val input   = 0
+    val input = 0
     val pattern = 1
-    val output  = 2
+    val output = 2
     for (i <- 0 until tripleG.length) {
       locally {
         val f = new Formatter(Locale.US)
@@ -2528,9 +2528,9 @@ object FormatterUSSuite extends tests.Suite {
             "% 0#(9.8f",
             " 340282346638528860000000000000000000000.00000000")
     )
-    val input: Int   = 0
+    val input: Int = 0
     val pattern: Int = 1
-    val output: Int  = 2
+    val output: Int = 2
     for (i <- 0 until tripleF.length) {
       val f = new Formatter(Locale.US)
       f.format(tripleF(i)(pattern).asInstanceOf[String],
@@ -2716,9 +2716,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(java.lang.Double.NEGATIVE_INFINITY, "%-+(8.4f", "(Infinity)"),
       Array(java.lang.Double.NEGATIVE_INFINITY, "% 0#(9.8f", "(Infinity)")
     )
-    val input: Int   = 0
+    val input: Int = 0
     val pattern: Int = 1
-    val output: Int  = 2
+    val output: Int = 2
     for (i <- 0 until tripleF.length) {
       val f = new Formatter(Locale.US)
       f.format(tripleF(i)(pattern).asInstanceOf[String],
@@ -2735,9 +2735,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(java.lang.Double.MIN_VALUE, "%a", "0x0.0000000000001p-1022"),
       Array(java.lang.Double.MIN_VALUE, "%5a", "0x0.0000000000001p-1022")
     )
-    val input: Int   = 0
+    val input: Int = 0
     val pattern: Int = 1
-    val output: Int  = 2
+    val output: Int = 2
     for (i <- 0 until tripleA.length) {
       locally {
         val f = new Formatter(Locale.US)
@@ -2887,9 +2887,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(java.lang.Double.POSITIVE_INFINITY, "%#+01.6a", "+Infinity"),
       Array(java.lang.Double.POSITIVE_INFINITY, "%-+8.4a", "+Infinity")
     )
-    val input: Int   = 0
+    val input: Int = 0
     val pattern: Int = 1
-    val output: Int  = 2
+    val output: Int = 2
     for (i <- 0 until tripleA.length) {
       locally {
         val f = new Formatter(Locale.US)
@@ -2949,9 +2949,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(new BigDecimal("-5.000E999"), "%-+17.6e", "-5.000000e+999   "),
       Array(new BigDecimal("-5.000E999"), "% 0(20e", "(000005.000000e+999)")
     )
-    val input: Int   = 0
+    val input: Int = 0
     val pattern: Int = 1
-    val output: Int  = 2
+    val output: Int = 2
     for (i <- 0 until tripleE.length) {
       locally {
         val f = new Formatter(Locale.US)
@@ -3023,9 +3023,9 @@ object FormatterUSSuite extends tests.Suite {
       Array(new BigDecimal("-5.000E999"), "%-+10.6g", "-5.00000e+999"),
       Array(new BigDecimal("-5.000E999"), "% 0(,12.0g", "(00005e+999)")
     )
-    val input: Int   = 0
+    val input: Int = 0
     val pattern: Int = 1
-    val output: Int  = 2
+    val output: Int = 2
     for (i <- 0 until tripleG.length) {
       locally {
         val f = new Formatter(Locale.US)
@@ -3055,9 +3055,9 @@ object FormatterUSSuite extends tests.Suite {
   }
 
   test("format(String, Array[Object]) for BigDecimal conversion type 'f'") {
-    val input: Int   = 0
+    val input: Int = 0
     val pattern: Int = 1
-    val output: Int  = 2
+    val output: Int = 2
     val tripleF: Array[Array[Any]] = Array(
       Array(BigDecimal.ZERO, "%f", "0.000000"),
       Array(BigDecimal.ZERO, "%#.3f", "0.000"),
@@ -3503,12 +3503,12 @@ object FormatterUSSuite extends tests.Suite {
    * test scientific notation to follow RI's behavior
    */
   test("ScientificNotation") {
-    val f: Formatter      = new Formatter()
-    val mc: MathContext   = new MathContext(30)
+    val f: Formatter = new Formatter()
+    val mc: MathContext = new MathContext(30)
     val value: BigDecimal = new BigDecimal(0.1, mc)
     f.format("%.30G", value)
 
-    val result: String   = f.toString
+    val result: String = f.toString
     val expected: String = "0.100000000000000005551115123126"
     assertEquals(expected, result)
   }

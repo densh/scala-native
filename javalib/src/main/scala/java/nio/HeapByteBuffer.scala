@@ -62,36 +62,36 @@ private[nio] final class HeapByteBuffer private (_capacity: Int,
 
   // Here begins the stuff specific to ByteArrays
 
-  def asCharBuffer(): java.nio.CharBuffer                       = ???
-  def asDoubleBuffer(): java.nio.DoubleBuffer                   = ???
-  def asFloatBuffer(): java.nio.FloatBuffer                     = ???
-  def asIntBuffer(): java.nio.IntBuffer                         = ???
-  def asLongBuffer(): java.nio.LongBuffer                       = ???
-  def asShortBuffer(): java.nio.ShortBuffer                     = ???
-  def getChar(index: Int): Char                                 = ???
-  def getChar(): Char                                           = ???
-  def getDouble(index: Int): Double                             = ???
-  def getDouble(): Double                                       = ???
-  def getFloat(index: Int): Float                               = ???
-  def getFloat(): Float                                         = ???
-  def getInt(index: Int): Int                                   = ???
-  def getInt(): Int                                             = ???
-  def getLong(index: Int): Long                                 = ???
-  def getLong(): Long                                           = ???
-  def getShort(index: Int): Short                               = ???
-  def getShort(): Short                                         = ???
-  def putChar(index: Int, value: Char): java.nio.ByteBuffer     = ???
-  def putChar(value: Char): java.nio.ByteBuffer                 = ???
+  def asCharBuffer(): java.nio.CharBuffer = ???
+  def asDoubleBuffer(): java.nio.DoubleBuffer = ???
+  def asFloatBuffer(): java.nio.FloatBuffer = ???
+  def asIntBuffer(): java.nio.IntBuffer = ???
+  def asLongBuffer(): java.nio.LongBuffer = ???
+  def asShortBuffer(): java.nio.ShortBuffer = ???
+  def getChar(index: Int): Char = ???
+  def getChar(): Char = ???
+  def getDouble(index: Int): Double = ???
+  def getDouble(): Double = ???
+  def getFloat(index: Int): Float = ???
+  def getFloat(): Float = ???
+  def getInt(index: Int): Int = ???
+  def getInt(): Int = ???
+  def getLong(index: Int): Long = ???
+  def getLong(): Long = ???
+  def getShort(index: Int): Short = ???
+  def getShort(): Short = ???
+  def putChar(index: Int, value: Char): java.nio.ByteBuffer = ???
+  def putChar(value: Char): java.nio.ByteBuffer = ???
   def putDouble(index: Int, value: Double): java.nio.ByteBuffer = ???
-  def putDouble(value: Double): java.nio.ByteBuffer             = ???
-  def putFloat(index: Int, value: Float): java.nio.ByteBuffer   = ???
-  def putFloat(value: Float): java.nio.ByteBuffer               = ???
-  def putInt(index: Int, value: Int): java.nio.ByteBuffer       = ???
-  def putInt(value: Int): java.nio.ByteBuffer                   = ???
-  def putLong(index: Int, value: Long): java.nio.ByteBuffer     = ???
-  def putLong(value: Long): java.nio.ByteBuffer                 = ???
-  def putShort(index: Int, value: Short): java.nio.ByteBuffer   = ???
-  def putShort(value: Short): java.nio.ByteBuffer               = ???
+  def putDouble(value: Double): java.nio.ByteBuffer = ???
+  def putFloat(index: Int, value: Float): java.nio.ByteBuffer = ???
+  def putFloat(value: Float): java.nio.ByteBuffer = ???
+  def putInt(index: Int, value: Int): java.nio.ByteBuffer = ???
+  def putInt(value: Int): java.nio.ByteBuffer = ???
+  def putLong(index: Int, value: Long): java.nio.ByteBuffer = ???
+  def putLong(value: Long): java.nio.ByteBuffer = ???
+  def putShort(index: Int, value: Short): java.nio.ByteBuffer = ???
+  def putShort(value: Short): java.nio.ByteBuffer = ???
 
   /*
 

@@ -121,10 +121,10 @@ object URISuite extends tests.Suite {
       // exception
       "http://host/a%path#frag", // invalid escape sequence in path
       "http://host/a%#frag", // incomplete escape sequence in path
-      "http://host#a frag",  // space char in fragment, not in
+      "http://host#a frag", // space char in fragment, not in
       // escaped octet form, no path
       "http://host/a#fr#ag", // illegal char in fragment
-      "http:///path#fr%ag",  // invalid escape sequence in fragment,
+      "http:///path#fr%ag", // invalid escape sequence in fragment,
       // with no host
       "http://host/path#frag%", // incomplete escape sequence in
       // fragment
@@ -149,11 +149,11 @@ object URISuite extends tests.Suite {
       "http://host name/path", // illegal
       // char in authority
       "http://host^name#fragment", // illegal char in authority
-      "telnet://us er@hostname/",  // illegal char in authority
+      "telnet://us er@hostname/", // illegal char in authority
       // missing components
       "//", // Authority expected
       "ascheme://", // Authority expected
-      "ascheme:",   // Scheme-specific part expected
+      "ascheme:", // Scheme-specific part expected
       // scheme validation
       "a scheme://reg/", // illegal char
       "1scheme://reg/", // non alpha char as 1st char

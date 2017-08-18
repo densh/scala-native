@@ -48,10 +48,10 @@ object AllocLowering extends PassCompanion {
   val allocSig = Type.Function(Seq(Type.Ptr, Type.Long), Type.Ptr)
 
   val allocSmallName = Global.Top("scalanative_alloc_small")
-  val alloc          = Val.Global(allocSmallName, allocSig)
+  val alloc = Val.Global(allocSmallName, allocSig)
 
   val largeAllocName = Global.Top("scalanative_alloc_large")
-  val largeAlloc     = Val.Global(largeAllocName, allocSig)
+  val largeAlloc = Val.Global(largeAllocName, allocSig)
 
   override val injects =
     Seq(Defn.Declare(Attrs.None, allocSmallName, allocSig),

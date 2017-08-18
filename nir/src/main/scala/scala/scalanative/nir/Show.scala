@@ -13,21 +13,21 @@ object Show {
     value
   }
 
-  def apply(v: Attr): String  = { val b = newBuilder; b.attr_(v); b.toString }
+  def apply(v: Attr): String = { val b = newBuilder; b.attr_(v); b.toString }
   def apply(v: Attrs): String = { val b = newBuilder; b.attrs_(v); b.toString }
-  def apply(v: Bin): String   = { val b = newBuilder; b.bin_(v); b.toString }
-  def apply(v: Comp): String  = { val b = newBuilder; b.comp_(v); b.toString }
-  def apply(v: Conv): String  = { val b = newBuilder; b.conv_(v); b.toString }
-  def apply(v: Defn): String  = { val b = newBuilder; b.defn_(v); b.toString }
+  def apply(v: Bin): String = { val b = newBuilder; b.bin_(v); b.toString }
+  def apply(v: Comp): String = { val b = newBuilder; b.comp_(v); b.toString }
+  def apply(v: Conv): String = { val b = newBuilder; b.conv_(v); b.toString }
+  def apply(v: Defn): String = { val b = newBuilder; b.defn_(v); b.toString }
   def apply(v: Global): String = {
     val b = newBuilder; b.global_(v); b.toString
   }
-  def apply(v: Inst): String  = { val b = newBuilder; b.inst_(v); b.toString }
+  def apply(v: Inst): String = { val b = newBuilder; b.inst_(v); b.toString }
   def apply(v: Local): String = { val b = newBuilder; b.local_(v); b.toString }
-  def apply(v: Next): String  = { val b = newBuilder; b.next_(v); b.toString }
-  def apply(v: Op): String    = { val b = newBuilder; b.op_(v); b.toString }
-  def apply(v: Type): String  = { val b = newBuilder; b.type_(v); b.toString }
-  def apply(v: Val): String   = { val b = newBuilder; b.val_(v); b.toString }
+  def apply(v: Next): String = { val b = newBuilder; b.next_(v); b.toString }
+  def apply(v: Op): String = { val b = newBuilder; b.op_(v); b.toString }
+  def apply(v: Type): String = { val b = newBuilder; b.type_(v); b.toString }
+  def apply(v: Val): String = { val b = newBuilder; b.val_(v); b.toString }
 
   final class NirShowBuilder(val builder: ShowBuilder) extends AnyVal {
     import builder._

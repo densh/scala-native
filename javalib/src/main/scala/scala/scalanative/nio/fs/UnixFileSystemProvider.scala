@@ -137,7 +137,7 @@ class UnixFileSystemProvider extends FileSystemProvider {
 
   private def getUserDir(): String = {
     val buff = stackalloc[CChar](4096)
-    val res  = unistd.getcwd(buff, 4095)
+    val res = unistd.getcwd(buff, 4095)
     fromCString(res)
   }
 

@@ -18,9 +18,9 @@ class InflaterInputStream private (in: InputStream,
     throw new IllegalArgumentException()
   }
 
-  protected var len: Int           = 0
+  protected var len: Int = 0
   private[zip] var closed: Boolean = false
-  private[zip] var eof: Boolean    = false
+  private[zip] var eof: Boolean = false
 
   override def read(): Int = {
     val b = new Array[Byte](1)

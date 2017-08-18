@@ -43,8 +43,8 @@ class Plane(position: Vector, val d: Double, material: Material)
 
     val intersection = ray.position + ray.direction.multiplyScalar(t)
     val color = if (this.material.hasTexture) {
-      val vU        = new Vector(this.position.y, this.position.z, -this.position.x)
-      val vV        = vU.cross(this.position)
+      val vU = new Vector(this.position.y, this.position.z, -this.position.x)
+      val vV = vU.cross(this.position)
       val u: Double = intersection.dot(vU)
       val v: Double = intersection.dot(vV)
       this.material.getColor(u, v)
@@ -79,7 +79,7 @@ class Sphere(position: Vector, radius: Double, material: Material)
       return new IntersectionInfo(null) // no intersection
 
     val distance = (-B) - math.sqrt(D)
-    val pos      = ray.position + ray.direction.multiplyScalar(distance)
+    val pos = ray.position + ray.direction.multiplyScalar(distance)
 
     new IntersectionInfo(
       shape = this,

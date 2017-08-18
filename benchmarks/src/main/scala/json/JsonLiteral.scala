@@ -22,16 +22,16 @@
 package json
 
 final class JsonLiteral(val value: String) extends JsonValue {
-  override val isNull  = "null".equals(value)
-  override val isTrue  = "true".equals(value)
+  override val isNull = "null".equals(value)
+  override val isTrue = "true".equals(value)
   override val isFalse = "false".equals(value)
 
-  override def toString()  = value
+  override def toString() = value
   override def isBoolean() = isTrue || isFalse
 }
 
 object JsonLiteral {
-  val NULL  = new JsonLiteral("null")
-  val TRUE  = new JsonLiteral("true")
+  val NULL = new JsonLiteral("null")
+  val TRUE = new JsonLiteral("true")
   val FALSE = new JsonLiteral("false")
 }

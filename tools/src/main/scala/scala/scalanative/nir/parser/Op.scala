@@ -87,7 +87,7 @@ object Op extends Base[nir.Op] {
     P("is[" ~ Type.parser ~ "]" ~ Val.parser map {
       case (ty, value) => nir.Op.Is(ty, value)
     })
-  val Copy   = P("copy" ~ Val.parser map (nir.Op.Copy(_)))
+  val Copy = P("copy" ~ Val.parser map (nir.Op.Copy(_)))
   val Sizeof = P("sizeof[" ~ Type.parser ~ "]" map (nir.Op.Sizeof(_)))
   val Closure =
     P("closure[" ~ Type.parser ~ "]" ~ Val.parser.rep(sep = ",") map {

@@ -15,15 +15,15 @@ class ClassReachabilitySuite extends ReachabilitySuite {
     }
   """)
 
-  val Parent      = g("Parent")
-  val ParentInit  = g("Parent", "init")
+  val Parent = g("Parent")
+  val ParentInit = g("Parent", "init")
   val ParentMeth1 = g("Parent", "meth1_unit")
   val ParentMeth2 = g("Parent", "meth2_unit")
-  val Child       = g("Child")
-  val ChildInit   = g("Child", "init")
-  val ChildMeth2  = g("Child", "meth2_unit")
-  val Object      = g("java.lang.Object")
-  val ObjectInit  = g("java.lang.Object", "init")
+  val Child = g("Child")
+  val ChildInit = g("Child", "init")
+  val ChildMeth2 = g("Child", "meth2_unit")
+  val Object = g("java.lang.Object")
+  val ObjectInit = g("java.lang.Object", "init")
 
   testReachable("parent class")(Parent)(Parent, Object)
   testReachable("parent meth1")(ParentMeth1)(Parent, ParentMeth1, Object)

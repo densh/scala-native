@@ -18,12 +18,12 @@ object Bin extends Base[nir.Bin] {
   val Srem = P("srem".! map (_ => nir.Bin.Srem))
   val Urem = P("urem".! map (_ => nir.Bin.Urem))
   val Frem = P("frem".! map (_ => nir.Bin.Frem))
-  val Shl  = P("shl".! map (_ => nir.Bin.Shl))
+  val Shl = P("shl".! map (_ => nir.Bin.Shl))
   val Lshr = P("lshr".! map (_ => nir.Bin.Lshr))
   val Ashr = P("ashr".! map (_ => nir.Bin.Ashr))
-  val And  = P("and".! map (_ => nir.Bin.And))
-  val Or   = P("or".! map (_ => nir.Bin.Or))
-  val Xor  = P("xor".! map (_ => nir.Bin.Xor))
+  val And = P("and".! map (_ => nir.Bin.And))
+  val Or = P("or".! map (_ => nir.Bin.Or))
+  val Xor = P("xor".! map (_ => nir.Bin.Xor))
   override val parser: P[nir.Bin] =
     Iadd | Fadd | Isub | Fsub | Imul | Fmul | Sdiv | Udiv | Fdiv | Srem | Urem | Frem | Shl | Lshr | Ashr | And | Or | Xor
 }

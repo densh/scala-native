@@ -93,8 +93,8 @@ object StringSuite extends tests.Suite {
 
   testFails("intern", issue = 486) {
     val chars = Array('f', 'o', 'o', 'b', 'a', 'r')
-    val s1    = new String(chars)
-    val s2    = new String(chars)
+    val s1 = new String(chars)
+    val s2 = new String(chars)
     assert(s1.intern eq s2.intern)
   }
 
@@ -152,7 +152,7 @@ object StringSuite extends tests.Suite {
     assert("aaaa\udc00".toUpperCase equals "AAAA\udc00")
     // case of one high surrogate
     val hChar = '\ud801'
-    val hStr  = hChar.toString
+    val hStr = hChar.toString
     assert(Character.isHighSurrogate(hChar) equals true)
     assert(hStr.length equals 1)
     assert(hStr.toUpperCase equals hStr)

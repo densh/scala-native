@@ -6,10 +6,10 @@ import language.implicitConversions
 class ScopedVar[A] {
   import ScopedVar.Assignment
 
-  private var init     = false
+  private var init = false
   private var value: A = _
 
-  def get: A                         = if (!init) throw ScopedVar.Unitialized() else value
+  def get: A = if (!init) throw ScopedVar.Unitialized() else value
   def :=(newValue: A): Assignment[A] = new Assignment(this, newValue)
 }
 

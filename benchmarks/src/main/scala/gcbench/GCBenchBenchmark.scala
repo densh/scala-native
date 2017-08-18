@@ -55,11 +55,11 @@ class GCBenchBenchmark extends benchmarks.Benchmark[(Node, Array[Double])] {
 class Node(var left: Node, var right: Node, var i: Int, var j: Int)
 
 object GCBenchBenchmark {
-  val kStretchTreeDepth: Int   = 18 // about 16Mb
+  val kStretchTreeDepth: Int = 18 // about 16Mb
   val kLongLivedTreeDepth: Int = 16 // about 4Mb
-  val kArraySize: Int          = 500000 // about 4Mb
-  val kMinTreeDepth: Int       = 4
-  val kMaxTreeDepth: Int       = 16
+  val kArraySize: Int = 500000 // about 4Mb
+  val kMinTreeDepth: Int = 4
+  val kMaxTreeDepth: Int = 16
 
   // Nodes used by a tree of a given size
   def treeSize(i: Int): Int = {
@@ -88,9 +88,9 @@ object GCBenchBenchmark {
     }
 
   def construction(depth: Int): Unit = {
-    var root: Node     = null
+    var root: Node = null
     var tempTree: Node = null
-    val iNumIter: Int  = numIters(depth)
+    val iNumIter: Int = numIters(depth)
 
     var i = 0;
     while (i < iNumIter) {
@@ -109,9 +109,9 @@ object GCBenchBenchmark {
   }
 
   def start(): (Node, Array[Double]) = {
-    var root: Node          = null
+    var root: Node = null
     var longLivedTree: Node = null
-    var tempTree: Node      = null
+    var tempTree: Node = null
 
     // Stretch the memory space quickly
     tempTree = makeTree(kStretchTreeDepth)
@@ -123,7 +123,7 @@ object GCBenchBenchmark {
 
     // Create long-lived array, filling half of it
     val array = new Array[Double](kArraySize)
-    var i     = 0
+    var i = 0
     while (i < kArraySize / 2) {
       array(i) = 1.0 / i
       i += 1

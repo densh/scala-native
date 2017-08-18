@@ -124,7 +124,7 @@ object Test {
    */
   def selfTest(verbose: Boolean): Boolean = {
     for (i <- 0 until sha512TestSum.length) {
-      val j     = i % 3
+      val j = i % 3
       val is384 = i < 3
 
       if (verbose)
@@ -163,7 +163,7 @@ object Test {
 object SHA512Context {
 
   def sha512(input: Array[Byte], is384: Boolean = false): Array[Byte] = {
-    val ctx    = new SHA512Context(is384)
+    val ctx = new SHA512Context(is384)
     val output = new Array[Byte](if (!is384) 64 else 48)
     ctx.update(input, input.length)
     ctx.finish(output)
@@ -365,8 +365,8 @@ object SHA512Context {
 class SHA512Context(val is384: Boolean) {
   import SHA512Context._
 
-  val total  = new Array[Long](2)   // number of bytes processed
-  val state  = new Array[Long](8)   // intermediate digest state
+  val total = new Array[Long](2) // number of bytes processed
+  val state = new Array[Long](8) // intermediate digest state
   val buffer = new Array[Byte](128) // data block being processed
 
   init()
@@ -523,7 +523,7 @@ class SHA512Context(val is384: Boolean) {
    */
   def finish(output: Array[Byte]): Unit = {
     val high = (total(0) >>> 61) | (total(1) << 3)
-    val low  = total(0) << 3
+    val low = total(0) << 3
 
     val msglen = new Array[Byte](16)
     putUInt64BE(msglen, 0, high)

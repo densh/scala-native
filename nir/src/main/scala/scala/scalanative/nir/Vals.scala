@@ -74,16 +74,16 @@ sealed abstract class Val {
 }
 object Val {
   // low-level
-  final case object None                     extends Val
-  final case object True                     extends Val
-  final case object False                    extends Val
-  final case object Null                     extends Val
-  final case class Zero(of: nir.Type)        extends Val
-  final case class Undef(of: nir.Type)       extends Val
-  final case class Byte(value: scala.Byte)   extends Val
+  final case object None extends Val
+  final case object True extends Val
+  final case object False extends Val
+  final case object Null extends Val
+  final case class Zero(of: nir.Type) extends Val
+  final case class Undef(of: nir.Type) extends Val
+  final case class Byte(value: scala.Byte) extends Val
   final case class Short(value: scala.Short) extends Val
-  final case class Int(value: scala.Int)     extends Val
-  final case class Long(value: scala.Long)   extends Val
+  final case class Int(value: scala.Int) extends Val
+  final case class Long(value: scala.Long) extends Val
   final case class Float(value: scala.Float) extends Val {
     override def equals(that: Any): Boolean = that match {
       case Float(thatValue) =>
@@ -103,14 +103,14 @@ object Val {
     }
   }
   final case class Struct(name: nir.Global, values: Seq[Val]) extends Val
-  final case class Array(elemty: nir.Type, values: Seq[Val])  extends Val
-  final case class Chars(value: java.lang.String)             extends Val
-  final case class Local(name: nir.Local, valty: nir.Type)    extends Val
-  final case class Global(name: nir.Global, valty: nir.Type)  extends Val
+  final case class Array(elemty: nir.Type, values: Seq[Val]) extends Val
+  final case class Chars(value: java.lang.String) extends Val
+  final case class Local(name: nir.Local, valty: nir.Type) extends Val
+  final case class Global(name: nir.Global, valty: nir.Type) extends Val
   def Bool(bool: Boolean) = if (bool) True else False
 
   // high-level
-  final case object Unit                           extends Val
-  final case class Const(value: Val)               extends Val
+  final case object Unit extends Val
+  final case class Const(value: Val) extends Val
   final case class String(value: java.lang.String) extends Val
 }

@@ -1,7 +1,7 @@
 package tests
 
-class A             extends Exception
-class B             extends Exception
+class A extends Exception
+class B extends Exception
 class C(val v: Int) extends Exception
 
 object SuiteSuite extends Suite {

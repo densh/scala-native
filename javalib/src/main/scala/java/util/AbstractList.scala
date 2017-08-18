@@ -25,8 +25,8 @@ abstract class AbstractList[E] protected ()
     throw new UnsupportedOperationException
 
   def indexOf(o: Any): Int = {
-    var idx  = -1
-    var i    = 0
+    var idx = -1
+    var i = 0
     val iter = listIterator()
     while (idx == -1 && iter.hasNext()) {
       if (iter.next() === o) idx = i
@@ -50,7 +50,7 @@ abstract class AbstractList[E] protected ()
 
   def addAll(index: Int, c: Collection[_ <: E]): Boolean = {
     checkIndexOnBounds(index)
-    var i    = index
+    var i = index
     val iter = c.iterator()
     while (iter.hasNext()) {
       add(i, iter.next())
@@ -119,8 +119,8 @@ abstract class AbstractList[E] protected ()
     } else {
       o match {
         case o: List[_] =>
-          val oIter  = o.listIterator
-          val iter   = listIterator
+          val oIter = o.listIterator
+          val iter = listIterator
           var result = true
 
           while (result && iter.hasNext() && oIter.hasNext()) {
@@ -144,7 +144,7 @@ abstract class AbstractList[E] protected ()
   }
 
   protected def removeRange(fromIndex: Int, toIndex: Int): Unit = {
-    var i    = 0
+    var i = 0
     val iter = listIterator(fromIndex)
     while (iter.hasNext && i <= toIndex) {
       iter.remove()

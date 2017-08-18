@@ -67,7 +67,7 @@ object StackallocSuite extends tests.Suite {
 
   test("stack-allocated list") {
     import CList._
-    var i               = 0
+    var i = 0
     var head: Ptr[Node] = null
     while (i < 4) {
       head = stackalloc[Node].init(i, head)
@@ -87,9 +87,9 @@ object CList {
       self
     }
     def value = !self._1
-    def next  = (!self._2).cast[Ptr[Node]]
+    def next = (!self._2).cast[Ptr[Node]]
     def sum: Int = {
-      var res  = 0
+      var res = 0
       var head = self
       while (head != null) {
         res += head.value

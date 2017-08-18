@@ -13,8 +13,8 @@ object CheckedInputStreamSuite extends tests.Suite {
   }
 
   test("getChecksum()") {
-    val outBuf     = new Array[Byte](100)
-    val emptyIn    = new ByteArrayInputStream(Array.empty[Byte])
+    val outBuf = new Array[Byte](100)
+    val emptyIn = new ByteArrayInputStream(Array.empty[Byte])
     val checkEmpty = new CheckedInputStream(emptyIn, new CRC32())
     while (checkEmpty.read() >= 0) {}
     assert(checkEmpty.getChecksum().getValue() == 0)

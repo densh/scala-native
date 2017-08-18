@@ -47,28 +47,28 @@ class ModuleLowering(implicit top: Top) extends Pass {
         implicit val fresh = Fresh()
 
         val clsDefn = Defn.Class(attrs, clsName, parent, ifaces)
-        val clsTy   = Type.Class(clsName)
+        val clsTy = Type.Class(clsName)
 
-        val entry      = fresh()
-        val existing   = fresh()
+        val entry = fresh()
+        val existing = fresh()
         val initialize = fresh()
 
-        val slot  = Val.Local(fresh(), Type.Ptr)
-        val self  = Val.Local(fresh(), clsTy)
-        val cond  = Val.Local(fresh(), Type.Bool)
+        val slot = Val.Local(fresh(), Type.Ptr)
+        val self = Val.Local(fresh(), clsTy)
+        val cond = Val.Local(fresh(), Type.Bool)
         val alloc = Val.Local(fresh(), clsTy)
 
         val initCall = if (isStaticModule(clsName)) {
           Inst.None
         } else {
           val initSig = Type.Function(Seq(Type.Class(clsName)), Type.Void)
-          val init    = Val.Global(clsName member "init", Type.Ptr)
+          val init = Val.Global(clsName member "init", Type.Ptr)
 
           Inst.Let(Op.Call(initSig, init, Seq(alloc), Next.None))
         }
 
         val loadName = clsName member "load"
-        val loadSig  = Type.Function(Seq(), clsTy)
+        val loadSig = Type.Function(Seq(), clsTy)
         val loadDefn = Defn.Define(
           Attrs.None,
           loadName,
@@ -105,7 +105,7 @@ class ModuleLowering(implicit top: Top) extends Pass {
   override def onInst(inst: Inst): Inst = inst match {
     case Inst.Let(n, Op.Module(name, unwind)) =>
       val loadSig = Type.Function(Seq(), Type.Class(name))
-      val load    = Val.Global(name member "load", Type.Ptr)
+      val load = Val.Global(name member "load", Type.Ptr)
 
       Inst.Let(n, Op.Call(loadSig, load, Seq(), unwind))
 

@@ -25,7 +25,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.copy can copy to a non-existing file") {
     val targetFile = File.createTempFile("test", ".tmp")
-    val target     = targetFile.toPath()
+    val target = targetFile.toPath()
     assert(!targetFile.exists || targetFile.delete())
 
     val in = new ByteArrayInputStream(Array(1, 2, 3))
@@ -42,7 +42,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.copy throws if the target exists and is a file") {
     val targetFile = File.createTempFile("test", ".tmp")
-    val target     = targetFile.toPath()
+    val target = targetFile.toPath()
     assert(targetFile.exists() && targetFile.isFile())
 
     val in = new ByteArrayInputStream(Array(1, 2, 3))
@@ -53,7 +53,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.copy throws if the target exists and is an empty directory") {
     val targetFile = File.createTempFile("test", ".tmp")
-    val target     = targetFile.toPath()
+    val target = targetFile.toPath()
     assert(targetFile.delete())
     assert(targetFile.mkdir())
     assert(
@@ -69,7 +69,7 @@ object FilesSuite extends tests.Suite {
   test(
     "Files.copy works if the target exists and is an empty directory and REPLACE_EXISTING is set") {
     val targetFile = File.createTempFile("test", ".tmp")
-    val target     = targetFile.toPath()
+    val target = targetFile.toPath()
     assert(targetFile.delete())
     assert(targetFile.mkdir())
     assert(
@@ -90,7 +90,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.copy throws if the target exists and is a non-empty directory") {
     val targetFile = File.createTempFile("test", ".tmp")
-    val target     = targetFile.toPath()
+    val target = targetFile.toPath()
     assert(targetFile.delete())
     assert(targetFile.mkdir())
     assert(targetFile.exists() && targetFile.isDirectory())
@@ -107,7 +107,7 @@ object FilesSuite extends tests.Suite {
   test(
     "Files.copy throws if the target exists and is a non-empty directory and REPLACE_EXISTING is set") {
     val targetFile = File.createTempFile("test", ".tmp")
-    val target     = targetFile.toPath()
+    val target = targetFile.toPath()
     assert(targetFile.delete())
     assert(targetFile.mkdir())
     assert(targetFile.exists() && targetFile.isDirectory())
@@ -124,7 +124,7 @@ object FilesSuite extends tests.Suite {
   test(
     "Files.copy replaces the target if its an existing file and REPLACE_EXISTING is set") {
     val targetFile = File.createTempFile("test", ".tmp")
-    val target     = targetFile.toPath()
+    val target = targetFile.toPath()
     assert(targetFile.exists() && targetFile.isFile())
 
     val in = new ByteArrayInputStream(Array(1, 2, 3))
@@ -140,8 +140,8 @@ object FilesSuite extends tests.Suite {
 
   test("Files.createSymbolicLink can create symbolic links") {
     withTemporaryDirectory { dirFile =>
-      val dir    = dirFile.toPath()
-      val link   = dir.resolve("link")
+      val dir = dirFile.toPath()
+      val link = dir.resolve("link")
       val target = dir.resolve("target")
       Files.createSymbolicLink(link, target)
       assert(Files.isSymbolicLink(link))
@@ -150,8 +150,8 @@ object FilesSuite extends tests.Suite {
 
   test("Files.createSymbolicLink throws if the link already exists") {
     withTemporaryDirectory { dirFile =>
-      val dir    = dirFile.toPath
-      val link   = dir.resolve("link")
+      val dir = dirFile.toPath
+      val link = dir.resolve("link")
       val target = dir.resolve("target")
       link.toFile().createNewFile()
       assert(link.toFile().exists())
@@ -164,7 +164,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.exists reports existing files as existing") {
     val targetFile = File.createTempFile("test", ".tmp")
-    val target     = targetFile.toPath()
+    val target = targetFile.toPath()
     assert(targetFile.exists() && targetFile.isFile())
 
     assert(Files.exists(target))
@@ -173,7 +173,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.exists reports existing directories as existing") {
     val targetFile = File.createTempFile("test", ".tmp")
-    val target     = targetFile.toPath()
+    val target = targetFile.toPath()
     assert(targetFile.delete())
     assert(targetFile.mkdir())
     assert(targetFile.exists() && targetFile.isDirectory())
@@ -184,7 +184,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.exists reports non-existing files as such") {
     val targetFile = File.createTempFile("test", ".tmp")
-    val target     = targetFile.toPath()
+    val target = targetFile.toPath()
     assert(targetFile.delete())
     assert(!targetFile.exists())
     assert(!Files.exists(target))
@@ -193,10 +193,10 @@ object FilesSuite extends tests.Suite {
 
   test("Files.exists handles symlinks") {
     withTemporaryDirectory { dirFile =>
-      val dir         = dirFile.toPath()
-      val existing    = new File(dirFile, "existing")
+      val dir = dirFile.toPath()
+      val existing = new File(dirFile, "existing")
       val nonexisting = dir.resolve("nonexisting")
-      val brokenLink  = dir.resolve("brokenlink")
+      val brokenLink = dir.resolve("brokenlink")
       val correctLink = dir.resolve("correctlink")
 
       existing.createNewFile()
@@ -213,7 +213,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.createDirectory can create a directory") {
     val targetFile = File.createTempFile("test", ".tmp")
-    val target     = targetFile.toPath()
+    val target = targetFile.toPath()
     assert(targetFile.delete())
 
     Files.createDirectory(target)
@@ -223,7 +223,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.createDirectory throws if the file already exists") {
     val targetFile = File.createTempFile("test", ".tmp")
-    val target     = targetFile.toPath()
+    val target = targetFile.toPath()
 
     assertThrows[FileAlreadyExistsException] {
       Files.createDirectory(target)
@@ -234,9 +234,9 @@ object FilesSuite extends tests.Suite {
     "Files.createDirectories can create directories if none of the hierarchy exists") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val p1  = dir.resolve("p1")
-      val p2  = p1.resolve("p2")
-      val p3  = p2.resolve("p3")
+      val p1 = dir.resolve("p1")
+      val p2 = p1.resolve("p2")
+      val p3 = p2.resolve("p3")
 
       assert(!Files.exists(p1))
       assert(!Files.exists(p2))
@@ -251,10 +251,10 @@ object FilesSuite extends tests.Suite {
     "Files.createDirectories can create directories if some of the hierarchy exists") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val p1  = dir.resolve("p1")
-      val p2  = p1.resolve("p2")
-      val p3  = p2.resolve("p3")
-      val p4  = p3.resolve("p4")
+      val p1 = dir.resolve("p1")
+      val p2 = p1.resolve("p2")
+      val p3 = p2.resolve("p3")
+      val p4 = p3.resolve("p4")
 
       assert(!Files.exists(p1))
       assert(!Files.exists(p2))
@@ -278,7 +278,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.createFile can create a new file") {
     withTemporaryDirectory { dirFile =>
-      val dir  = dirFile.toPath()
+      val dir = dirFile.toPath()
       val file = dir.resolve("file")
 
       assert(!Files.exists(file))
@@ -289,7 +289,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.createFile throws if the file already exists") {
     withTemporaryDirectory { dirFile =>
-      val dir  = dirFile.toPath()
+      val dir = dirFile.toPath()
       val file = dir.resolve("file")
 
       assert(!Files.exists(file))
@@ -304,7 +304,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.createLink can create links") {
     withTemporaryDirectory { dirFile =>
-      val dir  = dirFile.toPath()
+      val dir = dirFile.toPath()
       val file = dir.resolve("file")
       val link = dir.resolve("link")
 
@@ -318,7 +318,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.createLink throws if the file already exists") {
     withTemporaryDirectory { dirFile =>
-      val dir  = dirFile.toPath()
+      val dir = dirFile.toPath()
       val file = dir.resolve("file")
       val link = dir.resolve("link")
 
@@ -360,7 +360,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.isRegularFile reports files as such") {
     withTemporaryDirectory { dirFile =>
-      val dir  = dirFile.toPath
+      val dir = dirFile.toPath
       val file = dir.resolve("file")
       Files.createFile(file)
       assert(Files.exists(file))
@@ -378,7 +378,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.isRegularFile handles symlinks") {
     withTemporaryDirectory { dirFile =>
-      val dir  = dirFile.toPath
+      val dir = dirFile.toPath
       val file = dir.resolve("file")
       val link = dir.resolve("link")
       Files.createFile(file)
@@ -408,7 +408,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.delete can delete files") {
     withTemporaryDirectory { dirFile =>
-      val dir  = dirFile.toPath()
+      val dir = dirFile.toPath()
       val file = dir.resolve("file")
       Files.createFile(file)
 
@@ -421,7 +421,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.delete can delete empty directories") {
     withTemporaryDirectory { dirFile =>
-      val dir    = dirFile.toPath()
+      val dir = dirFile.toPath()
       val subdir = dir.resolve("subdir")
       Files.createDirectory(subdir)
       assert(Files.exists(subdir))
@@ -433,7 +433,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.delete throws when deleting a non-existing file") {
     withTemporaryDirectory { dirFile =>
-      val dir         = dirFile.toPath()
+      val dir = dirFile.toPath()
       val nonexisting = dir.resolve("nonexisting")
       assert(!Files.exists(nonexisting))
 
@@ -445,9 +445,9 @@ object FilesSuite extends tests.Suite {
 
   test("Files.delete throws when deleting a non-empty directory") {
     withTemporaryDirectory { dirFile =>
-      val dir    = dirFile.toPath()
+      val dir = dirFile.toPath()
       val subdir = dir.resolve("subdir")
-      val file   = subdir.resolve("file")
+      val file = subdir.resolve("file")
       Files.createDirectory(subdir)
       Files.createFile(file)
       assert(Files.exists(subdir))
@@ -460,7 +460,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.deleteIfExists works if the file exists") {
     withTemporaryDirectory { dirFile =>
-      val dir  = dirFile.toPath()
+      val dir = dirFile.toPath()
       val file = dir.resolve("file")
       Files.createFile(file)
       assert(Files.exists(file))
@@ -472,7 +472,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.deleteIfExists works if the file doesn't exist") {
     withTemporaryDirectory { dirFile =>
-      val dir  = dirFile.toPath()
+      val dir = dirFile.toPath()
       val file = dir.resolve("file")
       assert(!Files.exists(file))
       assert(!Files.deleteIfExists(file))
@@ -483,10 +483,10 @@ object FilesSuite extends tests.Suite {
   test("Files.list lists files") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
-      val f1  = dir.resolve("f1")
-      val d0  = dir.resolve("d0")
-      val f2  = d0.resolve("f2")
+      val f0 = dir.resolve("f0")
+      val f1 = dir.resolve("f1")
+      val d0 = dir.resolve("d0")
+      val f2 = d0.resolve("f2")
 
       Files.createDirectory(d0)
       Files.createFile(f0)
@@ -497,7 +497,7 @@ object FilesSuite extends tests.Suite {
       assert(Files.exists(f1) && Files.isRegularFile(f1))
       assert(Files.exists(f2) && Files.isRegularFile(f2))
 
-      val it    = Files.list(dir).iterator()
+      val it = Files.list(dir).iterator()
       val files = scala.collection.mutable.Set.empty[Path]
       while (it.hasNext()) {
         files += it.next()
@@ -511,7 +511,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.readSymbolicLink can read a valid symbolic link") {
     withTemporaryDirectory { dirFile =>
-      val dir  = dirFile.toPath()
+      val dir = dirFile.toPath()
       val link = dir.resolve("link")
       val file = dir.resolve("file")
       Files.createFile(file)
@@ -525,9 +525,9 @@ object FilesSuite extends tests.Suite {
 
   test("Files.readSymbolicLink can read a broken symbolic link") {
     withTemporaryDirectory { dirFile =>
-      val dir        = dirFile.toPath()
+      val dir = dirFile.toPath()
       val brokenLink = dir.resolve("link")
-      val file       = dir.resolve("file")
+      val file = dir.resolve("file")
       Files.createSymbolicLink(brokenLink, file)
 
       assert(!Files.exists(file))
@@ -539,10 +539,10 @@ object FilesSuite extends tests.Suite {
   test("Files.walk walks files") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
-      val f1  = dir.resolve("f1")
-      val d0  = dir.resolve("d0")
-      val f2  = d0.resolve("f2")
+      val f0 = dir.resolve("f0")
+      val f1 = dir.resolve("f1")
+      val d0 = dir.resolve("d0")
+      val f2 = d0.resolve("f2")
 
       Files.createDirectory(d0)
       Files.createFile(f0)
@@ -553,7 +553,7 @@ object FilesSuite extends tests.Suite {
       assert(Files.exists(f1) && Files.isRegularFile(f1))
       assert(Files.exists(f2) && Files.isRegularFile(f2))
 
-      val it    = Files.walk(dir).iterator()
+      val it = Files.walk(dir).iterator()
       val files = scala.collection.mutable.Set.empty[Path]
       while (it.hasNext()) {
         files += it.next()
@@ -571,9 +571,9 @@ object FilesSuite extends tests.Suite {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
 
-      val d0   = dir.resolve("d0")
-      val f0   = d0.resolve("f0")
-      val f1   = d0.resolve("f1")
+      val d0 = dir.resolve("d0")
+      val f0 = d0.resolve("f0")
+      val f1 = d0.resolve("f1")
       val link = d0.resolve("link")
 
       val d1 = dir.resolve("d1")
@@ -592,7 +592,7 @@ object FilesSuite extends tests.Suite {
       assert(Files.exists(f1) && Files.isRegularFile(f1))
       assert(Files.exists(f2) && Files.isRegularFile(f2))
 
-      val it    = Files.walk(d0, FileVisitOption.FOLLOW_LINKS).iterator()
+      val it = Files.walk(d0, FileVisitOption.FOLLOW_LINKS).iterator()
       val files = scala.collection.mutable.Set.empty[Path]
       while (it.hasNext()) {
         files += it.next()
@@ -609,15 +609,15 @@ object FilesSuite extends tests.Suite {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
 
-      val d0   = dir.resolve("d0")
-      val d1   = d0.resolve("d1")
+      val d0 = dir.resolve("d0")
+      val d1 = d0.resolve("d1")
       val link = d1.resolve("link")
 
       Files.createDirectory(d0)
       Files.createDirectory(d1)
       Files.createSymbolicLink(link, d0)
 
-      val it       = Files.walk(d0, FileVisitOption.FOLLOW_LINKS).iterator()
+      val it = Files.walk(d0, FileVisitOption.FOLLOW_LINKS).iterator()
       val expected = Set(d0, d1)
       assert(expected contains it.next())
       assert(expected contains it.next())
@@ -628,10 +628,10 @@ object FilesSuite extends tests.Suite {
   test("Files.walkFileTree walks the tree") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
-      val f1  = dir.resolve("f1")
-      val d0  = dir.resolve("d0")
-      val f2  = d0.resolve("f2")
+      val f0 = dir.resolve("f0")
+      val f1 = dir.resolve("f1")
+      val d0 = dir.resolve("d0")
+      val f2 = d0.resolve("f2")
 
       Files.createDirectory(d0)
       Files.createFile(f0)
@@ -645,9 +645,9 @@ object FilesSuite extends tests.Suite {
       val visitor = new QueueingVisitor
       Files.walkFileTree(dir, visitor)
       val expected = Map(dir -> 2, d0 -> 2, f2 -> 1, f0 -> 1, f1 -> 1)
-      val result   = scala.collection.mutable.Map.empty[Path, Int]
+      val result = scala.collection.mutable.Map.empty[Path, Int]
       while (!visitor.isEmpty) {
-        val f     = visitor.dequeue()
+        val f = visitor.dequeue()
         val count = result.getOrElse(f, 0)
         result(f) = count + 1
       }
@@ -658,10 +658,10 @@ object FilesSuite extends tests.Suite {
   test("Files.walkFileTree can be terminated") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
-      val f1  = dir.resolve("f1")
-      val d0  = dir.resolve("d0")
-      val f2  = d0.resolve("f2")
+      val f0 = dir.resolve("f0")
+      val f1 = dir.resolve("f1")
+      val d0 = dir.resolve("d0")
+      val f2 = d0.resolve("f2")
 
       Files.createDirectory(d0)
       Files.createFile(f0)
@@ -701,10 +701,10 @@ object FilesSuite extends tests.Suite {
   test("Files.walkFileTree can skip subtrees") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
-      val f1  = dir.resolve("f1")
-      val d0  = dir.resolve("d0")
-      val f2  = d0.resolve("f2")
+      val f0 = dir.resolve("f0")
+      val f1 = dir.resolve("f1")
+      val d0 = dir.resolve("d0")
+      val f2 = d0.resolve("f2")
 
       Files.createDirectory(d0)
       Files.createFile(f0)
@@ -724,9 +724,9 @@ object FilesSuite extends tests.Suite {
       }
       Files.walkFileTree(dir, visitor)
       val expected = Map(dir -> 2, f0 -> 1, f1 -> 1)
-      val result   = scala.collection.mutable.Map.empty[Path, Int]
+      val result = scala.collection.mutable.Map.empty[Path, Int]
       while (!visitor.isEmpty) {
-        val f     = visitor.dequeue()
+        val f = visitor.dequeue()
         val count = result.getOrElse(f, 0)
         result(f) = count + 1
       }
@@ -737,10 +737,10 @@ object FilesSuite extends tests.Suite {
   test("Files.walkFileTree can skip siblings") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
-      val f1  = dir.resolve("f1")
-      val d0  = dir.resolve("d0")
-      val f2  = d0.resolve("f2")
+      val f0 = dir.resolve("f0")
+      val f1 = dir.resolve("f1")
+      val d0 = dir.resolve("d0")
+      val f2 = d0.resolve("f2")
 
       Files.createDirectory(d0)
       Files.createFile(f0)
@@ -751,9 +751,9 @@ object FilesSuite extends tests.Suite {
       assert(Files.exists(f1) && Files.isRegularFile(f1))
       assert(Files.exists(f2) && Files.isRegularFile(f2))
 
-      val visitor  = new QueueingVisitor()
+      val visitor = new QueueingVisitor()
       val expected = scala.collection.mutable.Set.empty[Path]
-      var skip     = false
+      var skip = false
       val skippingVisitor = new QueueingVisitor {
         override def visitFile(
             file: Path,
@@ -781,10 +781,10 @@ object FilesSuite extends tests.Suite {
   test("Files.find finds files") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
-      val f1  = dir.resolve("f1")
-      val d0  = dir.resolve("d0")
-      val f2  = d0.resolve("f2")
+      val f0 = dir.resolve("f0")
+      val f1 = dir.resolve("f1")
+      val d0 = dir.resolve("d0")
+      val f2 = d0.resolve("f2")
 
       Files.createDirectory(d0)
       Files.createFile(f0)
@@ -799,7 +799,7 @@ object FilesSuite extends tests.Suite {
         override def test(path: Path, attrs: BasicFileAttributes): Boolean =
           path.getFileName.toString.startsWith("f")
       }
-      val it       = Files.find(dir, 10, predicate).iterator
+      val it = Files.find(dir, 10, predicate).iterator
       val expected = Set(f0, f1, f2)
 
       assert(expected contains it.next())
@@ -811,13 +811,13 @@ object FilesSuite extends tests.Suite {
   test("Files.getLastModifiedTime works") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
+      val f0 = dir.resolve("f0")
 
       Files.createFile(f0)
       assert(Files.exists(f0))
 
       val referenceMs = f0.toFile().lastModified()
-      val filetimeMs  = Files.getLastModifiedTime(f0).toMillis()
+      val filetimeMs = Files.getLastModifiedTime(f0).toMillis()
       assert(referenceMs == filetimeMs)
     }
   }
@@ -843,7 +843,7 @@ object FilesSuite extends tests.Suite {
       val d0isSym =
         Files.getAttribute(d0, "isSymbolicLink").asInstanceOf[Boolean]
       val d0isOth = Files.getAttribute(d0, "isOther").asInstanceOf[Boolean]
-      val d0fkey  = Files.getAttribute(d0, "fileKey")
+      val d0fkey = Files.getAttribute(d0, "fileKey")
 
       assert(!d0isReg)
       assert(d0isDir)
@@ -863,7 +863,7 @@ object FilesSuite extends tests.Suite {
       val f0isSym =
         Files.getAttribute(f0, "isSymbolicLink").asInstanceOf[Boolean]
       val f0isOth = Files.getAttribute(f0, "isOther").asInstanceOf[Boolean]
-      val f0fkey  = Files.getAttribute(f0, "fileKey")
+      val f0fkey = Files.getAttribute(f0, "fileKey")
 
       assert(f0mtime.toMillis() == f0.toFile().lastModified())
       assert(f0size == f0.toFile().length())
@@ -877,8 +877,8 @@ object FilesSuite extends tests.Suite {
   test("Files.getAttribute obeys given LinkOption") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
-      val l0  = dir.resolve("l0")
+      val f0 = dir.resolve("f0")
+      val l0 = dir.resolve("l0")
 
       Files.createFile(f0)
       Files.createSymbolicLink(l0, f0)
@@ -914,7 +914,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.getOwner works") {
     withTemporaryDirectory { dirFile =>
-      val dir   = dirFile.toPath()
+      val dir = dirFile.toPath()
       val owner = Files.getOwner(dir)
       assert(owner.getName().nonEmpty)
     }
@@ -922,8 +922,8 @@ object FilesSuite extends tests.Suite {
 
   test("Files.getPosixFilePermissions works") {
     withTemporaryDirectory { dirFile =>
-      val dir    = dirFile.toPath()
-      val f0     = dir.resolve("f0")
+      val dir = dirFile.toPath()
+      val f0 = dir.resolve("f0")
       val f0File = f0.toFile()
 
       Files.createFile(f0)
@@ -953,7 +953,7 @@ object FilesSuite extends tests.Suite {
   test("Files.lines returns the lines") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
+      val f0 = dir.resolve("f0")
 
       val writer = new BufferedWriter(
         new OutputStreamWriter(new FileOutputStream(f0.toFile())))
@@ -975,7 +975,7 @@ object FilesSuite extends tests.Suite {
   test("Files.write can write to a file") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
+      val f0 = dir.resolve("f0")
 
       val lines = new Iterable(Array("first line", "second line"))
       Files.write(f0, lines)
@@ -990,8 +990,8 @@ object FilesSuite extends tests.Suite {
   test("Files.move moves files") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
-      val f1  = dir.resolve("f1")
+      val f0 = dir.resolve("f0")
+      val f1 = dir.resolve("f1")
 
       val lines = new Iterable(Array("first line", "second line"))
       Files.write(f0, lines)
@@ -1011,7 +1011,7 @@ object FilesSuite extends tests.Suite {
   test("Files.setAttribute can set lastModifiedTime") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
+      val f0 = dir.resolve("f0")
 
       Files.createFile(f0)
       assert(Files.exists(f0))
@@ -1029,7 +1029,7 @@ object FilesSuite extends tests.Suite {
   test("Files.setAttribute can set lastAccessTime") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
+      val f0 = dir.resolve("f0")
 
       Files.createFile(f0)
       assert(Files.exists(f0))
@@ -1047,7 +1047,7 @@ object FilesSuite extends tests.Suite {
   test("Files.setAttribute can set permissions") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
+      val f0 = dir.resolve("f0")
 
       Files.createFile(f0)
       assert(Files.exists(f0))
@@ -1065,7 +1065,7 @@ object FilesSuite extends tests.Suite {
   test("Files.readAllLines returns all the lines") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
+      val f0 = dir.resolve("f0")
 
       val lines = new Iterable(Array("first line", "second line"))
       Files.write(f0, lines)
@@ -1081,8 +1081,8 @@ object FilesSuite extends tests.Suite {
   test("Files.readAllBytes reads all bytes") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath()
-      val f0  = dir.resolve("f0")
-      val in  = new ByteArrayInputStream(Array(1, 2, 3))
+      val f0 = dir.resolve("f0")
+      val in = new ByteArrayInputStream(Array(1, 2, 3))
       Files.copy(in, f0)
       assert(Files.exists(f0))
       assert(Files.size(f0) == 3)
@@ -1096,7 +1096,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.readAttributes(Path, Class[_], Array[LinkOption]) works") {
     withTemporaryDirectory { dirFile =>
-      val dir   = dirFile.toPath
+      val dir = dirFile.toPath
       val attrs = Files.readAttributes(dir, classOf[PosixFileAttributes])
       assert(attrs.isDirectory())
       assert(!attrs.isOther())
@@ -1107,7 +1107,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.readAttributes(Path, String, Array[LinkOption]) works") {
     withTemporaryDirectory { dirFile =>
-      val dir   = dirFile.toPath
+      val dir = dirFile.toPath
       val attrs = Files.readAttributes(dir, "posix:permissions,size")
       assert(attrs.size == 2)
       assert(attrs.containsKey("permissions"))
@@ -1117,7 +1117,7 @@ object FilesSuite extends tests.Suite {
 
   test("Files.readAttributes(Path, String, Array[LinkOption]) supports *") {
     withTemporaryDirectory { dirFile =>
-      val dir   = dirFile.toPath
+      val dir = dirFile.toPath
       val attrs = Files.readAttributes(dir, "posix:*")
       assert(!attrs.isEmpty())
     }
@@ -1128,8 +1128,8 @@ object FilesSuite extends tests.Suite {
       val f = dir.toPath.resolve("f0")
       Files.write(f, Array[Byte](1, 2, 3))
       val channel = Files.newByteChannel(f)
-      val buffer  = ByteBuffer.allocate(10)
-      var read    = 0
+      val buffer = ByteBuffer.allocate(10)
+      var read = 0
       while (channel.read(buffer) != -1) {
         read += 1
       }
@@ -1143,7 +1143,7 @@ object FilesSuite extends tests.Suite {
   test("newInputStream returns an inputStream") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath
-      val f0  = dir.resolve("f0")
+      val f0 = dir.resolve("f0")
       Files.write(f0, Array[Byte](1, 2, 3))
 
       val in = Files.newInputStream(f0)
@@ -1157,7 +1157,7 @@ object FilesSuite extends tests.Suite {
   test("newOutputStream returns an OutputStream") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath
-      val f0  = dir.resolve("f0")
+      val f0 = dir.resolve("f0")
       val out = Files.newOutputStream(f0)
 
       assert(Files.exists(f0))
@@ -1175,7 +1175,7 @@ object FilesSuite extends tests.Suite {
   test("newOutputStream honors OpenOptions") {
     withTemporaryDirectory { dirFile =>
       val dir = dirFile.toPath
-      val f0  = dir.resolve("f0")
+      val f0 = dir.resolve("f0")
 
       val out0 = Files.newOutputStream(f0)
       out0.write(Array[Byte](1, 2, 3))
@@ -1212,7 +1212,7 @@ object FilesSuite extends tests.Suite {
 
 class Iterable[T](elems: Array[T]) extends java.lang.Iterable[T] {
   override val iterator = new java.util.Iterator[T] {
-    private var i                   = 0
+    private var i = 0
     override def hasNext(): Boolean = i < elems.length
     override def next(): T =
       if (hasNext) {
@@ -1226,9 +1226,9 @@ class Iterable[T](elems: Array[T]) extends java.lang.Iterable[T] {
 }
 
 class QueueingVisitor extends SimpleFileVisitor[Path] {
-  private val visited    = scala.collection.mutable.Queue.empty[Path]
+  private val visited = scala.collection.mutable.Queue.empty[Path]
   def isEmpty(): Boolean = visited.isEmpty
-  def dequeue(): Path    = visited.dequeue()
+  def dequeue(): Path = visited.dequeue()
 
   override def visitFileFailed(file: Path,
                                error: IOException): FileVisitResult =

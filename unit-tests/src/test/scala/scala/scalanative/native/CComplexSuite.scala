@@ -29,8 +29,8 @@ object CComplexSuite extends tests.Suite {
   // shared values for special calculations
   val qtrPI = Math.PI / 4
   val sqrt2 = Math.sqrt(2)
-  val real  = 1.0
-  val imag  = 1.0
+  val real = 1.0
+  val imag = 1.0
 
   // float complex helper fcns
   def printF(str: String, cp: Ptr[CFloatComplex]): Unit =
@@ -39,7 +39,7 @@ object CComplexSuite extends tests.Suite {
   def toFloat(i: Int): Float = jl.Float.intBitsToFloat(i)
 
   def isAlmostEqual(act: Float, exp: Float): Boolean = {
-    val diff    = Math.abs(act - exp)
+    val diff = Math.abs(act - exp)
     val epsilon = 2 * Math.max(Math.ulp(act), Math.ulp(exp))
     if (debug) {
       println(
@@ -198,7 +198,7 @@ object CComplexSuite extends tests.Suite {
   }
 
   def isAlmostEqual(act: Double, exp: Double): Boolean = {
-    val diff    = Math.abs(act - exp)
+    val diff = Math.abs(act - exp)
     val epsilon = Math.max(Math.ulp(act), Math.ulp(exp))
     if (debug) {
       println(

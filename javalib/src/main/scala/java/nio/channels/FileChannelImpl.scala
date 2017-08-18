@@ -36,7 +36,7 @@ final class FileChannelImpl(path: Path,
   override def map(mode: FileChannel.MapMode,
                    position: Long,
                    size: Long): MappedByteBuffer = {
-    var total  = 0
+    var total = 0
     var copied = 0
     val buffer =
       new MappedByteBuffer(mode, size.toInt, new Array(size.toInt), 0) {}
@@ -58,8 +58,8 @@ final class FileChannelImpl(path: Path,
                     number: Int): Long = {
     ensureOpen()
     val dst = new Array[Byte](1)
-    val nb  = raf.read(dst)
-    var i   = 0
+    val nb = raf.read(dst)
+    var i = 0
     while (i < number) {
       buffers(start + i).put(dst)
       i += 1
@@ -71,7 +71,7 @@ final class FileChannelImpl(path: Path,
     ensureOpen()
     position(pos)
     val dst = new Array[Byte](1)
-    val nb  = raf.read(dst)
+    val nb = raf.read(dst)
     if (nb > 0) buffer.put(dst)
     nb
   }
@@ -97,7 +97,7 @@ final class FileChannelImpl(path: Path,
     ensureOpen()
     position(pos)
     val buf = new Array[Byte](count.toInt)
-    val nb  = raf.read(buf)
+    val nb = raf.read(buf)
     target.write(ByteBuffer.wrap(buf, 0, nb))
     nb
   }

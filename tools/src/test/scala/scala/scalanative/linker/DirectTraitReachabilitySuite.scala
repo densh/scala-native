@@ -14,12 +14,12 @@ class DirectTraitReachabilitySuite extends ReachabilitySuite {
     }
   """)
 
-  val Parent     = g("Parent")
+  val Parent = g("Parent")
   val ParentMeth = g("Parent", "meth_unit")
-  val Child      = g("Child")
-  val ChildInit  = g("Child", "init")
-  val ChildMeth  = g("Child", "meth_unit")
-  val Object     = g("java.lang.Object")
+  val Child = g("Child")
+  val ChildInit = g("Child", "init")
+  val ChildMeth = g("Child", "meth_unit")
+  val Object = g("java.lang.Object")
   val ObjectInit = g("java.lang.Object", "init")
 
   testReachable("trait")(Parent)(Parent)

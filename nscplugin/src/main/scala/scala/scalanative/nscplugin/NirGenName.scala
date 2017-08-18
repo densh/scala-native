@@ -43,15 +43,15 @@ trait NirGenName { self: NirGenPhase =>
 
   def genFieldName(sym: Symbol): nir.Global = {
     val owner = genTypeName(sym.owner)
-    val id    = nativeIdOf(sym)
-    val tag   = if (sym.owner.isExternModule) "extern" else "field"
+    val id = nativeIdOf(sym)
+    val tag = if (sym.owner.isExternModule) "extern" else "field"
     owner member id tag tag
   }
 
   def genMethodSignature(sym: Symbol): String = {
     val owner = genTypeName(sym.owner)
-    val id    = nativeIdOf(sym)
-    val tpe   = sym.tpe.widen
+    val id = nativeIdOf(sym)
+    val tpe = sym.tpe.widen
     val mangledParams =
       tpe.params.map(p => mangledType(p.info))
 
@@ -62,8 +62,8 @@ trait NirGenName { self: NirGenPhase =>
 
   def genMethodName(sym: Symbol): nir.Global = {
     val owner = genTypeName(sym.owner)
-    val id    = nativeIdOf(sym)
-    val tpe   = sym.tpe.widen
+    val id = nativeIdOf(sym)
+    val tpe = sym.tpe.widen
 
     val mangledParams = tpe.params.toSeq.map(p => mangledType(p.info))
 

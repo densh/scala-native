@@ -33,13 +33,13 @@ abstract class NirGenPhase
 
   protected val curLazyAnonDefs =
     new util.ScopedVar[mutable.Map[Symbol, ClassDef]]
-  protected val curClassSym   = new util.ScopedVar[Symbol]
-  protected val curMethodSym  = new util.ScopedVar[Symbol]
+  protected val curClassSym = new util.ScopedVar[Symbol]
+  protected val curMethodSym = new util.ScopedVar[Symbol]
   protected val curMethodInfo = new util.ScopedVar[CollectMethodInfo]
-  protected val curMethodEnv  = new util.ScopedVar[MethodEnv]
+  protected val curMethodEnv = new util.ScopedVar[MethodEnv]
   protected val curMethodThis = new util.ScopedVar[Option[Val]]
-  protected val curFresh      = new util.ScopedVar[nir.Fresh]
-  protected val curUnwind     = new util.ScopedVar[nir.Next]
+  protected val curFresh = new util.ScopedVar[nir.Fresh]
+  protected val curUnwind = new util.ScopedVar[nir.Next]
   protected val curStatBuffer = new util.ScopedVar[StatBuffer]
 
   protected def lazyAnonDefs =
@@ -66,9 +66,9 @@ abstract class NirGenPhase
     }
 
     override def apply(cunit: CompilationUnit): Unit = {
-      val classDefs    = mutable.UnrolledBuffer.empty[ClassDef]
+      val classDefs = mutable.UnrolledBuffer.empty[ClassDef]
       val lazyAnonDefs = mutable.Map.empty[Symbol, ClassDef]
-      val files        = mutable.UnrolledBuffer.empty[(Path, Seq[nir.Defn])]
+      val files = mutable.UnrolledBuffer.empty[(Path, Seq[nir.Defn])]
 
       def collectClassDefs(tree: Tree): Unit = tree match {
         case EmptyTree =>
@@ -87,7 +87,7 @@ abstract class NirGenPhase
       }
 
       def genClass(cd: ClassDef): Unit = {
-        val path   = genPathFor(cunit, cd.symbol)
+        val path = genPathFor(cunit, cd.symbol)
         val buffer = new StatBuffer
 
         scoped(

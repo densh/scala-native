@@ -13,7 +13,7 @@ class FieldPosition(private val attribute: Format.Field,
   def getField(): Int = fieldID
 
   private[this] var beginIndex: Int = _
-  private[this] var endIndex: Int   = _
+  private[this] var endIndex: Int = _
 
   def getBeginIndex(): Int = beginIndex
 

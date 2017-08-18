@@ -19,7 +19,7 @@ trait ReachabilitySuite extends FunSuite {
   def testReachable(label: String)(entries: Global*)(expected: Global*) =
     test(label) {
       link(entries, sources) { res =>
-        val left  = res.defns.map(_.name).toSet
+        val left = res.defns.map(_.name).toSet
         val right = expected.toSet
         assert((left -- right).isEmpty, "overapproximation")
         assert((right -- left).isEmpty, "underapproximation")
@@ -40,15 +40,15 @@ trait ReachabilitySuite extends FunSuite {
   def link[T](entries: Seq[Global], sources: Seq[String])(
       f: linker.Result => T): T =
     Scope { implicit in =>
-      val outDir   = Files.createTempDirectory("native-test-out").toFile()
+      val outDir = Files.createTempDirectory("native-test-out").toFile()
       val compiler = NIRCompiler.getCompiler(outDir)
       val sourceMap = sources.zipWithIndex.map {
         case (b, i) => (s"file$i.scala", b)
       }.toMap
       val sourcesDir = NIRCompiler.writeSources(sourceMap)
-      val files      = compiler.compile(sourcesDir)
-      val config     = makeConfig(outDir)
-      val result     = tools.linkRaw(config, entries)
+      val files = compiler.compile(sourcesDir)
+      val config = makeConfig(outDir)
+      val result = tools.linkRaw(config, entries)
 
       f(result)
     }

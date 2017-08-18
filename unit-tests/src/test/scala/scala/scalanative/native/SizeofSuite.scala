@@ -75,8 +75,8 @@ object SizeofSuite extends tests.Suite {
                  CStruct3[Int, Int, CStruct4[Byte, Int, Short, Byte]]]] == 40)
   }
 
-  type _32   = Nat.Digit[Nat._3, Nat._2]
-  type _128  = Nat.Digit[Nat._1, Nat.Digit[Nat._2, Nat._8]]
+  type _32 = Nat.Digit[Nat._3, Nat._2]
+  type _128 = Nat.Digit[Nat._1, Nat.Digit[Nat._2, Nat._8]]
   type _1024 = Nat.Digit[Nat._1, Nat.Digit[Nat._0, Nat.Digit[Nat._2, Nat._4]]]
 
   test("CArray[Byte, _32]") {

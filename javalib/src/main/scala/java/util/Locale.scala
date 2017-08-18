@@ -110,30 +110,30 @@ object Locale {
 
   private[this] var defaultLocale = Locale.US
 
-  lazy val CANADA                   = new Locale("en", "CA")
-  lazy val CANADA_FRENCH            = new Locale("fr", "CA")
-  lazy val CHINA                    = new Locale("zh", "CN")
-  lazy val CHINESE                  = new Locale("zh", "")
-  lazy val ENGLISH                  = new Locale("en", "")
-  lazy val FRANCE                   = new Locale("fr", "FR")
-  lazy val FRENCH                   = new Locale("fr", "")
-  lazy val GERMAN                   = new Locale("de", "")
-  lazy val GERMANY                  = new Locale("de", "DE")
-  lazy val ITALIAN                  = new Locale("it", "")
-  lazy val ITALY                    = new Locale("it", "IT")
-  lazy val JAPAN                    = new Locale("ja", "JP")
-  lazy val JAPANESE                 = new Locale("ja", "")
-  lazy val KOREA                    = new Locale("ko", "KR")
-  lazy val KOREAN                   = new Locale("ko", "")
-  lazy val PRC                      = new Locale("zh", "CN")
-  lazy val PRIVATE_USE_EXTENSION    = 'x'
-  lazy val ROOT                     = new Locale("", "", "")
-  lazy val SIMPLIFIED_CHINESE       = new Locale("zh", "CN")
-  lazy val TAIWAN                   = new Locale("zh", "TW")
-  lazy val TRADITIONAL_CHINESE      = new Locale("zh", "TW")
-  lazy val UK                       = new Locale("en", "GB")
+  lazy val CANADA = new Locale("en", "CA")
+  lazy val CANADA_FRENCH = new Locale("fr", "CA")
+  lazy val CHINA = new Locale("zh", "CN")
+  lazy val CHINESE = new Locale("zh", "")
+  lazy val ENGLISH = new Locale("en", "")
+  lazy val FRANCE = new Locale("fr", "FR")
+  lazy val FRENCH = new Locale("fr", "")
+  lazy val GERMAN = new Locale("de", "")
+  lazy val GERMANY = new Locale("de", "DE")
+  lazy val ITALIAN = new Locale("it", "")
+  lazy val ITALY = new Locale("it", "IT")
+  lazy val JAPAN = new Locale("ja", "JP")
+  lazy val JAPANESE = new Locale("ja", "")
+  lazy val KOREA = new Locale("ko", "KR")
+  lazy val KOREAN = new Locale("ko", "")
+  lazy val PRC = new Locale("zh", "CN")
+  lazy val PRIVATE_USE_EXTENSION = 'x'
+  lazy val ROOT = new Locale("", "", "")
+  lazy val SIMPLIFIED_CHINESE = new Locale("zh", "CN")
+  lazy val TAIWAN = new Locale("zh", "TW")
+  lazy val TRADITIONAL_CHINESE = new Locale("zh", "TW")
+  lazy val UK = new Locale("en", "GB")
   lazy val UNICODE_LOCALE_EXTENSION = 'u'
-  lazy val US                       = new Locale("en", "US")
+  lazy val US = new Locale("en", "US")
 
   //def forLanguageTag(languageTag: String): String = ???
 

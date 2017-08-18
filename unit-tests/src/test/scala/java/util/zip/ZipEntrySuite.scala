@@ -9,13 +9,13 @@ import ZipBytes._
 
 object ZipEntrySuite extends tests.Suite {
 
-  var zfile: ZipFile          = null
-  var zentry: ZipEntry        = null
-  var orgSize: Long           = 0L
+  var zfile: ZipFile = null
+  var zentry: ZipEntry = null
+  var orgSize: Long = 0L
   var orgCompressedSize: Long = 0L
-  var orgCrc: Long            = 0L
-  var orgTime: Long           = 0L
-  var orgComment: String      = null
+  var orgCrc: Long = 0L
+  var orgTime: Long = 0L
+  var orgComment: String = null
 
   test("Constructor(String)") {
     setUp()
@@ -189,7 +189,7 @@ object ZipEntrySuite extends tests.Suite {
     }
 
     val zeInput = new ZipEntry("InputZip")
-    val extraB  = Array[Byte]('a', 'b', 'd', 'e')
+    val extraB = Array[Byte]('a', 'b', 'd', 'e')
     zeInput.setExtra(extraB)
     assert(extraB == zeInput.getExtra())
     assert(extraB(3) == zeInput.getExtra()(3))

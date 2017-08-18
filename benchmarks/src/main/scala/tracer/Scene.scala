@@ -21,8 +21,8 @@ class Ray(val position: Vector, val direction: Vector) {
 }
 
 class Camera(val position: Vector, val lookAt: Vector, val up: Vector) {
-  val equator          = lookAt.normalize.cross(this.up)
-  val screen           = position + lookAt
+  val equator = lookAt.normalize.cross(this.up)
+  val screen = position + lookAt
   val REVERSE_Y_VECTOR = new Vector(1.0, -1.0, 1.0)
 
   def getRay(vx: Double, vy: Double): Ray = {

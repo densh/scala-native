@@ -4,8 +4,8 @@ import scalanative.tools.OptimizerReporter
 import scalanative.sbtplugin.ScalaNativePluginInternal._
 import scalanative.io.packageNameFromPath
 
-val toolScalaVersion      = "2.10.6"
-val libScalaVersion       = "2.11.11"
+val toolScalaVersion = "2.10.6"
+val libScalaVersion = "2.11.11"
 val libCrossScalaVersions = Seq("2.11.8", "2.11.11")
 
 lazy val baseSettings = Seq(
@@ -52,8 +52,8 @@ lazy val publishSnapshot =
 lazy val setUpTestingCompiler = Def.task {
   val nscpluginjar = (Keys.`package` in nscplugin in Compile).value
   val nativelibjar = (Keys.`package` in nativelib in Compile).value
-  val scalalibjar  = (Keys.`package` in scalalib in Compile).value
-  val javalibjar   = (Keys.`package` in javalib in Compile).value
+  val scalalibjar = (Keys.`package` in scalalib in Compile).value
+  val javalibjar = (Keys.`package` in javalib in Compile).value
   val testingcompilercp =
     (fullClasspath in testingCompiler in Compile).value.files
   val testingcompilerjar = (Keys.`package` in testingCompiler in Compile).value
@@ -94,7 +94,7 @@ lazy val mavenPublishSettings = Seq(
     val travis = Try(sys.env("TRAVIS")).getOrElse("false") == "true"
     val pr = Try(sys.env("TRAVIS_PULL_REQUEST"))
       .getOrElse("false") != "false"
-    val branch   = Try(sys.env("TRAVIS_BRANCH")).getOrElse("")
+    val branch = Try(sys.env("TRAVIS_BRANCH")).getOrElse("")
     val snapshot = version.value.trim.endsWith("SNAPSHOT")
 
     (travis, pr, branch, snapshot) match {
@@ -112,9 +112,9 @@ lazy val mavenPublishSettings = Seq(
   }.value,
   credentials ++= {
     for {
-      realm    <- sys.env.get("MAVEN_REALM")
-      domain   <- sys.env.get("MAVEN_DOMAIN")
-      user     <- sys.env.get("MAVEN_USER")
+      realm <- sys.env.get("MAVEN_REALM")
+      domain <- sys.env.get("MAVEN_DOMAIN")
+      user <- sys.env.get("MAVEN_USER")
       password <- sys.env.get("MAVEN_PASSWORD")
     } yield {
       Credentials(realm, domain, user, password)
@@ -218,8 +218,8 @@ lazy val tools =
     .settings(mavenPublishSettings)
     .settings(
       libraryDependencies ++= Seq(
-        "com.lihaoyi"    %% "fastparse"  % "0.4.2",
-        "com.lihaoyi"    %% "scalaparse" % "0.4.2",
+        "com.lihaoyi" %% "fastparse" % "0.4.2",
+        "com.lihaoyi" %% "scalaparse" % "0.4.2",
         "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
         compilerPlugin(
           "org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
@@ -250,7 +250,7 @@ lazy val nscplugin =
       ),
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-        "org.scala-lang" % "scala-reflect"  % scalaVersion.value
+        "org.scala-lang" % "scala-reflect" % scalaVersion.value
       )
     )
 
@@ -320,7 +320,7 @@ lazy val javalib =
         val previous = (scalacOptions in Compile).value
         val javaBootClasspath =
           scala.tools.util.PathResolver.Environment.javaBootClassPath
-        val classDir  = (classDirectory in Compile).value.getAbsolutePath()
+        val classDir = (classDirectory in Compile).value.getAbsolutePath()
         val separator = sys.props("path.separator")
         "-javabootclasspath" +: s"$classDir$separator$javaBootClasspath" +: previous
       },
@@ -347,7 +347,7 @@ lazy val scalalib =
       assembleScalaLibrary := {
         import org.eclipse.jgit.api._
 
-        val s      = streams.value
+        val s = streams.value
         val trgDir = target.value / "scalaSources" / scalaVersion.value
 
         if (!trgDir.exists) {
@@ -417,9 +417,9 @@ lazy val tests =
       libraryDependencies += "org.scala-native" %%% "test-interface" % nativeVersion,
       testFrameworks += new TestFramework("tests.NativeFramework"),
       envVars in (Test, test) ++= Map(
-        "USER"                           -> "scala-native",
-        "HOME"                           -> baseDirectory.value.getAbsolutePath,
-        "SCALA_NATIVE_ENV_WITH_EQUALS"   -> "1+1=2",
+        "USER" -> "scala-native",
+        "HOME" -> baseDirectory.value.getAbsolutePath,
+        "SCALA_NATIVE_ENV_WITH_EQUALS" -> "1+1=2",
         "SCALA_NATIVE_ENV_WITHOUT_VALUE" -> ""
       )
     )
@@ -484,7 +484,7 @@ lazy val testingCompiler =
     .settings(
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-        "org.scala-lang" % "scala-reflect"  % scalaVersion.value
+        "org.scala-lang" % "scala-reflect" % scalaVersion.value
       )
     )
     .dependsOn(testingCompilerInterface, nativelib)
@@ -497,7 +497,7 @@ lazy val testInterface =
     .in(file("test-interface"))
     .settings(
       name := "test-interface",
-      libraryDependencies += "org.scala-sbt"    % "test-interface"   % "1.0",
+      libraryDependencies += "org.scala-sbt" % "test-interface" % "1.0",
       libraryDependencies -= "org.scala-native" %%% "test-interface" % version.value % Test
     )
     .enablePlugins(ScalaNativePlugin)

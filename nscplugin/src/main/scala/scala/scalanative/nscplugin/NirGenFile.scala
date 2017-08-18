@@ -15,12 +15,12 @@ trait NirGenFile { self: NirGenPhase =>
     val baseDir: AbstractFile =
       settings.outputDirs.outputDirFor(cunit.source.file)
 
-    val id        = genTypeName(sym).id
+    val id = genTypeName(sym).id
     val pathParts = id.split("[./]")
-    val dir       = (baseDir /: pathParts.init)(_.subdirectoryNamed(_))
+    val dir = (baseDir /: pathParts.init)(_.subdirectoryNamed(_))
 
     var filename = pathParts.last
-    val file     = dir fileNamed (filename + ".nir")
+    val file = dir fileNamed (filename + ".nir")
 
     Paths.get(file.file.getAbsolutePath)
   }

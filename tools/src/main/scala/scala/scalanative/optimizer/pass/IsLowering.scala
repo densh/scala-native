@@ -55,16 +55,16 @@ class IsLowering(implicit top: Top) extends Pass {
 
       case ClassRef(cls) =>
         val typeptr = let(Op.Load(Type.Ptr, obj))
-        val idptr   = let(Op.Elem(Rt.Type, typeptr, Seq(Val.Int(0), Val.Int(0))))
-        val id      = let(Op.Load(Type.Int, idptr))
-        val ge      = let(Op.Comp(Comp.Sle, Type.Int, Val.Int(cls.range.start), id))
-        val le      = let(Op.Comp(Comp.Sle, Type.Int, id, Val.Int(cls.range.end)))
+        val idptr = let(Op.Elem(Rt.Type, typeptr, Seq(Val.Int(0), Val.Int(0))))
+        val id = let(Op.Load(Type.Int, idptr))
+        val ge = let(Op.Comp(Comp.Sle, Type.Int, Val.Int(cls.range.start), id))
+        val le = let(Op.Comp(Comp.Sle, Type.Int, id, Val.Int(cls.range.end)))
         let(Op.Bin(Bin.And, Type.Bool, ge, le))
 
       case TraitRef(trt) =>
         val typeptr = let(Op.Load(Type.Ptr, obj))
-        val idptr   = let(Op.Elem(Rt.Type, typeptr, Seq(Val.Int(0), Val.Int(0))))
-        val id      = let(Op.Load(Type.Int, idptr))
+        val idptr = let(Op.Elem(Rt.Type, typeptr, Seq(Val.Int(0), Val.Int(0))))
+        val id = let(Op.Load(Type.Int, idptr))
         val boolptr = let(
           Op.Elem(top.tables.classHasTraitTy,
                   top.tables.classHasTraitVal,

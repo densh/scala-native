@@ -43,7 +43,7 @@ object System {
     if (Platform.isWindows) {
       sysProps.setProperty("file.separator", "\\")
       sysProps.setProperty("path.separator", ";")
-      val userLang    = fromCString(Platform.windowsGetUserLang())
+      val userLang = fromCString(Platform.windowsGetUserLang())
       val userCountry = fromCString(Platform.windowsGetUserCountry())
       sysProps.setProperty("user.language", userLang)
       sysProps.setProperty("user.country", userCountry)
@@ -88,11 +88,11 @@ object System {
   def setProperty(key: String, value: String): String =
     systemProperties.setProperty(key, value).asInstanceOf[String]
 
-  def nanoTime(): scala.Long          = time.scalanative_nano_time
+  def nanoTime(): scala.Long = time.scalanative_nano_time
   def currentTimeMillis(): scala.Long = time.scalanative_current_time_millis
 
   def getenv(): Map[String, String] = envVars
-  def getenv(key: String): String   = envVars.get(key)
+  def getenv(key: String): String = envVars.get(key)
 
   var in: InputStream =
     new FileInputStream(FileDescriptor.in)
@@ -111,18 +111,18 @@ object System {
     }
 
     // Count to preallocate the map
-    var size    = 0
+    var size = 0
     var sizePtr = unistd.environ
     while (isDefined(sizePtr)) {
       size += 1
       sizePtr += 1
     }
 
-    val map               = new HashMap[String, String](size)
+    val map = new HashMap[String, String](size)
     var ptr: Ptr[CString] = unistd.environ
     while (isDefined(ptr)) {
       val variable = fromCString(ptr(0))
-      val name     = variable.takeWhile(_ != '=')
+      val name = variable.takeWhile(_ != '=')
       val value =
         if (name.length < variable.length)
           variable.substring(name.length + 1, variable.length)

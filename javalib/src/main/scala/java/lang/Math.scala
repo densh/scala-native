@@ -6,7 +6,7 @@ import scalanative.native.{math => cmath}
 object Math {
   private lazy val rand = new java.util.Random
 
-  final val E  = 2.718281828459045
+  final val E = 2.718281828459045
   final val PI = 3.141592653589793
 
   @inline def abs(a: scala.Double): scala.Double =

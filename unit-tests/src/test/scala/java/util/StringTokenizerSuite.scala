@@ -34,7 +34,7 @@ object StringTokenizerSuite extends tests.Suite {
   }
 
   test("hasMoreTokens()") {
-    val st      = new StringTokenizer("This is a test String")
+    val st = new StringTokenizer("This is a test String")
     var counter = 0
     while (counter < 5) {
       assert(st.hasMoreTokens())

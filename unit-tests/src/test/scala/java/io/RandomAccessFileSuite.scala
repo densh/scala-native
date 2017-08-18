@@ -20,8 +20,8 @@ object RandomAccessFileSuite extends tests.Suite {
 
   test("valid file descriptor and sync success") {
     val file = File.createTempFile("raffdtest", "")
-    val raf  = new RandomAccessFile(file, "r")
-    val fd   = raf.getFD
+    val raf = new RandomAccessFile(file, "r")
+    val fd = raf.getFD
     assert(fd.valid())
     assert(Try(fd.sync()).isSuccess)
   }
@@ -117,7 +117,7 @@ object RandomAccessFileSuite extends tests.Suite {
   private def testWithRAF(name: String)(tst: RandomAccessFile => Unit): Unit =
     test(name) {
       val file = File.createTempFile("tmp", "")
-      val raf  = new RandomAccessFile(file, "rw")
+      val raf = new RandomAccessFile(file, "rw")
       tst(raf)
     }
 }

@@ -11,12 +11,12 @@ import java.nio.charset.Charset
 @link("re2")
 @extern
 object cre2 {
-  type regexp_t     = CStruct0
-  type options_t    = CStruct0
-  type string_t     = CStruct2[CString, CInt]
+  type regexp_t = CStruct0
+  type options_t = CStruct0
+  type string_t = CStruct2[CString, CInt]
   type error_code_t = CInt
-  type anchor_t     = CInt
-  type encoding_t   = CInt
+  type anchor_t = CInt
+  type encoding_t = CInt
 
   @name("scalanative_cre2_new")
   def compile(

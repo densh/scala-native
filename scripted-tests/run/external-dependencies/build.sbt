@@ -7,7 +7,7 @@ lazy val check =
 
 check := {
   val external = (nativeExternalDependencies in Compile).value.toSet
-  val missing  = (nativeMissingDependencies in Compile).value.toSet
+  val missing = (nativeMissingDependencies in Compile).value.toSet
 
   // not supported
   val applets = Set(

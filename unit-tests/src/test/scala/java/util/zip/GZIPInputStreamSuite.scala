@@ -62,11 +62,11 @@ object GZIPInputStreamSuite extends tests.Suite {
       i += 1
     }
     val bout = new ByteArrayOutputStream()
-    val out  = new GZIPOutputStream(bout)
+    val out = new GZIPOutputStream(bout)
     out.write(test)
     out.close()
-    val comp  = bout.toByteArray()
-    var gin2  = new GZIPInputStream(new ByteArrayInputStream(comp), 512)
+    val comp = bout.toByteArray()
+    var gin2 = new GZIPInputStream(new ByteArrayInputStream(comp), 512)
     var total = 0
     while ({ result = gin2.read(test); result != -1 }) {
       total += result
@@ -101,7 +101,7 @@ object GZIPInputStreamSuite extends tests.Suite {
       while (gin2.read(test) != -1) {}
     }
 
-    val baos   = new ByteArrayOutputStream()
+    val baos = new ByteArrayOutputStream()
     val zipout = new GZIPOutputStream(baos)
     zipout.write(test)
     zipout.close()
@@ -142,8 +142,8 @@ object GZIPInputStreamSuite extends tests.Suite {
     test("read()") {
       var result = 0
       var buffer = Array[Byte](1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-      val out    = new ByteArrayOutputStream()
-      val gout   = new GZIPOutputStream(out)
+      val out = new ByteArrayOutputStream()
+      val gout = new GZIPOutputStream(out)
 
       var i = 0
       while (i < 10) {

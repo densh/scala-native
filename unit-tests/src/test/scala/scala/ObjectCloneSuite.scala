@@ -7,7 +7,7 @@ object ObjectCloneSuite extends tests.Suite {
   }
 
   test("clone with primitive") {
-    val obj   = I(123)
+    val obj = I(123)
     val clone = obj.copy()
 
     obj.i = 124
@@ -21,7 +21,7 @@ object ObjectCloneSuite extends tests.Suite {
   }
 
   test("clone with ref") {
-    val obj   = Arr(Array(123))
+    val obj = Arr(Array(123))
     val clone = obj.copy()
 
     obj.arr(0) = 124

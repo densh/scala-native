@@ -40,10 +40,10 @@ object PatternSuite extends tests.Suite {
     // hex
     pass("\\x10", "\u0010")
 
-    pass("\\t", "\t")     // tab
-    pass("\\n", "\n")     // newline
-    pass("\\r", "\r")     // carriage-return
-    pass("\\f", "\f")     // form-feed
+    pass("\\t", "\t") // tab
+    pass("\\n", "\n") // newline
+    pass("\\r", "\r") // carriage-return
+    pass("\\f", "\f") // form-feed
     pass("\\a", "\u0007") // alert (bell)
   }
 
@@ -73,19 +73,19 @@ object PatternSuite extends tests.Suite {
 
   testFails("(not supported) POSIX character classes", 620) {
     // Needs to convert to
-    pass("\\p{Alnum}", "a")     // [[:alpha:]]
-    pass("\\p{Alpha}", "a")     // [[:alnum:]]
-    pass("\\p{ASCII}", "a")     // [[:ascii:]]
-    pass("\\p{Blank}", " ")     // [[:blank:]]
+    pass("\\p{Alnum}", "a") // [[:alpha:]]
+    pass("\\p{Alpha}", "a") // [[:alnum:]]
+    pass("\\p{ASCII}", "a") // [[:ascii:]]
+    pass("\\p{Blank}", " ") // [[:blank:]]
     pass("\\p{Cntrl}", "\\x20") // [[:cntrl:]]
-    pass("\\p{Digit}", "1")     // [[:digit:]]
-    pass("\\p{Graph}", "a")     // [[:graph:]]
-    pass("\\p{Lower}", "a")     // [[:lower:]]
-    pass("\\p{Print}", "a")     // [[:print:]]
-    pass("\\p{Punct}", ".")     // [[:punct:]]
-    pass("\\p{Space}", " ")     // [[:space:]]
-    pass("\\p{Upper}", "A")     // [[:upper:]]
-    pass("\\p{XDigit}", "a")    // [[:xdigit:]]
+    pass("\\p{Digit}", "1") // [[:digit:]]
+    pass("\\p{Graph}", "a") // [[:graph:]]
+    pass("\\p{Lower}", "a") // [[:lower:]]
+    pass("\\p{Print}", "a") // [[:print:]]
+    pass("\\p{Punct}", ".") // [[:punct:]]
+    pass("\\p{Space}", " ") // [[:space:]]
+    pass("\\p{Upper}", "A") // [[:upper:]]
+    pass("\\p{XDigit}", "a") // [[:xdigit:]]
   }
 
   test("unicode classes") {

@@ -4,13 +4,13 @@ package util
 import scala.collection.mutable
 
 object Stats {
-  private val times    = mutable.Map.empty[String, Long]
+  private val times = mutable.Map.empty[String, Long]
   private val counters = mutable.Map.empty[String, Long]
   def time[T](key: String)(f: => T): T = {
     import System.nanoTime
     val start = nanoTime()
-    val res   = f
-    val end   = nanoTime()
+    val res = f
+    val end = nanoTime()
     synchronized {
       times(key) = times.getOrElse(key, 0L) + (end - start)
     }

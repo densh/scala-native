@@ -13,8 +13,8 @@ import java.io.{
 object DeflaterOutputStreamSuite extends tests.Suite {
 
   test("DeflaterOutputStream can deflate a few bytes") {
-    val bos      = new ByteArrayOutputStream()
-    val out      = new DeflaterOutputStream(bos)
+    val bos = new ByteArrayOutputStream()
+    val out = new DeflaterOutputStream(bos)
     val expected = Array[Byte](120, -100, 99, 100, 98, 6, 0, 0, 13, 0, 7)
     out.write(Array[Byte](1, 2, 3))
     out.close()
@@ -71,7 +71,7 @@ object DeflaterOutputStreamSuite extends tests.Suite {
       extends DeflaterOutputStream(out, defl, size) {
     def this(out: OutputStream, defl: Deflater) = this(out, defl, 512)
     def this(out: OutputStream) = this(out, new Deflater)
-    var deflateFlag: Boolean  = false
+    var deflateFlag: Boolean = false
     def getBuf(): Array[Byte] = buf
     override protected def deflate(): Unit = {
       deflateFlag = true
@@ -82,8 +82,8 @@ object DeflaterOutputStreamSuite extends tests.Suite {
   private var outPutBuf = new Array[Byte](500)
   private def setUp(): Unit = {
     val byteArray = Array[Byte](1, 3, 4, 7, 8)
-    var x         = 0
-    val deflate   = new Deflater(1)
+    var x = 0
+    val deflate = new Deflater(1)
     deflate.setInput(byteArray)
     while (!deflate.needsInput()) {
       x += deflate.deflate(outPutBuf, x, outPutBuf.length - x)
@@ -97,10 +97,10 @@ object DeflaterOutputStreamSuite extends tests.Suite {
 
   test("constructor(OutputStream, Deflater)") {
     val byteArray = Array[Byte](1, 3, 4, 7, 8)
-    val f1        = File.createTempFile("hyts_constru(OD)", ".tst")
-    val fos       = new FileOutputStream(f1)
-    val defl      = new Deflater()
-    val dos       = new MyDeflaterOutputStream(fos, defl)
+    val f1 = File.createTempFile("hyts_constru(OD)", ".tst")
+    val fos = new FileOutputStream(f1)
+    val defl = new Deflater()
+    val dos = new MyDeflaterOutputStream(fos, defl)
 
     assert(dos.getBuf.length == 512)
     dos.write(byteArray)
@@ -109,13 +109,13 @@ object DeflaterOutputStreamSuite extends tests.Suite {
   }
 
   test("constructor(OutputStream, Deflater, Int)") {
-    val buf       = 5
-    val negBuf    = -5
-    val zeroBuf   = 0
+    val buf = 5
+    val negBuf = -5
+    val zeroBuf = 0
     val byteArray = Array[Byte](1, 3, 4, 7, 8, 3, 6)
-    val f1        = File.createTempFile("gyts_Constru(ODI)", ".tst")
-    val fos       = new FileOutputStream(f1)
-    val defl      = new Deflater()
+    val f1 = File.createTempFile("gyts_Constru(ODI)", ".tst")
+    val fos = new FileOutputStream(f1)
+    val defl = new Deflater()
 
     assertThrows[IllegalArgumentException] {
       new MyDeflaterOutputStream(fos, defl, negBuf)
@@ -133,15 +133,15 @@ object DeflaterOutputStreamSuite extends tests.Suite {
   }
 
   test("DeflaterOutputStream.close") {
-    val f1  = File.createTempFile("close", ".tst")
+    val f1 = File.createTempFile("close", ".tst")
     var iis = new InflaterInputStream(new FileInputStream(f1))
     assertThrows[EOFException] {
       iis.read()
     }
     iis.close()
 
-    val fos       = new FileOutputStream(f1)
-    val dos       = new DeflaterOutputStream(fos)
+    val fos = new FileOutputStream(f1)
+    val dos = new DeflaterOutputStream(fos)
     val byteArray = Array[Byte](1, 3, 4, 6)
     dos.write(byteArray)
     dos.close()

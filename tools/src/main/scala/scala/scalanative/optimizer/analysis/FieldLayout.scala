@@ -20,11 +20,11 @@ class FieldLayout(cls: Class) {
   val struct: Type.Struct = {
     val data = entries.map(_.ty)
     val body = Type.Ptr +: data
-    val ty   = Type.Struct(name, body)
+    val ty = Type.Struct(name, body)
     Type.Struct(name, body)
   }
   val layout = MemoryLayout(struct.tys)
-  val size   = layout.size
+  val size = layout.size
   val referenceOffsetsTy =
     Type.Struct(Global.None, Seq(Type.Ptr))
   val referenceOffsetsValue =

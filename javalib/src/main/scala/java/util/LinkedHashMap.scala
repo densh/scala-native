@@ -66,5 +66,5 @@ class LinkedHashMap[K, V] private (inner: mutable.LinkedHashMap[Box[K], V],
 object LinkedHashMap {
 
   private[LinkedHashMap] final val DEFAULT_INITIAL_CAPACITY = 16
-  private[LinkedHashMap] final val DEFAULT_LOAD_FACTOR      = 0.75f
+  private[LinkedHashMap] final val DEFAULT_LOAD_FACTOR = 0.75f
 }

@@ -24,7 +24,7 @@ abstract class ByteBuffer private[nio] (_capacity: Int,
     with Comparable[ByteBuffer] {
 
   private[nio] type ElementType = Byte
-  private[nio] type BufferType  = ByteBuffer
+  private[nio] type BufferType = ByteBuffer
 
   def this(_capacity: Int) = this(_capacity, null, -1)
 

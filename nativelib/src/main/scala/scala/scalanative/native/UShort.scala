@@ -7,18 +7,18 @@ final class UShort private[scala] (private val underlying: Short)
     with java.io.Serializable
     with Comparable[UShort] {
 
-  @inline final def toByte: Byte     = underlying.toByte
-  @inline final def toShort: Short   = underlying
-  @inline final def toChar: Char     = underlying.toChar
-  @inline final def toInt: Int       = underlying & 0xffff
-  @inline final def toLong: Long     = toInt.toLong
-  @inline final def toFloat: Float   = toInt.toFloat
+  @inline final def toByte: Byte = underlying.toByte
+  @inline final def toShort: Short = underlying
+  @inline final def toChar: Char = underlying.toChar
+  @inline final def toInt: Int = underlying & 0xffff
+  @inline final def toLong: Long = toInt.toLong
+  @inline final def toFloat: Float = toInt.toFloat
   @inline final def toDouble: Double = toInt.toDouble
 
-  @inline final def toUByte: UByte   = new UByte(toByte)
+  @inline final def toUByte: UByte = new UByte(toByte)
   @inline final def toUShort: UShort = this
-  @inline final def toUInt: UInt     = new UInt(toInt)
-  @inline final def toULong: ULong   = new ULong(toLong)
+  @inline final def toUInt: UInt = new UInt(toInt)
+  @inline final def toULong: ULong = new ULong(toLong)
 
   /**
    * Returns the bitwise negation of this value.
@@ -271,8 +271,8 @@ final class UShort private[scala] (private val underlying: Short)
     this.toUInt.min(that.toUInt).toUShort
 
   @inline final def toBinaryString: String = toUInt.toBinaryString
-  @inline final def toHexString: String    = toUInt.toHexString
-  @inline final def toOctalString: String  = toUInt.toOctalString
+  @inline final def toHexString: String = toUInt.toHexString
+  @inline final def toOctalString: String = toUInt.toOctalString
 }
 
 object UShort {
@@ -288,6 +288,6 @@ object UShort {
 
   /** Language mandated coercions from UShort to "wider" types. */
   import scala.language.implicitConversions
-  implicit def ubyte2uint(x: UShort): UInt   = x.toUInt
+  implicit def ubyte2uint(x: UShort): UInt = x.toUInt
   implicit def ubyte2ulong(x: UShort): ULong = x.toULong
 }

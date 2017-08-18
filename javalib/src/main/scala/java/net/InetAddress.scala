@@ -17,8 +17,8 @@ private[net] trait InetAddressBase {
     var address: InetAddress = null
     if (isValidIPv4Address(host)) {
       val byteAddress: Array[Byte] = Array.ofDim[Byte](4)
-      val parts: Array[String]     = host.split("\\.")
-      val length: Int              = parts.length
+      val parts: Array[String] = host.split("\\.")
+      val length: Int = parts.length
       if (length == 1) {
         val value: Long = java.lang.Long.parseLong(parts(0))
         for (i <- 0.until(4)) {
@@ -46,11 +46,11 @@ private[net] trait InetAddressBase {
       }
       val tokenizer: StringTokenizer =
         new StringTokenizer(ipAddressString, ":.%", true)
-      val hexStrings            = new ArrayBuffer[String]()
-      val decStrings            = new ArrayBuffer[String]()
-      var scopeString: String   = null
-      var token: String         = ""
-      var prevToken: String     = ""
+      val hexStrings = new ArrayBuffer[String]()
+      val decStrings = new ArrayBuffer[String]()
+      var scopeString: String = null
+      var token: String = ""
+      var prevToken: String = ""
       var prevPrevToken: String = ""
       var doubleColonIndex: Int = -1
       while (tokenizer.hasMoreTokens()) {
@@ -209,14 +209,14 @@ private[net] trait InetAddressBase {
   }
 
   private[net] def isValidIPv6Address(ipAddress: String): Boolean = {
-    val length: Int          = ipAddress.length
+    val length: Int = ipAddress.length
     var doubleColon: Boolean = false
-    var numberOfColons: Int  = 0
+    var numberOfColons: Int = 0
     var numberOfPeriods: Int = 0
     var numberOfPercent: Int = 0
-    var word: String         = ""
-    var c: Char              = 0
-    var prevChar: Char       = 0
+    var word: String = ""
+    var c: Char = 0
+    var prevChar: Char = 0
     // offset for [] IP addresses
     var offset: Int = 0
     if (length < 2) {
@@ -364,11 +364,11 @@ private[net] trait InetAddressBase {
     if (ipAddr.charAt(0) == '[')
       ipAddr = ipAddr.substring(1, ipAddr.length - 1)
 
-    val tokenizer        = new StringTokenizer(ipAddr, ":.", true)
-    val hexStrings       = new ArrayBuffer[String]()
-    val decStrings       = new ArrayBuffer[String]()
-    var token            = ""
-    var prevToken        = ""
+    val tokenizer = new StringTokenizer(ipAddr, ":.", true)
+    val hexStrings = new ArrayBuffer[String]()
+    val decStrings = new ArrayBuffer[String]()
+    var token = ""
+    var prevToken = ""
     var doubleColonIndex = -1
 
     /*
@@ -446,7 +446,7 @@ private[net] trait InetAddressBase {
                              ipByteArray: Array[Byte],
                              byteIndex: Int): Unit = {
     val hexWordLength = hexWord.length
-    var hexWordIndex  = 0
+    var hexWordIndex = 0
     ipByteArray(byteIndex) = 0
     ipByteArray(byteIndex + 1) = 0
 
@@ -499,7 +499,7 @@ private[net] trait InetAddressBase {
 
         return addressToString(bytesToInt(ipv4ByteArray, 0))
       }
-      val buffer  = new StringBuilder()
+      val buffer = new StringBuilder()
       var isFirst = true
       for (i <- 0 until ipByteArray.length) {
         if ((i & 1) == 0)

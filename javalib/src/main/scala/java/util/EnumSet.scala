@@ -8,7 +8,7 @@ final class EnumSet[E <: Enum[E]] private (values: Array[E])
     with Serializable {
   def iterator(): Iterator[E] =
     new Iterator[E] {
-      private var i                   = 0
+      private var i = 0
       override def hasNext(): Boolean = i < values.length
       override def next(): E = {
         val r = values(i)

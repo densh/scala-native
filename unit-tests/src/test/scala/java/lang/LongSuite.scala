@@ -1,16 +1,16 @@
 package java.lang
 
 object LongSuite extends tests.Suite {
-  val signedMaxValue     = Long.MAX_VALUE
+  val signedMaxValue = Long.MAX_VALUE
   val signedMaxValueText = "9223372036854775807"
-  val signedMinValue     = Long.MIN_VALUE
+  val signedMinValue = Long.MIN_VALUE
   val signedMinValueText = "-9223372036854775808"
 
-  val signedMaxPlusOneText  = "9223372036854775808"
+  val signedMaxPlusOneText = "9223372036854775808"
   val signedMinMinusOneText = "-9223372036854775809"
 
-  val unsignedMaxValue       = -1L
-  val unsignedMaxValueText   = "18446744073709551615"
+  val unsignedMaxValue = -1L
+  val unsignedMaxValueText = "18446744073709551615"
   val unsignedMaxPlusOneText = "18446744073709551616"
 
   test("parseLong") {

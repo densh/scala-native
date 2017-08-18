@@ -41,9 +41,9 @@ import som.Vector
  * </p>
  */
 final class JsonObject extends JsonValue {
-  private val names  = new Vector[String]()
+  private val names = new Vector[String]()
   private val values = new Vector[JsonValue]()
-  private var table  = new HashIndexTable()
+  private var table = new HashIndexTable()
 
   /**
    * Appends a new member to the end of this object, with the specified name and the specified JSON

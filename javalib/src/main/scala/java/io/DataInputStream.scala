@@ -56,7 +56,7 @@ class DataInputStream(in: InputStream)
     if (v == -1) null
     else {
       val builder = new StringBuilder
-      var c       = v.toChar
+      var c = v.toChar
       while (v != -1 && c != '\n' && c != '\r') {
         builder.append(c)
         v = read()
@@ -110,7 +110,7 @@ class DataInputStream(in: InputStream)
 object DataInputStream {
 
   def readUTF(in: DataInput): String = {
-    val nbBytes  = in.readUnsignedShort()
+    val nbBytes = in.readUnsignedShort()
     val utfBytes = new Array[Byte](nbBytes)
     in.readFully(utfBytes)
     fromModifiedUTF(utfBytes)
@@ -118,7 +118,7 @@ object DataInputStream {
 
   private def fromModifiedUTF(b: Array[Byte]): String = {
     val builder = new StringBuilder
-    var i       = 0
+    var i = 0
     while (i < b.length) {
       if ((b(i) & 0x80) == 0) {
         builder.append(b(i).toChar)
@@ -126,14 +126,14 @@ object DataInputStream {
       } else if ((b(i) & 0xE0) == 0xC0) {
         val b1 = (b(i) & 0x1F) << 6
         val b2 = (b(i + 1) & 0x3F)
-        val c  = (b1 | b2).toChar
+        val c = (b1 | b2).toChar
         builder.append(c)
         i += 2
       } else {
         val b1 = (b(i) & 0x0F) << 12
         val b2 = (b(i + 1) & 0x3F) << 6
         val b3 = (b(i + 2) & 0x3F)
-        val c  = (b1 | b2 | b3).toChar
+        val c = (b1 | b2 | b3).toChar
         builder.append(c)
         i += 3
       }

@@ -27,7 +27,7 @@ object Base {
     _
   }
   private def VarId0(dollar: Boolean) = P(Lower ~ IdRest(dollar))
-  private val VarId                   = VarId0(true)
+  private val VarId = VarId0(true)
 
   val mangledId: P[String] = {
     val mangledIdPart: P[String] =
@@ -59,7 +59,7 @@ object Base {
   }
 
   object Literals extends scalaparse.syntax.Literals {
-    override def Block: P0   = Fail
+    override def Block: P0 = Fail
     override def Pattern: P0 = Fail
   }
 
@@ -67,10 +67,10 @@ object Base {
   def neg(p: P[String]): P[String] = "-".!.? ~ p map {
     case (a, b) => a.getOrElse("") + b
   }
-  val Byte: P[Byte]       = neg(DecNum.!) map (_.toByte)
-  val Short: P[Short]     = neg((HexNum | DecNum).!) map (_.toInt.toShort)
-  val Int: P[Int]         = neg((HexNum | DecNum).!) map (_.toInt)
-  val Long: P[Long]       = neg((HexNum | DecNum).!) map (_.toLong)
+  val Byte: P[Byte] = neg(DecNum.!) map (_.toByte)
+  val Short: P[Short] = neg((HexNum | DecNum).!) map (_.toInt.toShort)
+  val Int: P[Int] = neg((HexNum | DecNum).!) map (_.toInt)
+  val Long: P[Long] = neg((HexNum | DecNum).!) map (_.toLong)
   val Infinity: P[String] = P("Infinityf".!) map (_.init)
   val Float
     : P[Float] = neg(Infinity | Literals.Literals.Float.!) map (_.toFloat)

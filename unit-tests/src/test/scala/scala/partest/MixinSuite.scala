@@ -3,8 +3,8 @@ package partest
 
 object MixinSuite extends tests.Suite {
   var messages: List[String] = Nil
-  def log(msg: String)       = messages ::= msg
-  def clear(): Unit          = messages = Nil
+  def log(msg: String) = messages ::= msg
+  def clear(): Unit = messages = Nil
   def testEffects(name: String)(effects: String*)(body: => Unit): Unit =
     test(name) {
       clear()

@@ -7,7 +7,7 @@ import ClassHierarchy._
 import nir._
 
 class ModuleArray(top: Top) {
-  val index   = mutable.Map.empty[Class, Int]
+  val index = mutable.Map.empty[Class, Int]
   val modules = mutable.UnrolledBuffer.empty[Class]
   top.classes.foreach { cls =>
     if (cls.isModule) {

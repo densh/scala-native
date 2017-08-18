@@ -19,7 +19,7 @@ object ControlFlow {
                          params: Seq[Val.Local],
                          insts: Seq[Inst],
                          isEntry: Boolean) {
-    val inEdges  = mutable.UnrolledBuffer.empty[Edge]
+    val inEdges = mutable.UnrolledBuffer.empty[Edge]
     val outEdges = mutable.UnrolledBuffer.empty[Edge]
 
     lazy val splitCount: Int = {
@@ -33,10 +33,10 @@ object ControlFlow {
       count
     }
 
-    def pred  = inEdges.map(_.from)
-    def succ  = outEdges.map(_.to)
+    def pred = inEdges.map(_.from)
+    def succ = outEdges.map(_.to)
     def label = Inst.Label(name, params)
-    def show  = name.show
+    def show = name.show
 
     def isRegular: Boolean =
       inEdges.forall {
@@ -56,7 +56,7 @@ object ControlFlow {
                     val all: Seq[Block],
                     val find: Map[Local, Block]) {
     def foreach(f: Block => Unit): Unit = {
-      val visited  = mutable.Set.empty[Block]
+      val visited = mutable.Set.empty[Block]
       val worklist = mutable.Stack.empty[Block]
 
       worklist.push(entry)
@@ -94,7 +94,7 @@ object ControlFlow {
           // copy all instruction up until and including
           // first control-flow instruction after the label
           val body = mutable.UnrolledBuffer.empty[Inst]
-          var i    = k
+          var i = k
           do {
             i += 1
             body += insts(i)

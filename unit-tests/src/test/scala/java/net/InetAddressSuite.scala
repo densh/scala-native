@@ -11,9 +11,9 @@ object InetAddressSuite extends tests.Suite {
 
   test("getAddress") {
     try {
-      val ia    = InetAddress.getByName("127.0.0.1")
+      val ia = InetAddress.getByName("127.0.0.1")
       val caddr = Array[Byte](127.toByte, 0.toByte, 0.toByte, 1.toByte)
-      val addr  = ia.getAddress()
+      val addr = ia.getAddress()
       for (i <- addr.indices)
         assertEquals(caddr(i), addr(i))
     } catch {
@@ -21,7 +21,7 @@ object InetAddressSuite extends tests.Suite {
     }
 
     val origBytes = Array[Byte](0.toByte, 1.toByte, 2.toByte, 3.toByte)
-    val address   = InetAddress.getByAddress(origBytes)
+    val address = InetAddress.getByAddress(origBytes)
     origBytes(0) = -1
     val newBytes = address.getAddress()
     assertEquals(newBytes(0), 0.toByte)

@@ -45,8 +45,8 @@ class NothingLowering extends Pass {
 
 object NothingLowering extends PassCompanion {
   val throwName = Global.Top("scalanative_throw")
-  val throwSig  = Type.Function(Seq(Type.Ptr), Type.Void)
-  val throw_    = Val.Global(throwName, Type.Ptr)
+  val throwSig = Type.Function(Seq(Type.Ptr), Type.Void)
+  val throw_ = Val.Global(throwName, Type.Ptr)
 
   override val injects =
     Seq(Defn.Declare(Attrs.None, throwName, throwSig))

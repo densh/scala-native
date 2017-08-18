@@ -34,8 +34,8 @@ class ZipFile(file: File, mode: Int, charset: Charset) extends Closeable {
       null
     }
 
-  private var mRaf     = new RandomAccessFile(fileName, "r")
-  private val ler      = new ZipEntry.LittleEndianReader()
+  private var mRaf = new RandomAccessFile(fileName, "r")
+  private val ler = new ZipEntry.LittleEndianReader()
   private val mEntries = scala.collection.mutable.Map.empty[String, ZipEntry]
 
   readCentralDir()
@@ -167,12 +167,12 @@ class ZipFile(file: File, mode: Int, charset: Charset) extends Closeable {
      * doing a read() system call every time.
      */
     var rafs = new ZipFile.RAFStream(mRaf, mRaf.getFilePointer())
-    var bin  = new BufferedInputStream(rafs, ZipFile.ENDHDR)
+    var bin = new BufferedInputStream(rafs, ZipFile.ENDHDR)
 
-    val diskNumber         = ler.readShortLE(bin)
+    val diskNumber = ler.readShortLE(bin)
     val diskWithCentralDir = ler.readShortLE(bin)
-    val numEntries         = ler.readShortLE(bin)
-    val totalNumEntries    = ler.readShortLE(bin)
+    val numEntries = ler.readShortLE(bin)
+    val totalNumEntries = ler.readShortLE(bin)
     /*centralDirSize =*/
     ler.readIntLE(bin)
     val centralDirOffset = ler.readIntLE(bin)
@@ -221,7 +221,7 @@ class ZipFile(file: File, mode: Int, charset: Charset) extends Closeable {
 }
 
 object ZipFile extends ZipConstants {
-  final val OPEN_READ: Int   = 1
+  final val OPEN_READ: Int = 1
   final val OPEN_DELETE: Int = 4
 
   private class RAFStream(private var mSharedRaf: RandomAccessFile,

@@ -23,7 +23,7 @@ import som._
  */
 final class BasicBlockEdge(cfg: ControlFlowGraph, fromName: Int, toName: Int) {
   private val from: BasicBlock = cfg.createNode(fromName)
-  private val to: BasicBlock   = cfg.createNode(toName)
+  private val to: BasicBlock = cfg.createNode(toName)
 
   from.addOutEdge(to)
   to.addInEdge(from)

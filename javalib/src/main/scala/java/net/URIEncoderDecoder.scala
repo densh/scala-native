@@ -95,9 +95,9 @@ object URIEncoderDecoder {
   }
 
   def decode(s: String): String = {
-    val result: StringBuilder      = new StringBuilder()
+    val result: StringBuilder = new StringBuilder()
     val out: ByteArrayOutputStream = new ByteArrayOutputStream()
-    var i: Int                     = 0
+    var i: Int = 0
     while (i < s.length) {
       val c: Char = s.charAt(i)
       if (c == '%') {

@@ -7,7 +7,7 @@ class BufferedOutputStream(out: OutputStream, size: Int)
   if (size <= 0) throw new IllegalArgumentException("Buffer size <= 0")
 
   protected var buf: Array[Byte] = new Array[Byte](size)
-  protected var count: Int       = 0
+  protected var count: Int = 0
 
   def this(out: OutputStream) = this(out, 8192)
 

@@ -24,9 +24,9 @@ object ArrayObjectCopySuite extends tests.Suite {
     }
   }
 
-  val len      = 10
-  val arr      = new Array[B](len)
-  val arr2     = new Array[A](len + 2)
+  val len = 10
+  val arr = new Array[B](len)
+  val arr2 = new Array[A](len + 2)
   val arrEmpty = new Array[B](0)
 
   test("array[Object]: init") {

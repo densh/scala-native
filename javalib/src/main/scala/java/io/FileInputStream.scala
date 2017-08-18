@@ -11,7 +11,7 @@ class FileInputStream(fd: FileDescriptor) extends InputStream {
 
   override def available(): Int = {
     val currentPosition = lseek(fd.fd, 0, SEEK_CUR)
-    val lastPosition    = lseek(fd.fd, 0, SEEK_END)
+    val lastPosition = lseek(fd.fd, 0, SEEK_END)
     lseek(fd.fd, currentPosition, SEEK_SET)
     (lastPosition - currentPosition).toInt
   }
@@ -51,7 +51,7 @@ class FileInputStream(fd: FileDescriptor) extends InputStream {
 
     // we use the runtime knowledge of the array layout to avoid
     // intermediate buffer, and write straight into the array memory
-    val buf       = buffer.asInstanceOf[runtime.ByteArray].at(offset)
+    val buf = buffer.asInstanceOf[runtime.ByteArray].at(offset)
     val readCount = unistd.read(fd.fd, buf, count)
 
     if (readCount == 0) {

@@ -11,9 +11,9 @@ import som._
  */
 final class UnionFindNode {
   private var parent: UnionFindNode = _
-  private var bb: BasicBlock        = _
-  private var loop: SimpleLoop      = _
-  private var dfsNumber: Int        = _
+  private var bb: BasicBlock = _
+  private var loop: SimpleLoop = _
+  private var dfsNumber: Int = _
 
   // Initialize this node.
   //

@@ -47,9 +47,9 @@ private[nio] final class GenBuffer[B <: Buffer](val self: B) extends AnyVal {
       throw new IllegalArgumentException
     ensureNotReadOnly()
     val srcLimit = src.limit
-    var srcPos   = src.position
-    val length   = srcLimit - srcPos
-    var selfPos  = getPosAndAdvanceWrite(length)
+    var srcPos = src.position
+    val length = srcLimit - srcPos
+    var selfPos = getPosAndAdvanceWrite(length)
     src.position(srcLimit)
 
     val srcArray = src._array // even if read-only
@@ -104,9 +104,9 @@ private[nio] final class GenBuffer[B <: Buffer](val self: B) extends AnyVal {
   def generic_hashCode(hashSeed: Int): Int = {
     import scala.util.hashing.MurmurHash3._
     val start = position
-    val end   = limit
-    var h     = hashSeed
-    var i     = start
+    val end = limit
+    var h = hashSeed
+    var i = start
     while (i != end) {
       h = mix(h, load(i).##)
       i += 1
@@ -121,10 +121,10 @@ private[nio] final class GenBuffer[B <: Buffer](val self: B) extends AnyVal {
     if (self eq that) {
       0
     } else {
-      val thisStart      = self.position
-      val thisRemaining  = self.limit - thisStart
-      val thatStart      = that.position
-      val thatRemaining  = that.limit - thatStart
+      val thisStart = self.position
+      val thisRemaining = self.limit - thisStart
+      val thatStart = that.position
+      val thatRemaining = that.limit - thatStart
       val shortestLength = Math.min(thisRemaining, thatRemaining)
 
       var i = 0
@@ -145,8 +145,8 @@ private[nio] final class GenBuffer[B <: Buffer](val self: B) extends AnyVal {
                    dst: Array[ElementType],
                    offset: Int,
                    length: Int): Unit = {
-    var selfPos    = startIndex
-    val endPos     = selfPos + length
+    var selfPos = startIndex
+    val endPos = selfPos + length
     var arrayIndex = offset
     while (selfPos != endPos) {
       dst(arrayIndex) = load(selfPos)
@@ -160,8 +160,8 @@ private[nio] final class GenBuffer[B <: Buffer](val self: B) extends AnyVal {
                     src: Array[ElementType],
                     offset: Int,
                     length: Int): Unit = {
-    var selfPos    = startIndex
-    val endPos     = selfPos + length
+    var selfPos = startIndex
+    val endPos = selfPos + length
     var arrayIndex = offset
     while (selfPos != endPos) {
       store(selfPos, src(arrayIndex))

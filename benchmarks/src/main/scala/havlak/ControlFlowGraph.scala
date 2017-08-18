@@ -26,8 +26,8 @@ import som._
  */
 final class ControlFlowGraph {
   private var startNode: BasicBlock = null
-  private val basicBlockMap         = new Vector[BasicBlock]
-  private val edgeList              = new Vector[BasicBlockEdge]
+  private val basicBlockMap = new Vector[BasicBlock]
+  private val edgeList = new Vector[BasicBlockEdge]
 
   def createNode(name: Int): BasicBlock = {
     val node =

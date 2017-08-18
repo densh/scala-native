@@ -26,15 +26,15 @@ object Linker {
     import reporter._
 
     def link(entries: Seq[Global]): Result = Scope { implicit in =>
-      val resolved    = mutable.Set.empty[Global]
-      val unresolved  = mutable.Set.empty[Global]
-      val links       = mutable.Set.empty[Attr.Link]
-      val defns       = mutable.UnrolledBuffer.empty[Defn]
-      val direct      = mutable.Stack.empty[Global]
+      val resolved = mutable.Set.empty[Global]
+      val unresolved = mutable.Set.empty[Global]
+      val links = mutable.Set.empty[Attr.Link]
+      val defns = mutable.UnrolledBuffer.empty[Defn]
+      val direct = mutable.Stack.empty[Global]
       var conditional = mutable.UnrolledBuffer.empty[Dep.Conditional]
-      val weaks       = mutable.Set.empty[Global]
-      val signatures  = mutable.Set.empty[String]
-      val dyndefns    = mutable.Set.empty[Global]
+      val weaks = mutable.Set.empty[Global]
+      val signatures = mutable.Set.empty[String]
+      val dyndefns = mutable.Set.empty[Global]
 
       val paths = config.paths.map(p => ClassPath(VirtualDirectory.real(p)))
       def load(global: Global) =

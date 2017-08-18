@@ -69,13 +69,13 @@ object UseDef {
   }
 
   def apply(cfg: ControlFlow.Graph)(implicit top: Top): Map[Local, Def] = {
-    val defs   = mutable.Map.empty[Local, Def]
+    val defs = mutable.Map.empty[Local, Def]
     val blocks = cfg.all
 
     def enterBlock(n: Local, params: Seq[Local]) = {
       params.foreach(enterInst)
-      val deps      = mutable.UnrolledBuffer.empty[Def]
-      val uses      = mutable.UnrolledBuffer.empty[Def]
+      val deps = mutable.UnrolledBuffer.empty[Def]
+      val uses = mutable.UnrolledBuffer.empty[Def]
       val paramDefs = params.map(defs)
       defs += ((n, BlockDef(n, deps, uses, paramDefs)))
     }

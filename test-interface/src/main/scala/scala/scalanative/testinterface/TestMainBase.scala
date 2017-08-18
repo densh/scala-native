@@ -31,7 +31,7 @@ abstract class TestMainBase {
 
   /** Actual main method of the test runner. */
   def testMain(args: Array[String]): Unit = Zone { implicit z =>
-    val server_port   = args.head.toInt.toUShort
+    val server_port = args.head.toInt.toUShort
     val client_socket = connectToServer(server_port)
     testRunner(Array.empty, null, client_socket)
   }
@@ -48,7 +48,7 @@ abstract class TestMainBase {
       scala.sys.error("Couldn't create communication socket.")
     }
 
-    var tries     = 5
+    var tries = 5
     var connected = false
     while (!connected && tries > 0) {
       connected =
@@ -87,7 +87,7 @@ abstract class TestMainBase {
         testRunner(tasks, runner, client_socket)
 
       case Command.SendInfo(id, None) =>
-        val fps  = frameworks(id).fingerprints()
+        val fps = frameworks(id).fingerprints()
         val name = frameworks(id).name()
         val info = Command.SendInfo(id, Some(FrameworkInfo(name, fps.toSeq)))
         send(client_socket)(info)
@@ -121,7 +121,7 @@ abstract class TestMainBase {
         testRunner(tasks ++ newTasks, runner, client_socket)
 
       case Command.RunnerDone(_) =>
-        val r       = runner.done()
+        val r = runner.done()
         val message = Command.RunnerDone(r)
         send(client_socket)(message)
 
@@ -135,16 +135,16 @@ abstract class TestMainBase {
   /** Reads `len` bytes from `client` socket. */
   private def read(client: CInt)(len: Int): DataInputStream = {
     val buf = new Array[Byte](len)
-    val _   = socket.recv(client, buf.asInstanceOf[ByteArray].at(0), len, 0)
+    val _ = socket.recv(client, buf.asInstanceOf[ByteArray].at(0), len, 0)
     new DataInputStream(new ByteArrayInputStream(buf))
   }
 
   /** Receives a message from `client`. */
   private def receive[T](client: CInt): Message = {
     val msglen = read(client)(4).readInt()
-    val in     = read(client)(msglen)
+    val in = read(client)(msglen)
     val msgbuf = new Array[Byte](msglen)
-    var total  = 0
+    var total = 0
     while (total < msglen) {
       total += in.read(msgbuf, total, msglen - total)
     }
@@ -187,10 +187,10 @@ abstract class TestMainBase {
       send(client)(Log(index, msg, twb, level))
     }
 
-    override def error(msg: String): Unit  = log(Log.Level.Error, msg, None)
-    override def warn(msg: String): Unit   = log(Log.Level.Warn, msg, None)
-    override def info(msg: String): Unit   = log(Log.Level.Info, msg, None)
-    override def debug(msg: String): Unit  = log(Log.Level.Debug, msg, None)
+    override def error(msg: String): Unit = log(Log.Level.Error, msg, None)
+    override def warn(msg: String): Unit = log(Log.Level.Warn, msg, None)
+    override def info(msg: String): Unit = log(Log.Level.Info, msg, None)
+    override def debug(msg: String): Unit = log(Log.Level.Debug, msg, None)
     override def trace(t: Throwable): Unit = log(Log.Level.Trace, "", Some(t))
   }
 }

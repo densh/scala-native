@@ -94,7 +94,7 @@ abstract class CharsetEncoder protected (
     ()
 
   final def averageBytesPerChar(): Float = _averageBytesPerChar
-  final def maxBytesPerChar(): Float     = _maxBytesPerChar
+  final def maxBytesPerChar(): Float = _maxBytesPerChar
 
   final def encode(in: CharBuffer,
                    out: ByteBuffer,
@@ -228,7 +228,7 @@ abstract class CharsetEncoder protected (
 
       reset()
       val initLength = (in.remaining * averageBytesPerChar).toInt
-      val out        = loopFlush(loopEncode(ByteBuffer.allocate(initLength)))
+      val out = loopFlush(loopEncode(ByteBuffer.allocate(initLength)))
       out.flip()
       out
     }
@@ -236,8 +236,8 @@ abstract class CharsetEncoder protected (
 }
 
 object CharsetEncoder {
-  private final val INIT    = 0
+  private final val INIT = 0
   private final val ONGOING = 1
-  private final val END     = 2
+  private final val END = 2
   private final val FLUSHED = 3
 }

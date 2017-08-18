@@ -23,8 +23,8 @@ import scala.scalanative.testinterface.serialization.Log.Level
 object SerializedInputStream {
   def next[T](in: DataInputStream)(fn: SerializedInputStream => T) = {
     val length = in.readInt()
-    val bytes  = new Array[Byte](length)
-    var read   = 0
+    val bytes = new Array[Byte](length)
+    var read = 0
     while (read < length) {
       read += in.read(bytes, read, length - read)
     }
@@ -41,7 +41,7 @@ class SerializedInputStream(in: InputStream) extends DataInputStream(in) {
 
   def readString(): String = {
     val length = readInt()
-    val buf    = new Array[Byte](length)
+    val buf = new Array[Byte](length)
     read(buf)
     new String(buf, "UTF-8")
   }

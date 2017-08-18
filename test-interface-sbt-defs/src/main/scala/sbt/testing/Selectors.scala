@@ -29,8 +29,8 @@ abstract sealed class Selector
  */
 final class SuiteSelector extends Selector with Serializable {
   override def equals(o: Any): Boolean = o.isInstanceOf[SuiteSelector]
-  override def hashCode(): Int         = 29
-  override def toString(): String      = "SuiteSelector"
+  override def hashCode(): Int = 29
+  override def toString(): String = "SuiteSelector"
 }
 
 /** Information in addition to a test class name that identifies a test
@@ -54,7 +54,7 @@ final class TestSelector(_testName: String) extends Selector with Serializable {
     case _                  => false
   }
 
-  override def hashCode(): Int    = testName.hashCode()
+  override def hashCode(): Int = testName.hashCode()
   override def toString(): String = s"TestSelector($testName)"
 }
 
@@ -80,7 +80,7 @@ final class NestedSuiteSelector(_suiteId: String)
     case _                         => false
   }
 
-  override def hashCode(): Int    = suiteId.hashCode()
+  override def hashCode(): Int = suiteId.hashCode()
   override def toString(): String = s"NestedSuiteSelector($suiteId)"
 }
 

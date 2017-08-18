@@ -81,7 +81,7 @@ trait NirGenType { self: NirGenPhase =>
       nir.Type.Array(nir.Rt.Object, 0)
     case Seq(targ, tnat) =>
       val ty = genType(targ, box = false)
-      val n  = genNatType(tnat)
+      val n = genNatType(tnat)
       nir.Type.Array(ty, n)
   }
 
@@ -137,7 +137,7 @@ trait NirGenType { self: NirGenPhase =>
   }.toSeq
 
   def genStruct(st: SimpleType): nir.Type = {
-    val name   = genTypeName(st.sym)
+    val name = genTypeName(st.sym)
     val fields = genStructFields(st)
 
     nir.Type.Struct(name, fields)
@@ -192,8 +192,8 @@ trait NirGenType { self: NirGenPhase =>
                    forceStatic: Boolean = false): nir.Type.Function = {
     require(sym.isMethod || sym.isStaticMember)
 
-    val tpe      = sym.tpe
-    val owner    = sym.owner
+    val tpe = sym.tpe
+    val owner = sym.owner
     val paramtys = genMethodSigParams(sym)
     val selfty =
       if (forceStatic || owner.isExternModule || owner.isImplClass) None
@@ -209,7 +209,7 @@ trait NirGenType { self: NirGenPhase =>
     val wereRepeated = exitingPhase(currentRun.typerPhase) {
       for {
         params <- sym.tpe.paramss
-        param  <- params
+        param <- params
       } yield {
         param.name -> isScalaRepeatedParamType(param.tpe)
       }

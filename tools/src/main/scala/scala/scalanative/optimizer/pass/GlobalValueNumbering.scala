@@ -16,7 +16,7 @@ class GlobalValueNumbering extends Pass {
   import GlobalValueNumbering._
 
   override def onInsts(insts: Seq[Inst]): Seq[Inst] = {
-    val cfg        = ControlFlow.Graph(insts)
+    val cfg = ControlFlow.Graph(insts)
     val domination = DominatorTree.build(cfg)
 
     performSimpleValueNumbering(cfg, domination)
@@ -26,11 +26,11 @@ class GlobalValueNumbering extends Pass {
       cfg: ControlFlow.Graph,
       domination: Map[Block, Set[Block]]): Seq[Inst] = {
 
-    val variableVN   = mutable.HashMap.empty[Local, Hash]
+    val variableVN = mutable.HashMap.empty[Local, Hash]
     val instructions = mutable.HashMap.empty[Hash, List[Inst.Let]]
-    val localDefs    = mutable.HashMap.empty[Local, Inst]
+    val localDefs = mutable.HashMap.empty[Local, Inst]
 
-    val hash       = new HashFunction(variableVN)
+    val hash = new HashFunction(variableVN)
     val deepEquals = new DeepEquals(localDefs)
 
     def blockDominatedByDef(dominatedBlock: Block,
@@ -66,7 +66,7 @@ class GlobalValueNumbering extends Pass {
               inst.hashCode // hash the assigned variable as well, so a = op(b) and c = op(b) don't have the same hash
 
           variableVN += (inst.name -> instHash)
-          localDefs += (inst.name  -> inst)
+          localDefs += (inst.name -> inst)
 
           if (idempotent) {
             val hashEqualInstrs = instructions.getOrElse(instHash, Nil)

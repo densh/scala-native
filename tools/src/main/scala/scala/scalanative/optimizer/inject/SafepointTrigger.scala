@@ -15,7 +15,7 @@ class SafepointTrigger(top: Top) extends Inject {
 
 object SafepointTrigger extends InjectCompanion {
   val safepointTriggerName = Global.Top("scalanative_safepoint_trigger")
-  val safepointTriggerTy   = Type.Array(Type.Byte, 4096)
+  val safepointTriggerTy = Type.Array(Type.Byte, 4096)
   val safepointTriggerInit = Val.Zero(safepointTriggerTy)
   val safepointTriggerDefn =
     Defn.Var(Attrs(align = Some(4096)),

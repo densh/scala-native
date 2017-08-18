@@ -24,14 +24,14 @@ import som._
  * @author rhundt
  */
 final class BasicBlock(name: Int) extends CustomHash {
-  private val inEdges: Vector[BasicBlock]  = new Vector[BasicBlock](2)
+  private val inEdges: Vector[BasicBlock] = new Vector[BasicBlock](2)
   private val outEdges: Vector[BasicBlock] = new Vector[BasicBlock](2)
 
-  def getInEdges(): Vector[BasicBlock]  = inEdges
+  def getInEdges(): Vector[BasicBlock] = inEdges
   def getOutEdges(): Vector[BasicBlock] = outEdges
-  def getNumPred(): Int                 = inEdges.size()
+  def getNumPred(): Int = inEdges.size()
 
-  def addOutEdge(to: BasicBlock): Unit  = outEdges.append(to)
+  def addOutEdge(to: BasicBlock): Unit = outEdges.append(to)
   def addInEdge(from: BasicBlock): Unit = inEdges.append(from)
 
   override def customHash(): Int = name

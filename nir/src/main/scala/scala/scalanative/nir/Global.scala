@@ -33,7 +33,7 @@ sealed abstract class Global {
 }
 object Global {
   final case object None extends Global {
-    override def id  = throw new Exception("None doesn't have an id.")
+    override def id = throw new Exception("None doesn't have an id.")
     override def top = throw new Exception("None doesn't have a top.")
     override def member(id: String) =
       throw new Exception("None can't have any members.")
@@ -51,7 +51,7 @@ object Global {
 
   def genSignature(methodName: nir.Global, proxy: Boolean = false): String = {
     val fullSignature = methodName.id
-    val index         = fullSignature.lastIndexOf("_")
+    val index = fullSignature.lastIndexOf("_")
     val signature =
       if (index != -1) {
         fullSignature.substring(0, index)

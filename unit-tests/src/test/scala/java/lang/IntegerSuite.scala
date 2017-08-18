@@ -1,16 +1,16 @@
 package java.lang
 
 object IntegerSuite extends tests.Suite {
-  val signedMaxValue     = Integer.MAX_VALUE
+  val signedMaxValue = Integer.MAX_VALUE
   val signedMaxValueText = "2147483647"
-  val signedMinValue     = Integer.MIN_VALUE
+  val signedMinValue = Integer.MIN_VALUE
   val signedMinValueText = "-2147483648"
 
-  val signedMaxPlusOneText  = "2147483648"
+  val signedMaxPlusOneText = "2147483648"
   val signedMinMinusOneText = "-2147483649"
 
-  val unsignedMaxValue       = -1
-  val unsignedMaxValueText   = "4294967295"
+  val unsignedMaxValue = -1
+  val unsignedMaxValueText = "4294967295"
   val unsignedMaxPlusOneText = "4294967296"
 
   test("parseInt") {

@@ -29,7 +29,7 @@ abstract class CharBuffer private[nio] (_capacity: Int,
     with Readable {
 
   private[nio] type ElementType = Char
-  private[nio] type BufferType  = CharBuffer
+  private[nio] type BufferType = CharBuffer
 
   def this(_capacity: Int) = this(_capacity, null, -1)
 
@@ -118,7 +118,7 @@ abstract class CharBuffer private[nio] (_capacity: Int,
       // even if read-only
       new String(_array, position + _arrayOffset, remaining)
     } else {
-      val chars    = new Array[Char](remaining)
+      val chars = new Array[Char](remaining)
       val savedPos = position
       get(chars)
       position(savedPos)

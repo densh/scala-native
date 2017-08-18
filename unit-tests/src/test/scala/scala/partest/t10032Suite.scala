@@ -2,9 +2,9 @@ package scala
 package partest
 
 object t10032Suite extends tests.Suite {
-  var effects                    = List.empty[String]
+  var effects = List.empty[String]
   def println(str: String): Unit = effects = effects :+ str
-  def clean(): Unit              = effects = Nil
+  def clean(): Unit = effects = Nil
   def assertEffects(effects: String*)(f: => Unit) = {
     this.effects = Nil
     f

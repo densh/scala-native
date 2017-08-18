@@ -16,9 +16,9 @@ class StringTokenizer(string: String,
   private var position = 0
 
   def countTokens(): Int = {
-    var count   = 0
+    var count = 0
     var inToken = false
-    val length  = string.length
+    val length = string.length
     for (i <- position until length) {
       if (delimiters.indexOf(string.charAt(i), 0) >= 0) {
         if (returnDelimiters)
@@ -61,7 +61,7 @@ class StringTokenizer(string: String,
     if (delimiters == null) {
       throw new NullPointerException()
     }
-    var i      = position
+    var i = position
     val length = string.length
 
     if (i < length) {

@@ -4,9 +4,9 @@ import native.{CInt, CFloat, CDouble}
 
 object IssuesSuite extends tests.Suite {
 
-  def foo(arg: Int): Unit                        = ()
+  def foo(arg: Int): Unit = ()
   def crash(arg: CFunctionPtr1[Int, Unit]): Unit = ()
-  def lifted208Test(): Unit                      = crash(foo _)
+  def lifted208Test(): Unit = crash(foo _)
 
   test("#208") {
     // If we put the test directly, behind the scenes, this will
@@ -18,7 +18,7 @@ object IssuesSuite extends tests.Suite {
   test("#253") {
     class Cell(val value: Int)
 
-    val arr     = Array(new Cell(1), new Cell(2))
+    val arr = Array(new Cell(1), new Cell(2))
     val reverse = arr.reverse
 
     assert(reverse(0).value == 2)
@@ -101,10 +101,10 @@ object IssuesSuite extends tests.Suite {
   }
 
   def bar(i: Int): String = i.toString
-  def bar_i32(): String   = "bar"
+  def bar_i32(): String = "bar"
 
   test("#376") {
-    val m     = scala.collection.mutable.Map.empty[String, String]
+    val m = scala.collection.mutable.Map.empty[String, String]
     val hello = "hello"
     val world = "world"
     m(hello) = world
@@ -112,11 +112,11 @@ object IssuesSuite extends tests.Suite {
     assert(h equals world)
   }
 
-  val fptrBoxed: CFunctionPtr0[Integer]  = () => new Integer(1)
-  val fptr: CFunctionPtr0[CInt]          = () => 1
-  val fptrFloat: CFunctionPtr0[CFloat]   = () => 1.0.toFloat
+  val fptrBoxed: CFunctionPtr0[Integer] = () => new Integer(1)
+  val fptr: CFunctionPtr0[CInt] = () => 1
+  val fptrFloat: CFunctionPtr0[CFloat] = () => 1.0.toFloat
   val fptrDouble: CFunctionPtr0[CDouble] = () => 1.0
-  def intIdent(x: Int): Int              = x
+  def intIdent(x: Int): Int = x
   test("#382") {
     /// that gave NPE
 
@@ -152,12 +152,12 @@ object IssuesSuite extends tests.Suite {
   }
 
   test("#445") {
-    val char: Any   = 66.toChar
-    val byte: Any   = 66.toByte
-    val short: Any  = 66.toShort
-    val int: Any    = 66.toInt
-    val long: Any   = 66.toLong
-    val float: Any  = 66.toFloat
+    val char: Any = 66.toChar
+    val byte: Any = 66.toByte
+    val short: Any = 66.toShort
+    val int: Any = 66.toInt
+    val long: Any = 66.toLong
+    val float: Any = 66.toFloat
     val double: Any = 66.toDouble
     assert(char == char)
     assert(char == byte)
@@ -279,7 +279,7 @@ object IssuesSuite extends tests.Suite {
   }
 
   test("#695") {
-    val a   = List(1, 2, 3)
+    val a = List(1, 2, 3)
     var eff = List.empty[(Int, Int)]
 
     val result = a.corresponds(a) { (x, y) =>
@@ -291,22 +291,22 @@ object IssuesSuite extends tests.Suite {
   }
 
   test("#762") {
-    val byte         = 1.toByte
+    val byte = 1.toByte
     val negbyte: Any = -byte
     assert(negbyte.isInstanceOf[Int])
     assert(negbyte.toString == "-1")
 
-    val short         = 1.toByte
+    val short = 1.toByte
     val negshort: Any = -short
     assert(negshort.isInstanceOf[Int])
     assert(negshort.toString == "-1")
 
-    val int         = 1
+    val int = 1
     val negint: Any = -int
     assert(negint.isInstanceOf[Int])
     assert(negint.toString == "-1")
 
-    val long         = 1L
+    val long = 1L
     val neglong: Any = -long
     assert(neglong.isInstanceOf[Long])
     assert(neglong.toString == "-1")
@@ -317,8 +317,8 @@ object IssuesSuite extends tests.Suite {
     val hashmap = new HashMap[String, String]()
     hashmap.put("a", "b")
     val frozen = Collections.unmodifiableMap[String, String](hashmap)
-    val iter   = frozen.entrySet().iterator()
-    val ab     = iter.next()
+    val iter = frozen.entrySet().iterator()
+    val ab = iter.next()
     assert(ab.getKey() == "a")
     assert(ab.getValue() == "b")
     assert(!iter.hasNext())
@@ -341,7 +341,7 @@ object IssuesSuite extends tests.Suite {
     val x8: AnyRef = new { override def toString = "custom" }
     assert(x7 + x8 == "nullcustom")
 
-    val x9: String  = null
+    val x9: String = null
     val x10: String = null
     assert(x9 + x10 == "nullnull")
 

@@ -45,11 +45,11 @@ final class LoopTesterApp {
 
   // Construct a simple loop with two diamonds in it
   private def buildBaseLoop(from: Int): Int = {
-    val header   = buildStraight(from, 1)
+    val header = buildStraight(from, 1)
     val diamond1 = buildDiamond(header)
-    val d11      = buildStraight(diamond1, 1)
+    val d11 = buildStraight(diamond1, 1)
     val diamond2 = buildDiamond(d11)
-    var footer   = buildStraight(diamond2, 1)
+    var footer = buildStraight(diamond2, 1)
     buildConnect(diamond2, d11)
     buildConnect(diamond1, header)
     buildConnect(footer, from)

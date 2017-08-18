@@ -48,12 +48,12 @@ class Character(val _value: scala.Char)
    * we use the true javalib to lookup symbols, this file contains only
    * implementations.
    */
-  protected def toByte: scala.Byte     = _value.toByte
-  protected def toShort: scala.Short   = _value.toShort
-  protected def toChar: scala.Char     = _value.toChar
-  protected def toInt: scala.Int       = _value
-  protected def toLong: scala.Long     = _value.toLong
-  protected def toFloat: scala.Float   = _value.toFloat
+  protected def toByte: scala.Byte = _value.toByte
+  protected def toShort: scala.Short = _value.toShort
+  protected def toChar: scala.Char = _value.toChar
+  protected def toInt: scala.Int = _value
+  protected def toLong: scala.Long = _value.toLong
+  protected def toFloat: scala.Float = _value.toFloat
   protected def toDouble: scala.Double = _value.toDouble
 
   // scalastyle:off disallow.space.before.token
@@ -64,117 +64,117 @@ class Character(val _value: scala.Char)
 
   protected def +(x: String): String = _value + x
 
-  protected def <<(x: scala.Int): scala.Int   = _value << x
-  protected def <<(x: scala.Long): scala.Int  = _value << x
-  protected def >>>(x: scala.Int): scala.Int  = _value >>> x
+  protected def <<(x: scala.Int): scala.Int = _value << x
+  protected def <<(x: scala.Long): scala.Int = _value << x
+  protected def >>>(x: scala.Int): scala.Int = _value >>> x
   protected def >>>(x: scala.Long): scala.Int = _value >>> x
-  protected def >>(x: scala.Int): scala.Int   = _value >> x
-  protected def >>(x: scala.Long): scala.Int  = _value >> x
+  protected def >>(x: scala.Int): scala.Int = _value >> x
+  protected def >>(x: scala.Long): scala.Int = _value >> x
 
-  protected def ==(x: scala.Byte): scala.Boolean   = _value == x
-  protected def ==(x: scala.Short): scala.Boolean  = _value == x
-  protected def ==(x: scala.Char): scala.Boolean   = _value == x
-  protected def ==(x: scala.Int): scala.Boolean    = _value == x
-  protected def ==(x: scala.Long): scala.Boolean   = _value == x
-  protected def ==(x: scala.Float): scala.Boolean  = _value == x
+  protected def ==(x: scala.Byte): scala.Boolean = _value == x
+  protected def ==(x: scala.Short): scala.Boolean = _value == x
+  protected def ==(x: scala.Char): scala.Boolean = _value == x
+  protected def ==(x: scala.Int): scala.Boolean = _value == x
+  protected def ==(x: scala.Long): scala.Boolean = _value == x
+  protected def ==(x: scala.Float): scala.Boolean = _value == x
   protected def ==(x: scala.Double): scala.Boolean = _value == x
 
-  protected def !=(x: scala.Byte): scala.Boolean   = _value != x
-  protected def !=(x: scala.Short): scala.Boolean  = _value != x
-  protected def !=(x: scala.Char): scala.Boolean   = _value != x
-  protected def !=(x: scala.Int): scala.Boolean    = _value != x
-  protected def !=(x: scala.Long): scala.Boolean   = _value != x
-  protected def !=(x: scala.Float): scala.Boolean  = _value != x
+  protected def !=(x: scala.Byte): scala.Boolean = _value != x
+  protected def !=(x: scala.Short): scala.Boolean = _value != x
+  protected def !=(x: scala.Char): scala.Boolean = _value != x
+  protected def !=(x: scala.Int): scala.Boolean = _value != x
+  protected def !=(x: scala.Long): scala.Boolean = _value != x
+  protected def !=(x: scala.Float): scala.Boolean = _value != x
   protected def !=(x: scala.Double): scala.Boolean = _value != x
 
-  protected def <(x: scala.Byte): scala.Boolean   = _value < x
-  protected def <(x: scala.Short): scala.Boolean  = _value < x
-  protected def <(x: scala.Char): scala.Boolean   = _value < x
-  protected def <(x: scala.Int): scala.Boolean    = _value < x
-  protected def <(x: scala.Long): scala.Boolean   = _value < x
-  protected def <(x: scala.Float): scala.Boolean  = _value < x
+  protected def <(x: scala.Byte): scala.Boolean = _value < x
+  protected def <(x: scala.Short): scala.Boolean = _value < x
+  protected def <(x: scala.Char): scala.Boolean = _value < x
+  protected def <(x: scala.Int): scala.Boolean = _value < x
+  protected def <(x: scala.Long): scala.Boolean = _value < x
+  protected def <(x: scala.Float): scala.Boolean = _value < x
   protected def <(x: scala.Double): scala.Boolean = _value < x
 
-  protected def <=(x: scala.Byte): scala.Boolean   = _value <= x
-  protected def <=(x: scala.Short): scala.Boolean  = _value <= x
-  protected def <=(x: scala.Char): scala.Boolean   = _value <= x
-  protected def <=(x: scala.Int): scala.Boolean    = _value <= x
-  protected def <=(x: scala.Long): scala.Boolean   = _value <= x
-  protected def <=(x: scala.Float): scala.Boolean  = _value <= x
+  protected def <=(x: scala.Byte): scala.Boolean = _value <= x
+  protected def <=(x: scala.Short): scala.Boolean = _value <= x
+  protected def <=(x: scala.Char): scala.Boolean = _value <= x
+  protected def <=(x: scala.Int): scala.Boolean = _value <= x
+  protected def <=(x: scala.Long): scala.Boolean = _value <= x
+  protected def <=(x: scala.Float): scala.Boolean = _value <= x
   protected def <=(x: scala.Double): scala.Boolean = _value <= x
 
-  protected def >(x: scala.Byte): scala.Boolean   = _value > x
-  protected def >(x: scala.Short): scala.Boolean  = _value > x
-  protected def >(x: scala.Char): scala.Boolean   = _value > x
-  protected def >(x: scala.Int): scala.Boolean    = _value > x
-  protected def >(x: scala.Long): scala.Boolean   = _value > x
-  protected def >(x: scala.Float): scala.Boolean  = _value > x
+  protected def >(x: scala.Byte): scala.Boolean = _value > x
+  protected def >(x: scala.Short): scala.Boolean = _value > x
+  protected def >(x: scala.Char): scala.Boolean = _value > x
+  protected def >(x: scala.Int): scala.Boolean = _value > x
+  protected def >(x: scala.Long): scala.Boolean = _value > x
+  protected def >(x: scala.Float): scala.Boolean = _value > x
   protected def >(x: scala.Double): scala.Boolean = _value > x
 
-  protected def >=(x: scala.Byte): scala.Boolean   = _value >= x
-  protected def >=(x: scala.Short): scala.Boolean  = _value >= x
-  protected def >=(x: scala.Char): scala.Boolean   = _value >= x
-  protected def >=(x: scala.Int): scala.Boolean    = _value >= x
-  protected def >=(x: scala.Long): scala.Boolean   = _value >= x
-  protected def >=(x: scala.Float): scala.Boolean  = _value >= x
+  protected def >=(x: scala.Byte): scala.Boolean = _value >= x
+  protected def >=(x: scala.Short): scala.Boolean = _value >= x
+  protected def >=(x: scala.Char): scala.Boolean = _value >= x
+  protected def >=(x: scala.Int): scala.Boolean = _value >= x
+  protected def >=(x: scala.Long): scala.Boolean = _value >= x
+  protected def >=(x: scala.Float): scala.Boolean = _value >= x
   protected def >=(x: scala.Double): scala.Boolean = _value >= x
 
-  protected def |(x: scala.Byte): scala.Int  = _value | x
+  protected def |(x: scala.Byte): scala.Int = _value | x
   protected def |(x: scala.Short): scala.Int = _value | x
-  protected def |(x: scala.Char): scala.Int  = _value | x
-  protected def |(x: scala.Int): scala.Int   = _value | x
+  protected def |(x: scala.Char): scala.Int = _value | x
+  protected def |(x: scala.Int): scala.Int = _value | x
   protected def |(x: scala.Long): scala.Long = _value | x
 
-  protected def &(x: scala.Byte): scala.Int  = _value & x
+  protected def &(x: scala.Byte): scala.Int = _value & x
   protected def &(x: scala.Short): scala.Int = _value & x
-  protected def &(x: scala.Char): scala.Int  = _value & x
-  protected def &(x: scala.Int): scala.Int   = _value & x
+  protected def &(x: scala.Char): scala.Int = _value & x
+  protected def &(x: scala.Int): scala.Int = _value & x
   protected def &(x: scala.Long): scala.Long = _value & x
 
-  protected def ^(x: scala.Byte): scala.Int  = _value ^ x
+  protected def ^(x: scala.Byte): scala.Int = _value ^ x
   protected def ^(x: scala.Short): scala.Int = _value ^ x
-  protected def ^(x: scala.Char): scala.Int  = _value ^ x
-  protected def ^(x: scala.Int): scala.Int   = _value ^ x
+  protected def ^(x: scala.Char): scala.Int = _value ^ x
+  protected def ^(x: scala.Int): scala.Int = _value ^ x
   protected def ^(x: scala.Long): scala.Long = _value ^ x
 
-  protected def +(x: scala.Byte): scala.Int      = _value + x
-  protected def +(x: scala.Short): scala.Int     = _value + x
-  protected def +(x: scala.Char): scala.Int      = _value + x
-  protected def +(x: scala.Int): scala.Int       = _value + x
-  protected def +(x: scala.Long): scala.Long     = _value + x
-  protected def +(x: scala.Float): scala.Float   = _value + x
+  protected def +(x: scala.Byte): scala.Int = _value + x
+  protected def +(x: scala.Short): scala.Int = _value + x
+  protected def +(x: scala.Char): scala.Int = _value + x
+  protected def +(x: scala.Int): scala.Int = _value + x
+  protected def +(x: scala.Long): scala.Long = _value + x
+  protected def +(x: scala.Float): scala.Float = _value + x
   protected def +(x: scala.Double): scala.Double = _value + x
 
-  protected def -(x: scala.Byte): scala.Int      = _value - x
-  protected def -(x: scala.Short): scala.Int     = _value - x
-  protected def -(x: scala.Char): scala.Int      = _value - x
-  protected def -(x: scala.Int): scala.Int       = _value - x
-  protected def -(x: scala.Long): scala.Long     = _value - x
-  protected def -(x: scala.Float): scala.Float   = _value - x
+  protected def -(x: scala.Byte): scala.Int = _value - x
+  protected def -(x: scala.Short): scala.Int = _value - x
+  protected def -(x: scala.Char): scala.Int = _value - x
+  protected def -(x: scala.Int): scala.Int = _value - x
+  protected def -(x: scala.Long): scala.Long = _value - x
+  protected def -(x: scala.Float): scala.Float = _value - x
   protected def -(x: scala.Double): scala.Double = _value - x
 
-  protected def *(x: scala.Byte): scala.Int      = _value * x
-  protected def *(x: scala.Short): scala.Int     = _value * x
-  protected def *(x: scala.Char): scala.Int      = _value * x
-  protected def *(x: scala.Int): scala.Int       = _value * x
-  protected def *(x: scala.Long): scala.Long     = _value * x
-  protected def *(x: scala.Float): scala.Float   = _value * x
+  protected def *(x: scala.Byte): scala.Int = _value * x
+  protected def *(x: scala.Short): scala.Int = _value * x
+  protected def *(x: scala.Char): scala.Int = _value * x
+  protected def *(x: scala.Int): scala.Int = _value * x
+  protected def *(x: scala.Long): scala.Long = _value * x
+  protected def *(x: scala.Float): scala.Float = _value * x
   protected def *(x: scala.Double): scala.Double = _value * x
 
-  protected def /(x: scala.Byte): scala.Int      = _value / x
-  protected def /(x: scala.Short): scala.Int     = _value / x
-  protected def /(x: scala.Char): scala.Int      = _value / x
-  protected def /(x: scala.Int): scala.Int       = _value / x
-  protected def /(x: scala.Long): scala.Long     = _value / x
-  protected def /(x: scala.Float): scala.Float   = _value / x
+  protected def /(x: scala.Byte): scala.Int = _value / x
+  protected def /(x: scala.Short): scala.Int = _value / x
+  protected def /(x: scala.Char): scala.Int = _value / x
+  protected def /(x: scala.Int): scala.Int = _value / x
+  protected def /(x: scala.Long): scala.Long = _value / x
+  protected def /(x: scala.Float): scala.Float = _value / x
   protected def /(x: scala.Double): scala.Double = _value / x
 
-  protected def %(x: scala.Byte): scala.Int      = _value % x
-  protected def %(x: scala.Short): scala.Int     = _value % x
-  protected def %(x: scala.Char): scala.Int      = _value % x
-  protected def %(x: scala.Int): scala.Int       = _value % x
-  protected def %(x: scala.Long): scala.Long     = _value % x
-  protected def %(x: scala.Float): scala.Float   = _value % x
+  protected def %(x: scala.Byte): scala.Int = _value % x
+  protected def %(x: scala.Short): scala.Int = _value % x
+  protected def %(x: scala.Char): scala.Int = _value % x
+  protected def %(x: scala.Int): scala.Int = _value % x
+  protected def %(x: scala.Long): scala.Long = _value % x
+  protected def %(x: scala.Float): scala.Float = _value % x
   protected def %(x: scala.Double): scala.Double = _value % x
 
   // Ported from Harmony
@@ -184,15 +184,15 @@ class Character(val _value: scala.Char)
       throw new NullPointerException()
     }
     override def equals(that: Any): scala.Boolean = super.equals(that)
-    override def hashCode: scala.Int              = super.hashCode
-    override def toString                         = name
+    override def hashCode: scala.Int = super.hashCode
+    override def toString = name
   }
 
   // Ported from Harmony
 
   final class UnicodeBlock private (name: String) extends Subset(name) {
     private var start: Int = _
-    private var end: Int   = _
+    private var end: Int = _
     private def this(name: String, start: Int, end: Int) = {
       this(name)
       this.start = start
@@ -201,55 +201,55 @@ class Character(val _value: scala.Char)
   }
 
   object UnicodeBlock {
-    val SURROGATES_AREA    = new UnicodeBlock("SURROGATES_AREA", 0x0, 0x0)
-    val BASIC_LATIN        = new UnicodeBlock("BASIC_LATIN", 0x0, 0x7f)
+    val SURROGATES_AREA = new UnicodeBlock("SURROGATES_AREA", 0x0, 0x0)
+    val BASIC_LATIN = new UnicodeBlock("BASIC_LATIN", 0x0, 0x7f)
     val LATIN_1_SUPPLEMENT = new UnicodeBlock("LATIN_1_SUPPLEMENT", 0x80, 0xff)
-    val LATIN_EXTENDED_A   = new UnicodeBlock("LATIN_EXTENDED_A", 0x100, 0x17f)
-    val LATIN_EXTENDED_B   = new UnicodeBlock("LATIN_EXTENDED_B", 0x180, 0x24f)
-    val IPA_EXTENSIONS     = new UnicodeBlock("IPA_EXTENSIONS", 0x250, 0x2af)
+    val LATIN_EXTENDED_A = new UnicodeBlock("LATIN_EXTENDED_A", 0x100, 0x17f)
+    val LATIN_EXTENDED_B = new UnicodeBlock("LATIN_EXTENDED_B", 0x180, 0x24f)
+    val IPA_EXTENSIONS = new UnicodeBlock("IPA_EXTENSIONS", 0x250, 0x2af)
     val SPACING_MODIFIER_LETTERS =
       new UnicodeBlock("SPACING_MODIFIER_LETTERS", 0x2b0, 0x2ff)
     val COMBINING_DIACRITICAL_MARKS =
       new UnicodeBlock("COMBINING_DIACRITICAL_MARKS", 0x300, 0x36f)
-    val GREEK    = new UnicodeBlock("GREEK", 0x370, 0x3ff)
+    val GREEK = new UnicodeBlock("GREEK", 0x370, 0x3ff)
     val CYRILLIC = new UnicodeBlock("CYRILLIC", 0x400, 0x4ff)
     val CYRILLIC_SUPPLEMENTARY =
       new UnicodeBlock("CYRILLIC_SUPPLEMENTARY", 0x500, 0x52f)
-    val ARMENIAN    = new UnicodeBlock("ARMENIAN", 0x530, 0x58f)
-    val HEBREW      = new UnicodeBlock("HEBREW", 0x590, 0x5ff)
-    val ARABIC      = new UnicodeBlock("ARABIC", 0x600, 0x6ff)
-    val SYRIAC      = new UnicodeBlock("SYRIAC", 0x700, 0x74f)
-    val THAANA      = new UnicodeBlock("THAANA", 0x780, 0x7bf)
-    val DEVANAGARI  = new UnicodeBlock("DEVANAGARI", 0x900, 0x97f)
-    val BENGALI     = new UnicodeBlock("BENGALI", 0x980, 0x9ff)
-    val GURMUKHI    = new UnicodeBlock("GURMUKHI", 0xa00, 0xa7f)
-    val GUJARATI    = new UnicodeBlock("GUJARATI", 0xa80, 0xaff)
-    val ORIYA       = new UnicodeBlock("ORIYA", 0xb00, 0xb7f)
-    val TAMIL       = new UnicodeBlock("TAMIL", 0xb80, 0xbff)
-    val TELUGU      = new UnicodeBlock("TELUGU", 0xc00, 0xc7f)
-    val KANNADA     = new UnicodeBlock("KANNADA", 0xc80, 0xcff)
-    val MALAYALAM   = new UnicodeBlock("MALAYALAM", 0xd00, 0xd7f)
-    val SINHALA     = new UnicodeBlock("SINHALA", 0xd80, 0xdff)
-    val THAI        = new UnicodeBlock("THAI", 0xe00, 0xe7f)
-    val LAO         = new UnicodeBlock("LAO", 0xe80, 0xeff)
-    val TIBETAN     = new UnicodeBlock("TIBETAN", 0xf00, 0xfff)
-    val MYANMAR     = new UnicodeBlock("MYANMAR", 0x1000, 0x109f)
-    val GEORGIAN    = new UnicodeBlock("GEORGIAN", 0x10a0, 0x10ff)
+    val ARMENIAN = new UnicodeBlock("ARMENIAN", 0x530, 0x58f)
+    val HEBREW = new UnicodeBlock("HEBREW", 0x590, 0x5ff)
+    val ARABIC = new UnicodeBlock("ARABIC", 0x600, 0x6ff)
+    val SYRIAC = new UnicodeBlock("SYRIAC", 0x700, 0x74f)
+    val THAANA = new UnicodeBlock("THAANA", 0x780, 0x7bf)
+    val DEVANAGARI = new UnicodeBlock("DEVANAGARI", 0x900, 0x97f)
+    val BENGALI = new UnicodeBlock("BENGALI", 0x980, 0x9ff)
+    val GURMUKHI = new UnicodeBlock("GURMUKHI", 0xa00, 0xa7f)
+    val GUJARATI = new UnicodeBlock("GUJARATI", 0xa80, 0xaff)
+    val ORIYA = new UnicodeBlock("ORIYA", 0xb00, 0xb7f)
+    val TAMIL = new UnicodeBlock("TAMIL", 0xb80, 0xbff)
+    val TELUGU = new UnicodeBlock("TELUGU", 0xc00, 0xc7f)
+    val KANNADA = new UnicodeBlock("KANNADA", 0xc80, 0xcff)
+    val MALAYALAM = new UnicodeBlock("MALAYALAM", 0xd00, 0xd7f)
+    val SINHALA = new UnicodeBlock("SINHALA", 0xd80, 0xdff)
+    val THAI = new UnicodeBlock("THAI", 0xe00, 0xe7f)
+    val LAO = new UnicodeBlock("LAO", 0xe80, 0xeff)
+    val TIBETAN = new UnicodeBlock("TIBETAN", 0xf00, 0xfff)
+    val MYANMAR = new UnicodeBlock("MYANMAR", 0x1000, 0x109f)
+    val GEORGIAN = new UnicodeBlock("GEORGIAN", 0x10a0, 0x10ff)
     val HANGUL_JAMO = new UnicodeBlock("HANGUL_JAMO", 0x1100, 0x11ff)
-    val ETHIOPIC    = new UnicodeBlock("ETHIOPIC", 0x1200, 0x137f)
-    val CHEROKEE    = new UnicodeBlock("CHEROKEE", 0x13a0, 0x13ff)
+    val ETHIOPIC = new UnicodeBlock("ETHIOPIC", 0x1200, 0x137f)
+    val CHEROKEE = new UnicodeBlock("CHEROKEE", 0x13a0, 0x13ff)
     val UNIFIED_CANADIAN_ABORIGINAL_SYLLABICS =
       new UnicodeBlock("UNIFIED_CANADIAN_ABORIGINAL_SYLLABICS", 0x1400, 0x167f)
-    val OGHAM         = new UnicodeBlock("OGHAM", 0x1680, 0x169f)
-    val RUNIC         = new UnicodeBlock("RUNIC", 0x16a0, 0x16ff)
-    val TAGALOG       = new UnicodeBlock("TAGALOG", 0x1700, 0x171f)
-    val HANUNOO       = new UnicodeBlock("HANUNOO", 0x1720, 0x173f)
-    val BUHID         = new UnicodeBlock("BUHID", 0x1740, 0x175f)
-    val TAGBANWA      = new UnicodeBlock("TAGBANWA", 0x1760, 0x177f)
-    val KHMER         = new UnicodeBlock("KHMER", 0x1780, 0x17ff)
-    val MONGOLIAN     = new UnicodeBlock("MONGOLIAN", 0x1800, 0x18af)
-    val LIMBU         = new UnicodeBlock("LIMBU", 0x1900, 0x194f)
-    val TAI_LE        = new UnicodeBlock("TAI_LE", 0x1950, 0x197f)
+    val OGHAM = new UnicodeBlock("OGHAM", 0x1680, 0x169f)
+    val RUNIC = new UnicodeBlock("RUNIC", 0x16a0, 0x16ff)
+    val TAGALOG = new UnicodeBlock("TAGALOG", 0x1700, 0x171f)
+    val HANUNOO = new UnicodeBlock("HANUNOO", 0x1720, 0x173f)
+    val BUHID = new UnicodeBlock("BUHID", 0x1740, 0x175f)
+    val TAGBANWA = new UnicodeBlock("TAGBANWA", 0x1760, 0x177f)
+    val KHMER = new UnicodeBlock("KHMER", 0x1780, 0x17ff)
+    val MONGOLIAN = new UnicodeBlock("MONGOLIAN", 0x1800, 0x18af)
+    val LIMBU = new UnicodeBlock("LIMBU", 0x1900, 0x194f)
+    val TAI_LE = new UnicodeBlock("TAI_LE", 0x1950, 0x197f)
     val KHMER_SYMBOLS = new UnicodeBlock("KHMER_SYMBOLS", 0x19e0, 0x19ff)
     val PHONETIC_EXTENSIONS =
       new UnicodeBlock("PHONETIC_EXTENSIONS", 0x1d00, 0x1d7f)
@@ -266,7 +266,7 @@ class Character(val _value: scala.Char)
     val LETTERLIKE_SYMBOLS =
       new UnicodeBlock("LETTERLIKE_SYMBOLS", 0x2100, 0x214f)
     val NUMBER_FORMS = new UnicodeBlock("NUMBER_FORMS", 0x2150, 0x218f)
-    val ARROWS       = new UnicodeBlock("ARROWS", 0x2190, 0x21ff)
+    val ARROWS = new UnicodeBlock("ARROWS", 0x2190, 0x21ff)
     val MATHEMATICAL_OPERATORS =
       new UnicodeBlock("MATHEMATICAL_OPERATORS", 0x2200, 0x22ff)
     val MISCELLANEOUS_TECHNICAL =
@@ -276,8 +276,8 @@ class Character(val _value: scala.Char)
       new UnicodeBlock("OPTICAL_CHARACTER_RECOGNITION", 0x2440, 0x245f)
     val ENCLOSED_ALPHANUMERICS =
       new UnicodeBlock("ENCLOSED_ALPHANUMERICS", 0x2460, 0x24ff)
-    val BOX_DRAWING      = new UnicodeBlock("BOX_DRAWING", 0x2500, 0x257f)
-    val BLOCK_ELEMENTS   = new UnicodeBlock("BLOCK_ELEMENTS", 0x2580, 0x259f)
+    val BOX_DRAWING = new UnicodeBlock("BOX_DRAWING", 0x2500, 0x257f)
+    val BLOCK_ELEMENTS = new UnicodeBlock("BLOCK_ELEMENTS", 0x2580, 0x259f)
     val GEOMETRIC_SHAPES = new UnicodeBlock("GEOMETRIC_SHAPES", 0x25a0, 0x25ff)
     val MISCELLANEOUS_SYMBOLS =
       new UnicodeBlock("MISCELLANEOUS_SYMBOLS", 0x2600, 0x26ff)
@@ -322,13 +322,13 @@ class Character(val _value: scala.Char)
       new UnicodeBlock("YIJING_HEXAGRAM_SYMBOLS", 0x4dc0, 0x4dff)
     val CJK_UNIFIED_IDEOGRAPHS =
       new UnicodeBlock("CJK_UNIFIED_IDEOGRAPHS", 0x4e00, 0x9fff)
-    val YI_SYLLABLES     = new UnicodeBlock("YI_SYLLABLES", 0xa000, 0xa48f)
-    val YI_RADICALS      = new UnicodeBlock("YI_RADICALS", 0xa490, 0xa4cf)
+    val YI_SYLLABLES = new UnicodeBlock("YI_SYLLABLES", 0xa000, 0xa48f)
+    val YI_RADICALS = new UnicodeBlock("YI_RADICALS", 0xa490, 0xa4cf)
     val HANGUL_SYLLABLES = new UnicodeBlock("HANGUL_SYLLABLES", 0xac00, 0xd7af)
-    val HIGH_SURROGATES  = new UnicodeBlock("HIGH_SURROGATES", 0xd800, 0xdb7f)
+    val HIGH_SURROGATES = new UnicodeBlock("HIGH_SURROGATES", 0xd800, 0xdb7f)
     val HIGH_PRIVATE_USE_SURROGATES =
       new UnicodeBlock("HIGH_PRIVATE_USE_SURROGATES", 0xdb80, 0xdbff)
-    val LOW_SURROGATES   = new UnicodeBlock("LOW_SURROGATES", 0xdc00, 0xdfff)
+    val LOW_SURROGATES = new UnicodeBlock("LOW_SURROGATES", 0xdc00, 0xdfff)
     val PRIVATE_USE_AREA = new UnicodeBlock("PRIVATE_USE_AREA", 0xe000, 0xf8ff)
     val CJK_COMPATIBILITY_IDEOGRAPHS =
       new UnicodeBlock("CJK_COMPATIBILITY_IDEOGRAPHS", 0xf900, 0xfaff)
@@ -354,12 +354,12 @@ class Character(val _value: scala.Char)
     val LINEAR_B_IDEOGRAMS =
       new UnicodeBlock("LINEAR_B_IDEOGRAMS", 0x10080, 0x100ff)
     val AEGEAN_NUMBERS = new UnicodeBlock("AEGEAN_NUMBERS", 0x10100, 0x1013f)
-    val OLD_ITALIC     = new UnicodeBlock("OLD_ITALIC", 0x10300, 0x1032f)
-    val GOTHIC         = new UnicodeBlock("GOTHIC", 0x10330, 0x1034f)
-    val UGARITIC       = new UnicodeBlock("UGARITIC", 0x10380, 0x1039f)
-    val DESERET        = new UnicodeBlock("DESERET", 0x10400, 0x1044f)
-    val SHAVIAN        = new UnicodeBlock("SHAVIAN", 0x10450, 0x1047f)
-    val OSMANYA        = new UnicodeBlock("OSMANYA", 0x10480, 0x104af)
+    val OLD_ITALIC = new UnicodeBlock("OLD_ITALIC", 0x10300, 0x1032f)
+    val GOTHIC = new UnicodeBlock("GOTHIC", 0x10330, 0x1034f)
+    val UGARITIC = new UnicodeBlock("UGARITIC", 0x10380, 0x1039f)
+    val DESERET = new UnicodeBlock("DESERET", 0x10400, 0x1044f)
+    val SHAVIAN = new UnicodeBlock("SHAVIAN", 0x10450, 0x1047f)
+    val OSMANYA = new UnicodeBlock("OSMANYA", 0x10480, 0x104af)
     val CYPRIOT_SYLLABARY =
       new UnicodeBlock("CYPRIOT_SYLLABARY", 0x10800, 0x1083f)
     val BYZANTINE_MUSICAL_SYMBOLS =
@@ -911,8 +911,8 @@ class Character(val _value: scala.Char)
       if (!Character.isValidCodePoint(codePoint)) {
         throw new IllegalArgumentException()
       }
-      var low  = 0
-      var mid  = -1
+      var low = 0
+      var mid = -1
       var high = BLOCKS.length - 1
       while (low <= high) {
         mid = (low + high) >>> 1
@@ -931,58 +931,58 @@ class Character(val _value: scala.Char)
 }
 
 object Character {
-  final val TYPE      = classOf[scala.Char]
+  final val TYPE = classOf[scala.Char]
   final val MIN_VALUE = '\u0000'
   final val MAX_VALUE = '\uffff'
-  final val SIZE      = 16
-  final val BYTES     = 2
+  final val SIZE = 16
+  final val BYTES = 2
 
   /* These are supposed to be final vals of type Byte, but that's not possible.
    * So we implement them as def's, which are binary compatible with final vals.
    */
-  @inline def UNASSIGNED: scala.Byte                = 0
-  @inline def UPPERCASE_LETTER: scala.Byte          = 1
-  @inline def LOWERCASE_LETTER: scala.Byte          = 2
-  @inline def TITLECASE_LETTER: scala.Byte          = 3
-  @inline def MODIFIER_LETTER: scala.Byte           = 4
-  @inline def OTHER_LETTER: scala.Byte              = 5
-  @inline def NON_SPACING_MARK: scala.Byte          = 6
-  @inline def ENCLOSING_MARK: scala.Byte            = 7
-  @inline def COMBINING_SPACING_MARK: scala.Byte    = 8
-  @inline def DECIMAL_DIGIT_NUMBER: scala.Byte      = 9
-  @inline def LETTER_NUMBER: scala.Byte             = 10
-  @inline def OTHER_NUMBER: scala.Byte              = 11
-  @inline def SPACE_SEPARATOR: scala.Byte           = 12
-  @inline def LINE_SEPARATOR: scala.Byte            = 13
-  @inline def PARAGRAPH_SEPARATOR: scala.Byte       = 14
-  @inline def CONTROL: scala.Byte                   = 15
-  @inline def FORMAT: scala.Byte                    = 16
-  @inline def PRIVATE_USE: scala.Byte               = 18
-  @inline def SURROGATE: scala.Byte                 = 19
-  @inline def DASH_PUNCTUATION: scala.Byte          = 20
-  @inline def START_PUNCTUATION: scala.Byte         = 21
-  @inline def END_PUNCTUATION: scala.Byte           = 22
-  @inline def CONNECTOR_PUNCTUATION: scala.Byte     = 23
-  @inline def OTHER_PUNCTUATION: scala.Byte         = 24
-  @inline def MATH_SYMBOL: scala.Byte               = 25
-  @inline def CURRENCY_SYMBOL: scala.Byte           = 26
-  @inline def MODIFIER_SYMBOL: scala.Byte           = 27
-  @inline def OTHER_SYMBOL: scala.Byte              = 28
+  @inline def UNASSIGNED: scala.Byte = 0
+  @inline def UPPERCASE_LETTER: scala.Byte = 1
+  @inline def LOWERCASE_LETTER: scala.Byte = 2
+  @inline def TITLECASE_LETTER: scala.Byte = 3
+  @inline def MODIFIER_LETTER: scala.Byte = 4
+  @inline def OTHER_LETTER: scala.Byte = 5
+  @inline def NON_SPACING_MARK: scala.Byte = 6
+  @inline def ENCLOSING_MARK: scala.Byte = 7
+  @inline def COMBINING_SPACING_MARK: scala.Byte = 8
+  @inline def DECIMAL_DIGIT_NUMBER: scala.Byte = 9
+  @inline def LETTER_NUMBER: scala.Byte = 10
+  @inline def OTHER_NUMBER: scala.Byte = 11
+  @inline def SPACE_SEPARATOR: scala.Byte = 12
+  @inline def LINE_SEPARATOR: scala.Byte = 13
+  @inline def PARAGRAPH_SEPARATOR: scala.Byte = 14
+  @inline def CONTROL: scala.Byte = 15
+  @inline def FORMAT: scala.Byte = 16
+  @inline def PRIVATE_USE: scala.Byte = 18
+  @inline def SURROGATE: scala.Byte = 19
+  @inline def DASH_PUNCTUATION: scala.Byte = 20
+  @inline def START_PUNCTUATION: scala.Byte = 21
+  @inline def END_PUNCTUATION: scala.Byte = 22
+  @inline def CONNECTOR_PUNCTUATION: scala.Byte = 23
+  @inline def OTHER_PUNCTUATION: scala.Byte = 24
+  @inline def MATH_SYMBOL: scala.Byte = 25
+  @inline def CURRENCY_SYMBOL: scala.Byte = 26
+  @inline def MODIFIER_SYMBOL: scala.Byte = 27
+  @inline def OTHER_SYMBOL: scala.Byte = 28
   @inline def INITIAL_QUOTE_PUNCTUATION: scala.Byte = 29
-  @inline def FINAL_QUOTE_PUNCTUATION: scala.Byte   = 30
+  @inline def FINAL_QUOTE_PUNCTUATION: scala.Byte = 30
 
   final val MIN_RADIX = 2
   final val MAX_RADIX = 36
 
   final val MIN_HIGH_SURROGATE = '\uD800'
   final val MAX_HIGH_SURROGATE = '\uDBFF'
-  final val MIN_LOW_SURROGATE  = '\uDC00'
-  final val MAX_LOW_SURROGATE  = '\uDFFF'
-  final val MIN_SURROGATE      = MIN_HIGH_SURROGATE
-  final val MAX_SURROGATE      = MAX_LOW_SURROGATE
+  final val MIN_LOW_SURROGATE = '\uDC00'
+  final val MAX_LOW_SURROGATE = '\uDFFF'
+  final val MIN_SURROGATE = MIN_HIGH_SURROGATE
+  final val MAX_SURROGATE = MAX_LOW_SURROGATE
 
-  final val MIN_CODE_POINT               = 0
-  final val MAX_CODE_POINT               = 0x10ffff
+  final val MIN_CODE_POINT = 0
+  final val MAX_CODE_POINT = 0x10ffff
   final val MIN_SUPPLEMENTARY_CODE_POINT = 0x10000
 
   @inline def charCount(codePoint: Int): Int =
@@ -1011,7 +1011,7 @@ object Character {
 
   def codePointBefore(seq: Array[scala.Char], _index: scala.Int): scala.Int = {
     var index = _index
-    val len   = seq.length
+    val len = seq.length
     if (index < 1 || index > len) {
       throw new ArrayIndexOutOfBoundsException(index)
     }
@@ -1033,14 +1033,14 @@ object Character {
   def codePointCount(seq: Array[scala.Char],
                      offset: scala.Int,
                      count: scala.Int): scala.Int = {
-    val len      = seq.length
+    val len = seq.length
     val endIndex = offset + count
     if (offset < 0 || count < 0 || endIndex > len) {
       throw new IndexOutOfBoundsException()
     }
 
     var result = 0
-    var i      = offset
+    var i = offset
     while (i <= endIndex) {
       var c = seq(i)
       if (isHighSurrogate(c)) {
@@ -1074,7 +1074,7 @@ object Character {
       index
     } else if (codePointOffset > 0) {
       var codePoints = codePointOffset
-      var i          = index
+      var i = index
       while (codePoints > 0) {
         codePoints -= 1
         if (i >= end) {
@@ -1091,7 +1091,7 @@ object Character {
       i
     } else {
       var codePoints = -codePointOffset
-      var i          = index
+      var i = index
       while (codePoints > 0) {
         codePoints -= 1
         i -= 1
@@ -1157,7 +1157,7 @@ object Character {
       0
     } else {
       val overBaseTen = digit - 10
-      val result      = if (overBaseTen < 0) '0' + digit else 'a' + overBaseTen
+      val result = if (overBaseTen < 0) '0' + digit else 'a' + overBaseTen
       result.toChar
     }
   }
@@ -1201,10 +1201,10 @@ object Character {
   // --- UTF-16 surrogate pairs handling ---
   // See http://en.wikipedia.org/wiki/UTF-16
 
-  private final val HighSurrogateMask       = 0xfc00 // 111111 00  00000000
-  private final val HighSurrogateID         = 0xd800 // 110110 00  00000000
-  private final val LowSurrogateMask        = 0xfc00 // 111111 00  00000000
-  private final val LowSurrogateID          = 0xdc00 // 110111 00  00000000
+  private final val HighSurrogateMask = 0xfc00 // 111111 00  00000000
+  private final val HighSurrogateID = 0xd800 // 110110 00  00000000
+  private final val LowSurrogateMask = 0xfc00 // 111111 00  00000000
+  private final val LowSurrogateID = 0xdc00 // 110111 00  00000000
   private final val SurrogateUsefulPartMask = 0x03ff // 000000 11  11111111
 
   @inline def isHighSurrogate(c: scala.Char): scala.Boolean =
@@ -1476,8 +1476,8 @@ object Character {
                                         dst: Array[Char],
                                         dstIndex: Int): Unit = {
     val cpPrime = codePoint - 0x10000
-    val high    = 0xD800 | ((cpPrime >> 10) & 0x3FF)
-    val low     = 0xDC00 | (cpPrime & 0x3FF)
+    val high = 0xD800 | ((cpPrime >> 10) & 0x3FF)
+    val low = 0xDC00 | (cpPrime & 0x3FF)
     dst(dstIndex) = high.toChar
     dst(dstIndex + 1) = low.toChar
   }
@@ -2085,15 +2085,15 @@ object Character {
     66639, 71872, 71903)
 
   private[this] object CaseFolding {
-    lazy val a     = lowerRanges(0)
-    lazy val z     = lowerRanges(1)
-    lazy val A     = upperRanges(0)
-    lazy val Z     = upperRanges(1)
+    lazy val a = lowerRanges(0)
+    lazy val z = lowerRanges(1)
+    lazy val A = upperRanges(0)
+    lazy val Z = upperRanges(1)
     lazy val delta = upperDeltas(0)
     // other low char optimization whitespace, punctuation, etc.
-    lazy val upperMu                        = upperRanges(2)
-    lazy val lowerBeta                      = lowerRanges(2)
-    def insertionPoint(idx: Int)            = (-(idx) - 1)
+    lazy val upperMu = upperRanges(2)
+    lazy val lowerBeta = lowerRanges(2)
+    def insertionPoint(idx: Int) = (-(idx) - 1)
     def toUpper(codePoint: Int, delta: Int) = codePoint - delta
     def toLower(codePoint: Int, delta: Int) = codePoint + delta
   }
@@ -2124,7 +2124,7 @@ object Character {
             // no range involved
             codePoint
           } else {
-            val delta      = deltas(ip)
+            val delta = deltas(ip)
             val upperBound = ranges(ip)
             if (step == 1) {
               convert(codePoint, delta)

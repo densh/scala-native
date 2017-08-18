@@ -4,10 +4,10 @@ package runtime
 import native._
 
 object Boxes {
-  @inline def boxToUByte(v: UByte): Any   = v
+  @inline def boxToUByte(v: UByte): Any = v
   @inline def boxToUShort(v: UShort): Any = v
-  @inline def boxToUInt(v: UInt): Any     = v
-  @inline def boxToULong(v: ULong): Any   = v
+  @inline def boxToUInt(v: UInt): Any = v
+  @inline def boxToULong(v: ULong): Any = v
 
   @inline def unboxToUByte(o: java.lang.Object): UByte =
     if (o == null) 0.toUByte

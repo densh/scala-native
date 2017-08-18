@@ -13,10 +13,10 @@ class DeadCodeElimination(implicit top: Top) extends Pass {
   import DeadCodeElimination._
 
   override def onInsts(insts: Seq[Inst]): Seq[Inst] = {
-    val cfg        = ControlFlow.Graph(insts)
-    val usedef     = UseDef(cfg)
+    val cfg = ControlFlow.Graph(insts)
+    val usedef = UseDef(cfg)
     val removeArgs = new ArgRemover(usedef, cfg.entry.name)
-    val buf        = new nir.Buffer
+    val buf = new nir.Buffer
 
     cfg.all.foreach { block =>
       if (usedef(block.name).alive) {

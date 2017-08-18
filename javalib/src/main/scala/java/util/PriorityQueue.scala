@@ -65,7 +65,7 @@ class PriorityQueue[E] protected (ordering: Ordering[_ >: E],
     inner.headOption.fold(null.asInstanceOf[E])(_.inner)
 
   override def remove(o: Any): Boolean = {
-    val boxed       = Box(o.asInstanceOf[E])
+    val boxed = Box(o.asInstanceOf[E])
     val initialSize = inner.size
 
     @tailrec

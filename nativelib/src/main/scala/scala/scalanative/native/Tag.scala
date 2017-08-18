@@ -8,20 +8,20 @@ import scalanative.runtime.undefined
 final abstract class Tag[P]
 
 object Tag {
-  implicit val Unit: Tag[Unit]                    = undefined
-  implicit val Boolean: Tag[Boolean]              = undefined
-  implicit val Char: Tag[Char]                    = undefined
-  implicit val Byte: Tag[Byte]                    = undefined
-  implicit val UByte: Tag[UByte]                  = undefined
-  implicit val Short: Tag[Short]                  = undefined
-  implicit val UShort: Tag[UShort]                = undefined
-  implicit val Int: Tag[Int]                      = undefined
-  implicit val UInt: Tag[UInt]                    = undefined
-  implicit val Long: Tag[Long]                    = undefined
-  implicit val ULong: Tag[ULong]                  = undefined
-  implicit val Float: Tag[Float]                  = undefined
-  implicit val Double: Tag[Double]                = undefined
-  implicit def Ptr[T: Tag]: Tag[Ptr[T]]           = undefined
+  implicit val Unit: Tag[Unit] = undefined
+  implicit val Boolean: Tag[Boolean] = undefined
+  implicit val Char: Tag[Char] = undefined
+  implicit val Byte: Tag[Byte] = undefined
+  implicit val UByte: Tag[UByte] = undefined
+  implicit val Short: Tag[Short] = undefined
+  implicit val UShort: Tag[UShort] = undefined
+  implicit val Int: Tag[Int] = undefined
+  implicit val UInt: Tag[UInt] = undefined
+  implicit val Long: Tag[Long] = undefined
+  implicit val ULong: Tag[ULong] = undefined
+  implicit val Float: Tag[Float] = undefined
+  implicit val Double: Tag[Double] = undefined
+  implicit def Ptr[T: Tag]: Tag[Ptr[T]] = undefined
   implicit def Ref[T <: AnyRef: ClassTag]: Tag[T] = undefined
 
   implicit def Nat0: Tag[Nat._0] = undefined

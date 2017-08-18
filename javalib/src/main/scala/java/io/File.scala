@@ -16,7 +16,7 @@ class File(_path: String) extends Serializable with Comparable[File] {
   import File._
 
   if (_path == null) throw new NullPointerException()
-  private val path: String           = fixSlashes(_path)
+  private val path: String = fixSlashes(_path)
   private[io] val properPath: String = File.properPath(path)
   private[io] val properPathBytes: Array[Byte] =
     File.properPath(path).getBytes("UTF-8")
@@ -244,7 +244,7 @@ class File(_path: String) extends Serializable with Comparable[File] {
   def setReadOnly(): Boolean =
     Zone { implicit z =>
       import stat._
-      val mask    = S_ISUID | S_ISGID | S_ISVTX | S_IRUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
+      val mask = S_ISUID | S_ISGID | S_ISVTX | S_IRUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
       val newMode = accessMode() & mask
       chmod(toCString(path), newMode) == 0
     }
@@ -297,7 +297,7 @@ class File(_path: String) extends Serializable with Comparable[File] {
     } else
       Zone { implicit z =>
         val buffer = UnrolledBuffer.empty[String]
-        var elem   = alloc[dirent]
+        var elem = alloc[dirent]
         while (readdir(dir, elem) == 0) {
           val name = fromCString(elem._2.asInstanceOf[CString])
 
@@ -369,7 +369,7 @@ object File {
   private def getUserDir(): String =
     Zone { implicit z =>
       var buff: CString = alloc[CChar](4096)
-      var res: CString  = getcwd(buff, 4095)
+      var res: CString = getcwd(buff, 4095)
       fromCString(res)
     }
 
@@ -379,7 +379,7 @@ object File {
    */
   // Ported from Apache Harmony
   private def fixSlashes(path: String): String = {
-    val length    = path.length
+    val length = path.length
     var newLength = 0
 
     var uncIndex =
@@ -389,8 +389,8 @@ object File {
       else 1 // Possible UNC path name
 
     var foundSlash = false
-    val newPath    = path.toCharArray()
-    var i          = 0
+    val newPath = path.toCharArray()
+    var i = 0
     while (i < length) {
       val currentChar = newPath(i)
 
@@ -482,13 +482,13 @@ object File {
         case link =>
           val linkLength = strlen(link)
           val pathLength = strlen(path)
-          var last       = pathLength - 1
+          var last = pathLength - 1
           while (path(last) != separatorChar) last -= 1
           last += 1
 
           // previous path up to last /, plus result of resolving the link.
           val newPathLength = last + linkLength + 1
-          val newPath       = alloc[Byte](newPathLength)
+          val newPath = alloc[Byte](newPathLength)
           strncpy(newPath, path, last)
           strncat(newPath, link, linkLength)
 
@@ -545,12 +545,12 @@ object File {
     }
   }
 
-  val pathSeparatorChar: Char        = if (Platform.isWindows) ';' else ':'
-  val pathSeparator: String          = pathSeparatorChar.toString
-  val separatorChar: Char            = if (Platform.isWindows) '\\' else '/'
-  val separator: String              = separatorChar.toString
-  private var counter: Int           = 0
-  private var counterBase: Int       = 0
+  val pathSeparatorChar: Char = if (Platform.isWindows) ';' else ':'
+  val pathSeparator: String = pathSeparatorChar.toString
+  val separatorChar: Char = if (Platform.isWindows) '\\' else '/'
+  val separator: String = separatorChar.toString
+  private var counter: Int = 0
+  private var counterBase: Int = 0
   private val caseSensitive: Boolean = !Platform.isWindows
 
   def listRoots(): Array[File] =
@@ -571,8 +571,8 @@ object File {
     else if (prefix.length < 3)
       throw new IllegalArgumentException("Prefix string too short")
     else {
-      val tmpDir       = Option(directory).getOrElse(tempDir())
-      val newSuffix    = Option(suffix).getOrElse(".tmp")
+      val tmpDir = Option(directory).getOrElse(tempDir())
+      val newSuffix = Option(suffix).getOrElse(".tmp")
       var result: File = null
       do {
         result = genTempFile(prefix, newSuffix, tmpDir)
@@ -589,7 +589,7 @@ object File {
   private def genTempFile(prefix: String,
                           suffix: String,
                           directory: File): File = {
-    val id       = random.nextInt()
+    val id = random.nextInt()
     val fileName = prefix + id + suffix
     new File(directory, fileName)
   }

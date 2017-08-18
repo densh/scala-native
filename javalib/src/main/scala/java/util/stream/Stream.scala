@@ -20,7 +20,7 @@ object Stream {
   }
 
   def builder[T](): Builder[T] = new WrappedScalaStream.Builder[T]
-  def empty[T](): Stream[T]    = new WrappedScalaStream(SStream.empty[T], None)
+  def empty[T](): Stream[T] = new WrappedScalaStream(SStream.empty[T], None)
   def of[T](values: Array[AnyRef]): Stream[T] =
     new WrappedScalaStream(values.asInstanceOf[Array[T]].toStream, None)
 }

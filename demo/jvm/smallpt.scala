@@ -3,12 +3,12 @@ package demo
 import java.lang.Math.{PI, sin, cos, abs, pow, sqrt, random}
 
 class Vec(val x: Double = 0, val y: Double = 0, val z: Double = 0) {
-  @inline def +(v: Vec)    = new Vec(x + v.x, y + v.y, z + v.z)
-  @inline def -(v: Vec)    = new Vec(x - v.x, y - v.y, z - v.z)
+  @inline def +(v: Vec) = new Vec(x + v.x, y + v.y, z + v.z)
+  @inline def -(v: Vec) = new Vec(x - v.x, y - v.y, z - v.z)
   @inline def *(v: Double) = new Vec(x * v, y * v, z * v)
   @inline def mult(v: Vec) = new Vec(x * v.x, y * v.y, z * v.z)
-  @inline def norm()       = this * (1d / sqrt(x * x + y * y + z * z))
-  @inline def dot(v: Vec)  = x * v.x + y * v.y + z * v.z
+  @inline def norm() = this * (1d / sqrt(x * x + y * y + z * z))
+  @inline def dot(v: Vec) = x * v.x + y * v.y + z * v.z
   @inline def %(v: Vec) =
     new Vec(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x)
 }
@@ -28,10 +28,10 @@ class Sphere(val rad: Double,
              val c: Vec,
              val refl: Refl.T) {
   def intersect(r: Ray): Double = {
-    val op  = p - r.o
-    var t   = 0.0d
+    val op = p - r.o
+    var t = 0.0d
     val eps = 1e-4d
-    val b   = op.dot(r.d)
+    val b = op.dot(r.d)
     var det = b * b - op.dot(op) + rad * rad
     if (det < 0) return 0
     else det = sqrt(det)
@@ -121,15 +121,15 @@ object Main {
 
   def radiance(r: Ray, _depth: Int): Vec = {
     var depth = _depth
-    val t     = new Array[Double](1)
-    val id    = new Array[Int](1)
+    val t = new Array[Double](1)
+    val id = new Array[Int](1)
     id(0) = 0
     if (!intersect(r, t, id)) return new Vec()
     val obj = spheres(id(0))
-    val x   = r.o + r.d * t(0)
-    val n   = (x - obj.p).norm
-    val nl  = if (n.dot(r.d) < 0) n else n * -1
-    var f   = obj.c
+    val x = r.o + r.d * t(0)
+    val n = (x - obj.p).norm
+    val nl = if (n.dot(r.d) < 0) n else n * -1
+    var f = obj.c
     val p =
       if (f.x > f.y && f.x > f.z) f.x
       else if (f.y > f.z) f.y
@@ -142,13 +142,13 @@ object Main {
     }
 
     if (obj.refl == Refl.DIFF) {
-      val r1  = 2 * PI * random()
-      val r2  = random()
+      val r1 = 2 * PI * random()
+      val r2 = random()
       val r2s = sqrt(r2)
-      val w   = nl
-      val u   = ((if (abs(w.x) > .1) new Vec(0, 1) else new Vec(1)) % w).norm()
-      val v   = w % u
-      val d   = (u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2)).norm()
+      val w = nl
+      val u = ((if (abs(w.x) > .1) new Vec(0, 1) else new Vec(1)) % w).norm()
+      val v = w % u
+      val d = (u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2)).norm()
       return obj.e + f.mult(radiance(new Ray(x, d), depth))
     } else if (obj.refl == Refl.SPEC) {
       return obj.e + f.mult(
@@ -156,24 +156,24 @@ object Main {
     }
 
     val reflRay = new Ray(x, r.d - n * 2 * n.dot(r.d))
-    val into    = n.dot(nl) > 0
-    val nc      = 1d
-    val nt      = 1.5d
-    val nnt     = if (into) nc / nt else nt / nc
-    val ddn     = r.d.dot(nl)
-    val cos2t   = 1 - nnt * nnt * (1 - ddn * ddn)
+    val into = n.dot(nl) > 0
+    val nc = 1d
+    val nt = 1.5d
+    val nnt = if (into) nc / nt else nt / nc
+    val ddn = r.d.dot(nl)
+    val cos2t = 1 - nnt * nnt * (1 - ddn * ddn)
     if (cos2t < 0)
       return obj.e + f.mult(radiance(reflRay, depth))
     val tdir =
       (r.d * nnt - n * ((if (into) 1 else -1) * (ddn * nnt + sqrt(cos2t))))
         .norm();
-    val a  = nt - nc
-    val b  = nt + nc
+    val a = nt - nc
+    val b = nt + nc
     val R0 = (a * a) / (b * b)
-    val c  = 1 - (if (into) -ddn else tdir.dot(n))
+    val c = 1 - (if (into) -ddn else tdir.dot(n))
     val Re = R0 + (1 - R0) * c * c * c * c * c
     val Tr = 1 - Re
-    val P  = .25d + .5d * Re
+    val P = .25d + .5d * Re
     val RP = Re / P
     val TP = Tr / (1 - P)
     return obj.e + f.mult(
@@ -185,17 +185,17 @@ object Main {
     )
   }
 
-  final val W       = 800
-  final val H       = 600
+  final val W = 800
+  final val H = 600
   final val SAMPLES = 2
   def main(args: Array[String]): Unit = {
     val cam =
       new Ray(new Vec(50d, 52d, 295.6), new Vec(0d, -0.042612d, -1d).norm())
     val cx = new Vec(W * .5135d / H)
     val cy = (cx % cam.d).norm() * .5135d
-    var r  = new Vec()
-    val c  = Array.fill[Vec](W * H)(new Vec())
-    var y  = 0
+    var r = new Vec()
+    val c = Array.fill[Vec](W * H)(new Vec())
+    var y = 0
 
     def printOverPreviousLine(str: String) = {
       print(f"\u001b[1A"); print(str)
@@ -206,7 +206,7 @@ object Main {
         f"\rRendering (${SAMPLES * 4}%d spp) ${100.0 * y / (H - 1)}%5.2f%%")
       var x = 0
       while (x < W) {
-        val i  = (H - y - 1) * W + x
+        val i = (H - y - 1) * W + x
         var sy = 0
         while (sy < 2) {
           var sx = 0

@@ -28,8 +28,8 @@ createFileWithAlreadyWrittenText := {
 
 constructorFileCheck := {
   val fip: FileInputStream = new FileInputStream(f)
-  val size                 = fip.available()
-  val readed               = new Array[Byte](size)
+  val size = fip.available()
+  val readed = new Array[Byte](size)
   fip.read(readed)
   assert(new String(readed, "UTF-8") equals "Hello World")
 }
@@ -42,8 +42,8 @@ deleteFile := {
 
 constructorFileAppendTrueCheck := {
   val fip: FileInputStream = new FileInputStream(f)
-  val size                 = fip.available()
-  val readed               = new Array[Byte](size)
+  val size = fip.available()
+  val readed = new Array[Byte](size)
   fip.read(readed)
   assert(new String(readed, "UTF-8") equals "test Hello World")
 }

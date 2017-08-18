@@ -26,9 +26,9 @@ object FileSystems {
   }
 
   def newFileSystem(path: Path, loader: ClassLoader): FileSystem = {
-    val providers              = FileSystemProvider.installedProviders
-    val map                    = new HashMap[String, Object]()
-    var i                      = 0
+    val providers = FileSystemProvider.installedProviders
+    val map = new HashMap[String, Object]()
+    var i = 0
     var fs: Option[FileSystem] = None
     while (i < providers.size && fs.isEmpty) {
       try {
@@ -52,9 +52,9 @@ object FileSystems {
     newFileSystem(uri, env)
 
   private def findProvider(uri: URI): FileSystemProvider = {
-    val providers                            = FileSystemProvider.installedProviders
+    val providers = FileSystemProvider.installedProviders
     var provider: Option[FileSystemProvider] = None
-    var i                                    = 0
+    var i = 0
     while (i < providers.size && provider.isEmpty) {
       if (providers.get(i).getScheme.equalsIgnoreCase(uri.getScheme)) {
         provider = Some(providers.get(i))

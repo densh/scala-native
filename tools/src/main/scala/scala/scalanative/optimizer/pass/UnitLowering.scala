@@ -63,12 +63,12 @@ class UnitLowering extends Pass {
 }
 
 object UnitLowering extends PassCompanion {
-  val unitName  = Global.Top("scala.scalanative.runtime.BoxedUnit$")
-  val unit      = Val.Global(unitName, Type.Ptr)
-  val unitTy    = Type.Struct(unitName member "layout", Seq(Type.Ptr))
+  val unitName = Global.Top("scala.scalanative.runtime.BoxedUnit$")
+  val unit = Val.Global(unitName, Type.Ptr)
+  val unitTy = Type.Struct(unitName member "layout", Seq(Type.Ptr))
   val unitConst = Val.Global(unitName member "type", Type.Ptr)
   val unitValue = Val.Struct(unitTy.name, Seq(unitConst))
-  val unitDefn  = Defn.Const(Attrs.None, unitName, unitTy, unitValue)
+  val unitDefn = Defn.Const(Attrs.None, unitName, unitTy, unitValue)
 
   override val depends =
     Seq(unitName)

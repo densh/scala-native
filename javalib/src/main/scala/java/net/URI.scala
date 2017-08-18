@@ -36,19 +36,19 @@ final class URI private () extends Comparable[URI] with Serializable {
 
   private var string: String = _
 
-  @transient private var scheme: String             = _
+  @transient private var scheme: String = _
   @transient private var schemespecificpart: String = _
-  @transient private var authority: String          = _
-  @transient private var userinfo: String           = _
-  @transient private var host: String               = _
-  @transient private var port: Int                  = -1
-  @transient private var path: String               = _
-  @transient private var query: String              = _
-  @transient private var fragment: String           = _
-  @transient private var opaque: Boolean            = _
-  @transient private var absolute: Boolean          = _
-  @transient private var serverAuthority: Boolean   = false
-  @transient private var hash: Int                  = -1
+  @transient private var authority: String = _
+  @transient private var userinfo: String = _
+  @transient private var host: String = _
+  @transient private var port: Int = -1
+  @transient private var path: String = _
+  @transient private var query: String = _
+  @transient private var fragment: String = _
+  @transient private var opaque: Boolean = _
+  @transient private var absolute: Boolean = _
+  @transient private var serverAuthority: Boolean = false
+  @transient private var hash: Int = -1
 
   def this(str: String) = {
     this()
@@ -80,7 +80,7 @@ final class URI private () extends Comparable[URI] with Serializable {
            query: String,
            fragment: String) = {
     this()
-    var hostVar   = host
+    var hostVar = host
     var earlyStop = false
     if (scheme == null && userInfo == null && host == null && path == null &&
         query == null &&
@@ -170,7 +170,7 @@ final class URI private () extends Comparable[URI] with Serializable {
     def parseURI(uri: String, forceServer: Boolean): Unit = {
       var temp: String = uri
       string = uri
-      var index: Int  = 0
+      var index: Int = 0
       var index1: Int = 0
       var index2: Int = 0
       var index3: Int = 0
@@ -333,12 +333,12 @@ final class URI private () extends Comparable[URI] with Serializable {
       if (authority == null) {
         return
       }
-      var temp: String         = null
+      var temp: String = null
       var tempUserinfo: String = null
-      var tempHost: String     = null
-      var index: Int           = 0
-      var hostindex: Int       = 0
-      var tempPort: Int        = -1
+      var tempHost: String = null
+      var index: Int = 0
+      var hostindex: Int = 0
+      var tempPort: Int = -1
       temp = authority
       index = temp.indexOf('@')
       if (index != -1) {
@@ -448,7 +448,7 @@ final class URI private () extends Comparable[URI] with Serializable {
       } catch {
         case e: URISyntaxException => return false
       }
-      var label: String       = null
+      var label: String = null
       val st: StringTokenizer = new StringTokenizer(host, ".")
       while (st.hasMoreTokens) {
         label = st.nextToken()
@@ -466,7 +466,7 @@ final class URI private () extends Comparable[URI] with Serializable {
     }
 
     def isValidIPv4Address(host: String): Boolean = {
-      var index: Int  = 0
+      var index: Int = 0
       var index2: Int = 0
       try {
         var num: Int = 0
@@ -497,14 +497,14 @@ final class URI private () extends Comparable[URI] with Serializable {
     }
 
     def isValidIP6Address(ipAddress: String): Boolean = {
-      val length: Int          = ipAddress.length
+      val length: Int = ipAddress.length
       var doubleColon: Boolean = false
-      var numberOfColons: Int  = 0
+      var numberOfColons: Int = 0
       var numberOfPeriods: Int = 0
-      var word: String         = ""
-      var c: Char              = 0
-      var prevChar: Char       = 0
-      var offset: Int          = 0
+      var word: String = ""
+      var c: Char = 0
+      var prevChar: Char = 0
+      var offset: Int = 0
       if (length < 2) {
         return false
       }
@@ -728,7 +728,7 @@ final class URI private () extends Comparable[URI] with Serializable {
       return s
     }
     var previndex: Int = 0
-    var index: Int     = s.indexOf('%', previndex)
+    var index: Int = s.indexOf('%', previndex)
     while (index != -1) {
       result.append(s.substring(previndex, index + 1))
       result.append(s.substring(index + 1, index + 3).toLowerCase())
@@ -751,7 +751,7 @@ final class URI private () extends Comparable[URI] with Serializable {
       return first == second
     }
     var previndex: Int = 0
-    var index: Int     = first.indexOf('%', previndex)
+    var index: Int = first.indexOf('%', previndex)
     while (index != -1 && second.indexOf('%', previndex) == index) {
       var `match`: Boolean = first.substring(previndex, index) == second
         .substring(previndex, index)
@@ -884,7 +884,7 @@ final class URI private () extends Comparable[URI] with Serializable {
     var index = -1
     index = path.indexOf('/', index + 1)
     val pathlen: Int = path.length
-    var size: Int    = 0
+    var size: Int = 0
     if (pathlen > 0 && path.charAt(0) != '/') {
       size += 1
     }
@@ -895,11 +895,11 @@ final class URI private () extends Comparable[URI] with Serializable {
       index = path.indexOf('/', index + 1)
     }
 
-    val seglist: Array[String]  = Array.ofDim[String](size)
+    val seglist: Array[String] = Array.ofDim[String](size)
     val include: Array[Boolean] = Array.ofDim[Boolean](size)
     // break the path into segments and store in the list
     var current: Int = 0
-    var index2: Int  = path.indexOf('/', index + 1)
+    var index2: Int = path.indexOf('/', index + 1)
     index = if (pathlen > 0 && path.charAt(0) == '/') 1 else 0
     while (index2 != -1) {
       seglist({ current += 1; current - 1 }) = path.substring(index, index2)
@@ -986,7 +986,7 @@ final class URI private () extends Comparable[URI] with Serializable {
       return relative
     }
     // normalize both paths
-    var thisPath: String     = normalize(path)
+    var thisPath: String = normalize(path)
     val relativePath: String = normalize(relative.path)
     /*
      * if the paths aren't equal, then we need to determine if this URI's

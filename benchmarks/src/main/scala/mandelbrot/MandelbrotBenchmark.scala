@@ -47,7 +47,7 @@ import benchmarks.{BenchmarkRunningTime, VeryLongRunningTime}
 class MandelbrotBenchmark extends benchmarks.Benchmark[(Int, Int)] {
 
   private val sizes = List(750, 500, 1)
-  private var i     = 0
+  private var i = 0
 
   override val runningTime: BenchmarkRunningTime = VeryLongRunningTime
 
@@ -78,25 +78,25 @@ class MandelbrotBenchmark extends benchmarks.Benchmark[(Int, Int)] {
   }
 
   def mandelbrot(size: Int): Int = {
-    var sum: Int     = 0
+    var sum: Int = 0
     var byteAcc: Int = 0
-    var bitNum: Int  = 0
-    var y: Int       = 0
+    var bitNum: Int = 0
+    var y: Int = 0
 
     while (y < size) {
       var ci: Double = (2.0d * y / size) - 1.0
-      var x: Int     = 0
+      var x: Int = 0
 
       while (x < size) {
-        var zr: Double   = 0.0d
+        var zr: Double = 0.0d
         var zrzr: Double = 0.0d
-        var zi: Double   = 0.0d
+        var zi: Double = 0.0d
         var zizi: Double = 0.0d
-        var cr: Double   = (2.0d * x / size) - 1.5d
+        var cr: Double = (2.0d * x / size) - 1.5d
 
-        var z: Int           = 0
+        var z: Int = 0
         var notDone: Boolean = true
-        var escape: Int      = 0
+        var escape: Int = 0
         while (notDone && z < 50) {
           zr = zrzr - zizi + cr
           zi = 2.0 * zr * zi + ci

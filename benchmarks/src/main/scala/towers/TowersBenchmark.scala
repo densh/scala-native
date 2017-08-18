@@ -28,7 +28,7 @@ class TowersBenchmark extends benchmarks.Benchmark[Int] {
   final class TowersDisk(val size: Int, var next: TowersDisk = null)
 
   var piles: Array[TowersDisk] = _
-  var movesDone: Int           = _
+  var movesDone: Int = _
 
   def pushDisk(disk: TowersDisk, pile: Int): Unit = {
     val top = piles(pile)

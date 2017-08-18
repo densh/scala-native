@@ -78,15 +78,15 @@ private[niocharset] object UTF_8
 
     private def decodeLoopArray(in: ByteBuffer,
                                 out: CharBuffer): CoderResult = {
-      val inArray  = in.array
+      val inArray = in.array
       val inOffset = in.arrayOffset
-      val inStart  = in.position + inOffset
-      val inEnd    = in.limit + inOffset
+      val inStart = in.position + inOffset
+      val inEnd = in.limit + inOffset
 
-      val outArray  = out.array
+      val outArray = out.array
       val outOffset = out.arrayOffset
-      val outStart  = out.position + outOffset
-      val outEnd    = out.limit + outOffset
+      val outStart = out.position + outOffset
+      val outEnd = out.limit + outOffset
 
       @inline
       @tailrec
@@ -302,15 +302,15 @@ private[niocharset] object UTF_8
 
     private def encodeLoopArray(in: CharBuffer,
                                 out: ByteBuffer): CoderResult = {
-      val inArray  = in.array
+      val inArray = in.array
       val inOffset = in.arrayOffset
-      val inStart  = in.position + inOffset
-      val inEnd    = in.limit + inOffset
+      val inStart = in.position + inOffset
+      val inEnd = in.limit + inOffset
 
-      val outArray  = out.array
+      val outArray = out.array
       val outOffset = out.arrayOffset
-      val outStart  = out.position + outOffset
-      val outEnd    = out.limit + outOffset
+      val outStart = out.position + outOffset
+      val outEnd = out.limit + outOffset
 
       @inline
       @tailrec
@@ -461,7 +461,7 @@ private[niocharset] object UTF_8
   }
 
   private final val SurrogateMask = 0xf800 // 11111 0 00  00000000
-  private final val SurrogateID   = 0xd800 // 11011 0 00  00000000
+  private final val SurrogateID = 0xd800 // 11011 0 00  00000000
 
   @inline private def isSurrogate(c: Char): Boolean =
     (c & SurrogateMask) == SurrogateID

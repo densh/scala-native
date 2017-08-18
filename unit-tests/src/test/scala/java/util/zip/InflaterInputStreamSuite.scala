@@ -36,7 +36,7 @@ object InflaterInputStreamSuite extends tests.Suite {
   }
 
   test("mark()") {
-    val is  = new ByteArrayInputStream(new Array[Byte](10))
+    val is = new ByteArrayInputStream(new Array[Byte](10))
     val iis = new InflaterInputStream(is)
     // mark do nothing, do no check
     iis.mark(0)
@@ -45,20 +45,20 @@ object InflaterInputStreamSuite extends tests.Suite {
   }
 
   test("markSupported()") {
-    val is  = new ByteArrayInputStream(new Array[Byte](10))
+    val is = new ByteArrayInputStream(new Array[Byte](10))
     val iis = new InflaterInputStream(is)
     assert(!iis.markSupported())
     assert(is.markSupported())
   }
 
   test("read()") {
-    var result    = 0
-    var buffer    = new Array[Int](5000)
+    var result = 0
+    var buffer = new Array[Int](5000)
     val orgBuffer = Array[Byte](1, 3, 4, 7, 8)
     val infile = new ByteArrayInputStream(
       Array(0x78, 0x9c, 0x63, 0x64, 0x66, 0x61, 0xe7, 0x00, 0x00, 0x00, 0x38,
         0x00, 0x18, 0x00).map(_.toByte))
-    val inflate  = new Inflater()
+    val inflate = new Inflater()
     val inflatIP = new InflaterInputStream(infile, inflate)
 
     var i = 0
@@ -80,7 +80,7 @@ object InflaterInputStreamSuite extends tests.Suite {
     val infile = new ByteArrayInputStream(
       Array(0x9c, 0x78, 0x61, 0x66, 0x00, 0xe7, 0x00, 0x00, 0x00, 0x38, 0x00,
         0x18).map(_.toByte))
-    val inflate  = new Inflater()
+    val inflate = new Inflater()
     val inflatIP = new InflaterInputStream(infile, inflate)
 
     val b = new Array[Byte](3)
@@ -127,7 +127,7 @@ object InflaterInputStreamSuite extends tests.Suite {
   test("AvailableEmptySource") {
     // this byte[] is a deflation of the empty file
     val deflated = Array[Byte](120, -100, 3, 0, 0, 0, 0, 1)
-    val in       = new InflaterInputStream(new ByteArrayInputStream(deflated))
+    val in = new InflaterInputStream(new ByteArrayInputStream(deflated))
     assert(-1 == in.read())
     assert(-1 == in.read())
     assert(0 == in.available())
@@ -135,7 +135,7 @@ object InflaterInputStreamSuite extends tests.Suite {
 
   test("read(Array[Byte], Int, Int)") {
     val test = new Array[Byte](507)
-    var i    = 0
+    var i = 0
     while (i < 256) {
       test(i) = i.toByte
       i += 1
@@ -145,13 +145,13 @@ object InflaterInputStreamSuite extends tests.Suite {
       i += 1
     }
     val baos = new ByteArrayOutputStream()
-    val dos  = new DeflaterOutputStream(baos)
+    val dos = new DeflaterOutputStream(baos)
     dos.write(test)
     dos.close()
-    val is         = new ByteArrayInputStream(baos.toByteArray())
-    val iis        = new InflaterInputStream(is)
-    val outBuf     = new Array[Byte](530)
-    var result     = 0
+    val is = new ByteArrayInputStream(baos.toByteArray())
+    val iis = new InflaterInputStream(is)
+    val outBuf = new Array[Byte](530)
+    var result = 0
     var eofReached = false
     while (!eofReached) {
       result = iis.read(outBuf, 0, 5)
@@ -166,8 +166,8 @@ object InflaterInputStreamSuite extends tests.Suite {
 
   test("read(Array[Byte], Int, Int) 2") {
 
-    val bis    = new ByteArrayInputStream(ZipBytes.brokenManifestBytes)
-    val iis    = new InflaterInputStream(bis)
+    val bis = new ByteArrayInputStream(ZipBytes.brokenManifestBytes)
+    val iis = new InflaterInputStream(bis)
     val outBuf = new Array[Byte](530)
     iis.close()
 
@@ -179,8 +179,8 @@ object InflaterInputStreamSuite extends tests.Suite {
   }
 
   test("read(Array[Byte], Int, Int) 3") {
-    val bis    = new ByteArrayInputStream(ZipBytes.brokenManifestBytes)
-    val iis    = new InflaterInputStream(bis)
+    val bis = new ByteArrayInputStream(ZipBytes.brokenManifestBytes)
+    val iis = new InflaterInputStream(bis)
     val outBuf = new Array[Byte](530)
 
     assertThrows[IOException] {
@@ -224,15 +224,15 @@ object InflaterInputStreamSuite extends tests.Suite {
   }
 
   test("skipJ2") {
-    var result    = 0
-    val buffer    = new Array[Int](100)
+    var result = 0
+    val buffer = new Array[Int](100)
     val orgBuffer = Array[Byte](1, 3, 4, 7, 8)
 
     val infile = new ByteArrayInputStream(
       Array(0x78, 0x9c, 0x63, 0x64, 0x66, 0x61, 0xe7, 0x00, 0x00, 0x00, 0x38,
         0x00, 0x18, 0x00).map(_.toByte))
-    val inflate    = new Inflater()
-    val inflatIP   = new InflaterInputStream(infile, inflate, 10)
+    val inflate = new Inflater()
+    val inflatIP = new InflaterInputStream(infile, inflate, 10)
     var skip: Long = 0L
 
     assertThrows[IllegalArgumentException] {
@@ -274,8 +274,8 @@ object InflaterInputStreamSuite extends tests.Suite {
   test("available()") {
     val bytes = Array(0x78, 0x9c, 0x63, 0x65, 0x61, 0x66, 0xe2, 0x60, 0x67,
       0xe0, 0x64, 0x03, 0x00, 0x00, 0xd3, 0x00, 0x2d, 0x00).map(_.toByte)
-    val bis       = new ByteArrayInputStream(bytes)
-    val iis       = new InflaterInputStream(bis)
+    val bis = new ByteArrayInputStream(bytes)
+    val iis = new InflaterInputStream(bis)
     var available = 0
 
     var i = 0

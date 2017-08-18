@@ -56,7 +56,7 @@ class UnixPath(private val fs: UnixFileSystem, private val rawPath: String)
   override def startsWith(other: Path): Boolean =
     if (fs.provider == other.getFileSystem.provider) {
       val otherLength = other.getNameCount()
-      val thisLength  = getNameCount()
+      val thisLength = getNameCount()
 
       if (otherLength > thisLength) false
       else if (isAbsolute ^ other.isAbsolute) false
@@ -73,7 +73,7 @@ class UnixPath(private val fs: UnixFileSystem, private val rawPath: String)
   override def endsWith(other: Path): Boolean =
     if (fs.provider == other.getFileSystem.provider) {
       val otherLength = other.getNameCount()
-      val thisLength  = getNameCount()
+      val thisLength = getNameCount()
       if (otherLength > thisLength) false
       else if (!other.isAbsolute) {
         (0 until otherLength).forall(i =>
@@ -149,8 +149,8 @@ class UnixPath(private val fs: UnixFileSystem, private val rawPath: String)
 
   override def iterator(): Iterator[Path] =
     new Iterator[Path] {
-      private var i: Int              = 0
-      override def remove(): Unit     = throw new UnsupportedOperationException()
+      private var i: Int = 0
+      override def remove(): Unit = throw new UnsupportedOperationException()
       override def hasNext(): Boolean = i < getNameCount()
       override def next(): Path =
         if (hasNext) {
@@ -207,9 +207,9 @@ private object UnixPath {
   def removeRedundantSlashes(str: String): String =
     if (str.length < 2) str
     else {
-      val buffer   = new StringBuffer(str)
+      val buffer = new StringBuffer(str)
       var previous = buffer.charAt(0)
-      var i        = 1
+      var i = 1
       while (i < buffer.length) {
         val current = buffer.charAt(i)
         if (previous == '/' && current == '/') {

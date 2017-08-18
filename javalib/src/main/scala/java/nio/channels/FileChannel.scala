@@ -60,8 +60,8 @@ abstract class FileChannel protected ()
 object FileChannel {
   sealed abstract class MapMode
   object MapMode {
-    final val PRIVATE    = new MapMode {}
-    final val READ_ONLY  = new MapMode {}
+    final val PRIVATE = new MapMode {}
+    final val READ_ONLY = new MapMode {}
     final val READ_WRITE = new MapMode {}
   }
 
@@ -71,7 +71,7 @@ object FileChannel {
     new FileChannelImpl(path, options, attrs)
 
   def open(path: Path, options: Array[OpenOption]): FileChannel = {
-    var i   = 0
+    var i = 0
     val set = new HashSet[OpenOption]()
     while (i < options.length) {
       set.add(options(i))

@@ -70,7 +70,7 @@ object VirtualDirectory {
                        StandardOpenOption.TRUNCATE_EXISTING)
 
     override def read(path: Path): ByteBuffer = {
-      val bytes  = Files.readAllBytes(resolve(path))
+      val bytes = Files.readAllBytes(resolve(path))
       val buffer = ByteBuffer.wrap(bytes)
       buffer
     }

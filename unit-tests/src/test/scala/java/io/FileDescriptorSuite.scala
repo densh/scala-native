@@ -1,10 +1,10 @@
 package java.io
 
 object FileDescriptorSuite extends tests.Suite {
-  val in  = FileDescriptor.in
+  val in = FileDescriptor.in
   val out = FileDescriptor.out
   val err = FileDescriptor.err
-  val fd  = new FileDescriptor()
+  val fd = new FileDescriptor()
 
   test("valid descriptors") {
     assert(in.valid())

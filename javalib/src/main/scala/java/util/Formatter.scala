@@ -28,7 +28,7 @@ class Formatter(
       extends Enum[BigDecimalLayoutForm](name, ordinal)
 
   object BigDecimalLayoutForm {
-    final val SCIENTIFIC    = new BigDecimalLayoutForm("SCIENTIFIC", 0)
+    final val SCIENTIFIC = new BigDecimalLayoutForm("SCIENTIFIC", 0)
     final val DECIMAL_FLOAT = new BigDecimalLayoutForm("DECIMAL_FLOAT", 1)
 
     def valueOf(name: String): BigDecimalLayoutForm =
@@ -161,17 +161,17 @@ class Formatter(
   def format(l: Locale, format: String, args: Array[Object]): Formatter = {
     checkClosed()
     val formatBuffer = CharBuffer.wrap(format)
-    val parser       = new ParserStateMachine(formatBuffer)
-    val transformer  = new Transformer(this, l)
+    val parser = new ParserStateMachine(formatBuffer)
+    val transformer = new Transformer(this, l)
 
-    var currentObjectIndex: Int     = 0
-    var lastArgument: Object        = null
+    var currentObjectIndex: Int = 0
+    var lastArgument: Object = null
     var hasLastArgumentSet: Boolean = false
     while (formatBuffer.hasRemaining()) {
       parser.reset()
-      val token          = parser.getNextFormatToken()
+      val token = parser.getNextFormatToken()
       var result: String = null
-      var plainText      = token.getPlainText()
+      var plainText = token.getPlainText()
       if (token.getConversionType() == FormatToken.UNSET.asInstanceOf[Char]) {
         result = plainText
       } else {
@@ -407,9 +407,9 @@ object Formatter {
     }
 
     private def transformFromBoolean(): String = {
-      val result     = new StringBuilder()
+      val result = new StringBuilder()
       val startIndex = 0
-      val flags      = formatToken.getFlags()
+      val flags = formatToken.getFlags()
 
       if (formatToken.isFlagSet(FormatToken.FLAG_MINUS) && !formatToken
             .isWidthSet())
@@ -434,7 +434,7 @@ object Formatter {
       val result = new StringBuilder()
 
       val startIndex = 0
-      val flags      = formatToken.getFlags()
+      val flags = formatToken.getFlags()
 
       if (formatToken.isFlagSet(FormatToken.FLAG_MINUS) && !formatToken
             .isWidthSet())
@@ -454,9 +454,9 @@ object Formatter {
     }
 
     private def transformFromString(): String = {
-      val result     = new StringBuilder()
+      val result = new StringBuilder()
       val startIndex = 0
-      val flags      = formatToken.getFlags()
+      val flags = formatToken.getFlags()
 
       if (formatToken.isFlagSet(FormatToken.FLAG_MINUS) && !formatToken
             .isWidthSet())
@@ -499,7 +499,7 @@ object Formatter {
       val result = new StringBuilder()
 
       val startIndex = 0
-      val flags      = formatToken.getFlags()
+      val flags = formatToken.getFlags()
 
       if (formatToken.isFlagSet(FormatToken.FLAG_MINUS) && !formatToken
             .isWidthSet())
@@ -541,7 +541,7 @@ object Formatter {
       val result = new StringBuilder("%")
 
       val startIndex = 0
-      val flags      = formatToken.getFlags()
+      val flags = formatToken.getFlags()
 
       if (formatToken.isFlagSet(FormatToken.FLAG_MINUS) && !formatToken
             .isWidthSet())
@@ -575,8 +575,8 @@ object Formatter {
     }
 
     private def padding(source: StringBuilder, startIndex: Int): String = {
-      var start: Int        = startIndex
-      val paddingRight      = formatToken.isFlagSet(FormatToken.FLAG_MINUS)
+      var start: Int = startIndex
+      val paddingRight = formatToken.isFlagSet(FormatToken.FLAG_MINUS)
       var paddingChar: Char = '\u0020' // space as padding char.
       if (formatToken.isFlagSet(FormatToken.FLAG_ZERO)) {
         if ('d' == formatToken.getConversionType())
@@ -586,7 +586,7 @@ object Formatter {
       } else {
         start = 0
       }
-      var width     = formatToken.getWidth()
+      var width = formatToken.getWidth()
       val precision = formatToken.getPrecision()
 
       var length = source.length()
@@ -601,7 +601,7 @@ object Formatter {
         return source.toString()
       }
 
-      val paddings     = Array.fill[Char](width - length)(paddingChar)
+      val paddings = Array.fill[Char](width - length)(paddingChar)
       val insertString = new String(paddings)
 
       if (paddingRight)
@@ -612,11 +612,11 @@ object Formatter {
     }
 
     private def transformFromInteger(): String = {
-      var startIndex            = 0
-      var isNegative            = false
-      var result                = new StringBuilder()
+      var startIndex = 0
+      var isNegative = false
+      var result = new StringBuilder()
       val currentConversionType = formatToken.getConversionType()
-      var value: Long           = 0
+      var value: Long = 0
 
       if (formatToken.isFlagSet(FormatToken.FLAG_MINUS) || formatToken
             .isFlagSet(FormatToken.FLAG_ZERO)) {
@@ -678,9 +678,9 @@ object Formatter {
           numberFormat.setGroupingUsed(false)
         result.append(numberFormat.format(arg))
       } else {
-        val BYTE_MASK: Long  = 0x00000000000000FFL;
+        val BYTE_MASK: Long = 0x00000000000000FFL;
         val SHORT_MASK: Long = 0x000000000000FFFFL;
-        val INT_MASK: Long   = 0x00000000FFFFFFFFL;
+        val INT_MASK: Long = 0x00000000FFFFFFFFL;
         if (isNegative) {
           if (arg.isInstanceOf[Byte])
             value &= BYTE_MASK
@@ -738,7 +738,7 @@ object Formatter {
         return null
 
       val number = arg.asInstanceOf[Number]
-      val d      = number.doubleValue()
+      val d = number.doubleValue()
       if (java.lang.Double.isNaN(d))
         source = "NaN"
       else if (java.lang.Double.isInfinite(d)) {
@@ -771,10 +771,10 @@ object Formatter {
     }
 
     private def transformFromBigInteger(): String = {
-      var startIndex            = 0
-      var isNegative            = false
-      var result                = new StringBuilder()
-      val bigInt                = arg.asInstanceOf[BigInteger]
+      var startIndex = 0
+      var isNegative = false
+      var result = new StringBuilder()
+      val bigInt = arg.asInstanceOf[BigInteger]
       val currentConversionType = formatToken.getConversionType()
 
       if (formatToken.isFlagSet(FormatToken.FLAG_MINUS) || formatToken
@@ -853,8 +853,8 @@ object Formatter {
     }
 
     private def transformFromFloat(): String = {
-      var result                = new StringBuilder()
-      var startIndex            = 0
+      var result = new StringBuilder()
+      var startIndex = 0
       val currentConversionType = formatToken.getConversionType()
 
       if (formatToken.isFlagSet(FormatToken.FLAG_MINUS | FormatToken.FLAG_ZERO)) {
@@ -950,7 +950,7 @@ object Formatter {
     }
 
     private def transformFromDateTime(): String = {
-      val startIndex            = 0
+      val startIndex = 0
       val currentConversionType = formatToken.getConversionType()
 
       if (formatToken.isPrecisionSet())
@@ -1041,7 +1041,7 @@ object Formatter {
       if (formatToken.isFlagSet(FormatToken.FLAG_SHARP) && 0 == formatToken
             .getPrecision()) {
         val indexOfE = result.indexOf("e")
-        val dot      = decimalFormat.getDecimalFormatSymbols().getDecimalSeparator()
+        val dot = decimalFormat.getDecimalFormatSymbols().getDecimalSeparator()
         result.insert(indexOfE, dot)
       }
     }
@@ -1059,7 +1059,7 @@ object Formatter {
       }
 
       var requireScientificRepresentation = true
-      var d                               = argument.asInstanceOf[Number].doubleValue()
+      var d = argument.asInstanceOf[Number].doubleValue()
       d = Math.abs(d)
       if (java.lang.Double.isInfinite(d)) {
         precision = formatToken.getPrecision()
@@ -1152,8 +1152,8 @@ object Formatter {
       var precision = formatToken.getPrecision()
       precision = if (0 == precision) 1 else precision
       val indexOfFirstFracitoanlDigit = result.indexOf(".") + 1
-      val indexOfP                    = result.indexOf("p")
-      val fractionalLength            = indexOfP - indexOfFirstFracitoanlDigit
+      val indexOfP = result.indexOf("p")
+      val fractionalLength = indexOfP - indexOfFirstFracitoanlDigit
 
       if (fractionalLength == precision)
         return
@@ -1417,7 +1417,7 @@ object Formatter {
 
   private object DateTimeUtil {
     private def paddingZeros(number: Long, length: Int): String = {
-      var len    = length
+      var len = length
       val result = new StringBuilder()
       result.append(number)
       var startIndex = 0
@@ -1522,8 +1522,8 @@ object Formatter {
 
     private def process_START_CONVERSION_STATE(): Unit = {
       if (Character.isDigit(currentChar)) {
-        val position       = format.position() - 1
-        val number         = parseInt(format)
+        val position = format.position() - 1
+        val number = parseInt(format)
         var nextChar: Char = 0
         if (format.hasRemaining()) {
           nextChar = format.get()
@@ -1617,8 +1617,8 @@ object Formatter {
 
     private def parseInt(buffer: CharBuffer): Int = {
       val start = buffer.position() - 1
-      var end   = buffer.limit()
-      val b     = new Breaks
+      var end = buffer.limit()
+      val b = new Breaks
       import b.{breakable, break}
       breakable {
         while (buffer.hasRemaining()) {

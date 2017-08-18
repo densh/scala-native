@@ -27,7 +27,7 @@ final class FileDescriptor private[io] (private[io] val fd: Int,
 }
 
 object FileDescriptor {
-  val in: FileDescriptor  = new FileDescriptor(unistd.STDIN_FILENO)
+  val in: FileDescriptor = new FileDescriptor(unistd.STDIN_FILENO)
   val out: FileDescriptor = new FileDescriptor(unistd.STDOUT_FILENO)
   val err: FileDescriptor = new FileDescriptor(unistd.STDERR_FILENO)
 

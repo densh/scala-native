@@ -3,7 +3,7 @@ package scala.scalanative.native
 import scalanative.runtime.select
 
 object IntrinsicsSuite extends tests.Suite {
-  def condTrue: Boolean  = true
+  def condTrue: Boolean = true
   def condFalse: Boolean = false
 
   test("select") {

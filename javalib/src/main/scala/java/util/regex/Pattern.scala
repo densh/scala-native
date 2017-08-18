@@ -7,15 +7,15 @@ import cre2h._
 // Inspired by: https://github.com/google/re2j/blob/master/java/com/google/re2j/Pattern.java
 
 object Pattern {
-  def CANON_EQ: Int                = 128
-  def CASE_INSENSITIVE: Int        = 2
-  def COMMENTS: Int                = 4
-  def DOTALL: Int                  = 32
-  def LITERAL: Int                 = 16
-  def MULTILINE: Int               = 8
-  def UNICODE_CASE: Int            = 64
+  def CANON_EQ: Int = 128
+  def CASE_INSENSITIVE: Int = 2
+  def COMMENTS: Int = 4
+  def DOTALL: Int = 32
+  def LITERAL: Int = 16
+  def MULTILINE: Int = 8
+  def UNICODE_CASE: Int = 64
   def UNICODE_CHARACTER_CLASS: Int = 256
-  def UNIX_LINES: Int              = 1
+  def UNIX_LINES: Int = 1
 
   def compile(regex: String): Pattern = compile(regex, 0)
 
@@ -135,8 +135,8 @@ final class Pattern private[regex] (
 
   private def split(m: Matcher, limit: Int): Array[String] = {
     var matchCount = 0
-    var arraySize  = 0
-    var last       = 0
+    var arraySize = 0
+    var last = 0
     while (m.find()) {
       matchCount += 1
       if (limit != 0 || last < m.start()) {
@@ -155,7 +155,7 @@ final class Pattern private[regex] (
     }
 
     val array = Array.ofDim[String](arraySize)
-    var i     = 0
+    var i = 0
     last = 0
     m.reset()
     while (m.find() && i < arraySize - trunc) {
@@ -172,8 +172,8 @@ final class Pattern private[regex] (
 
   def matcher(input: CharSequence): Matcher = new Matcher(this, input)
 
-  def flags: Int                = _flags
-  def pattern: String           = _pattern
+  def flags: Int = _flags
+  def pattern: String = _pattern
   override def toString: String = _pattern
 
   override protected def finalize(): Unit = {

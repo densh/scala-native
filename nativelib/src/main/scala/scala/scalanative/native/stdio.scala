@@ -6,9 +6,9 @@ object stdio {
 
   // File access
 
-  def fopen(filename: CString, mode: CString): Ptr[FILE]  = extern
-  def fclose(stream: Ptr[FILE]): CInt                     = extern
-  def fflush(stream: Ptr[FILE]): CInt                     = extern
+  def fopen(filename: CString, mode: CString): Ptr[FILE] = extern
+  def fclose(stream: Ptr[FILE]): CInt = extern
+  def fflush(stream: Ptr[FILE]): CInt = extern
   def setbuf(stream: Ptr[FILE], buffer: Ptr[CChar]): Unit = extern
   def setvbuf(stream: Ptr[FILE],
               buffer: Ptr[CChar],
@@ -32,24 +32,24 @@ object stdio {
 
   // Unformatted input/output
 
-  def fgetc(stream: Ptr[FILE]): CInt                               = extern
-  def getc(stream: Ptr[FILE]): CInt                                = extern
+  def fgetc(stream: Ptr[FILE]): CInt = extern
+  def getc(stream: Ptr[FILE]): CInt = extern
   def fgets(str: CString, count: CInt, stream: Ptr[FILE]): CString = extern
-  def fputc(ch: CInt, stream: Ptr[FILE]): CInt                     = extern
-  def putc(ch: CInt, stream: Ptr[FILE]): CInt                      = extern
-  def fputs(str: CString, stream: Ptr[FILE]): CInt                 = extern
-  def getchar(): CInt                                              = extern
-  def gets(str: CString): CString                                  = extern
-  def putchar(ch: CInt): CInt                                      = extern
-  def puts(str: CString): CInt                                     = extern
-  def ungetc(ch: CInt, stream: Ptr[FILE]): CInt                    = extern
+  def fputc(ch: CInt, stream: Ptr[FILE]): CInt = extern
+  def putc(ch: CInt, stream: Ptr[FILE]): CInt = extern
+  def fputs(str: CString, stream: Ptr[FILE]): CInt = extern
+  def getchar(): CInt = extern
+  def gets(str: CString): CString = extern
+  def putchar(ch: CInt): CInt = extern
+  def puts(str: CString): CInt = extern
+  def ungetc(ch: CInt, stream: Ptr[FILE]): CInt = extern
 
   // Formatted input/output
 
-  def scanf(format: CString, args: CVararg*): CInt                     = extern
+  def scanf(format: CString, args: CVararg*): CInt = extern
   def fscanf(stream: Ptr[FILE], format: CString, args: CVararg*): CInt = extern
-  def sscanf(buffer: CString, format: CString, args: CVararg*): CInt   = extern
-  def printf(format: CString, args: CVararg*): CInt                    = extern
+  def sscanf(buffer: CString, format: CString, args: CVararg*): CInt = extern
+  def printf(format: CString, args: CVararg*): CInt = extern
   def fprintf(stream: Ptr[FILE], format: CString, args: CVararg*): CInt =
     extern
   def sprintf(buffer: CString, format: CString, args: CVararg*): CInt = extern
@@ -61,29 +61,29 @@ object stdio {
 
   // File positioning
 
-  def ftell(stream: Ptr[FILE]): CLong                             = extern
-  def fgetpos(stream: Ptr[FILE], pos: Ptr[fpos_t]): CInt          = extern
+  def ftell(stream: Ptr[FILE]): CLong = extern
+  def fgetpos(stream: Ptr[FILE], pos: Ptr[fpos_t]): CInt = extern
   def fseek(stream: Ptr[FILE], offset: CLong, origin: CInt): CInt = extern
-  def fsetpos(stream: Ptr[FILE], pos: Ptr[fpos_t]): CInt          = extern
-  def rewind(stream: Ptr[FILE]): Unit                             = extern
+  def fsetpos(stream: Ptr[FILE], pos: Ptr[fpos_t]): CInt = extern
+  def rewind(stream: Ptr[FILE]): Unit = extern
 
   // Error handling
 
   def clearerr(stream: Ptr[FILE]): Unit = extern
-  def feof(stream: Ptr[FILE]): CInt     = extern
-  def ferror(stream: Ptr[FILE]): CInt   = extern
-  def perror(str: CString): Unit        = extern
+  def feof(stream: Ptr[FILE]): CInt = extern
+  def ferror(stream: Ptr[FILE]): CInt = extern
+  def perror(str: CString): Unit = extern
 
   // Operations on files
 
-  def remove(fname: CString): CInt                             = extern
+  def remove(fname: CString): CInt = extern
   def rename(oldFileName: CString, newFileName: CString): CInt = extern
-  def tmpfile(): Ptr[FILE]                                     = extern
-  def tmpnam(fileName: CString): CString                       = extern
+  def tmpfile(): Ptr[FILE] = extern
+  def tmpnam(fileName: CString): CString = extern
 
   // Types
 
-  type FILE   = CStruct0
+  type FILE = CStruct0
   type fpos_t = CStruct0
 
   // Macros

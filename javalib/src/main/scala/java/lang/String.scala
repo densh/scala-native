@@ -11,9 +11,9 @@ final class _String()
     extends Serializable
     with Comparable[_String]
     with CharSequence {
-  protected[_String] var value: Array[Char]  = new Array[Char](0)
-  protected[_String] var offset: Int         = 0
-  protected[_String] var count: Int          = 0
+  protected[_String] var value: Array[Char] = new Array[Char](0)
+  protected[_String] var offset: Int = 0
+  protected[_String] var count: Int = 0
   protected[_String] var cachedHashCode: Int = _
 
   def this(data: Array[scala.Byte], high: Int, start: Int, length: Int) = {
@@ -22,7 +22,7 @@ final class _String()
       offset = 0
       value = {
         val value = new Array[Char](length)
-        var i     = 0
+        var i = 0
         while (i < length) {
           value(i) = ((high & 0xff) << 8 | (data(start + i) & 0xff)).toChar
           i += 1
@@ -268,7 +268,7 @@ final class _String()
 
       try {
         var index = _index
-        var i     = offset + start
+        var i = offset + start
         while (i < end) {
           data(index) = value(i).toByte
           index += 1
@@ -285,15 +285,15 @@ final class _String()
 
   def getBytes(encoding: _String): Array[scala.Byte] = {
     val charset = Charset.forName(encoding)
-    val buffer  = charset.encode(CharBuffer.wrap(value, offset, count))
-    val bytes   = new Array[scala.Byte](buffer.limit())
+    val buffer = charset.encode(CharBuffer.wrap(value, offset, count))
+    val bytes = new Array[scala.Byte](buffer.limit())
     buffer.get(bytes)
     bytes
   }
 
   def getBytes(encoding: Charset): Array[scala.Byte] = {
     val buffer = encoding.encode(CharBuffer.wrap(value, offset, count))
-    val bytes  = new Array[scala.Byte](buffer.limit())
+    val bytes = new Array[scala.Byte](buffer.limit())
     buffer.get(bytes)
     bytes
   }
@@ -314,7 +314,7 @@ final class _String()
         0
       } else {
         var hash = 0
-        var i    = offset
+        var i = offset
         while (i < count + offset) {
           hash = value(i) + ((hash << 5) - hash)
           i += 1
@@ -373,10 +373,10 @@ final class _String()
       if (subCount + start > count) {
         return -1
       }
-      val target    = subString.value
+      val target = subString.value
       val subOffset = subString.offset
       val firstChar = target(subOffset)
-      val end       = subOffset + subCount
+      val end = subOffset + subCount
       while (true) {
         val i = indexOf(firstChar, start)
         if (i == -1 || subCount + i > count) {
@@ -436,17 +436,17 @@ final class _String()
     lastIndexOf(string, count)
 
   def lastIndexOf(subString: _String, _start: Int): Int = {
-    var start    = _start
+    var start = _start
     val subCount = subString.count
     if (subCount <= count && start >= 0) {
       if (subCount > 0) {
         if (start > count - subCount) {
           start = count - subCount
         }
-        val target    = subString.value
+        val target = subString.value
         val subOffset = subString.offset
         val firstChar = target(subOffset)
-        val end       = subOffset + subCount
+        val end = subOffset + subCount
         while (true) {
           val i = lastIndexOf(firstChar, start)
           if (i == -1) {
@@ -504,7 +504,7 @@ final class _String()
                     _start: Int,
                     length: Int): scala.Boolean = {
     var thisStart = _thisStart
-    var start     = _start
+    var start = _start
     if (!ignoreCase) {
       regionMatches(thisStart, string, start, length)
     } else if (string != null) {
@@ -515,7 +515,7 @@ final class _String()
       } else {
         thisStart += offset
         start += string.offset
-        val end    = thisStart + length
+        val end = thisStart + length
         val target = string.value
 
         while (thisStart < end) {
@@ -560,7 +560,7 @@ final class _String()
     } else if (replacement == null) {
       throw new NullPointerException("replacement should not be null")
     } else {
-      val ts    = target.toString
+      val ts = target.toString
       var index = indexOf(ts, 0)
 
       if (index == -1) return this
@@ -583,8 +583,8 @@ final class _String()
       }
 
       val buffer = new java.lang.StringBuilder(count + rs.length)
-      val tl     = target.length
-      var tail   = 0
+      val tl = target.length
+      var tail = 0
       do {
         buffer.append(value, offset + tail, index - tail)
         buffer.append(rs)
@@ -648,7 +648,7 @@ final class _String()
   private[this] def toCase(locale: Locale, convert: Int => Int): _String = {
     if (count == 0) return this
     val buf = new StringBuilder(count)
-    var i   = 0
+    var i = 0
     while (i < count) {
       val high = value(i)
       i += 1
@@ -657,7 +657,7 @@ final class _String()
           val low = value(i)
           i += 1
           if (Character.isLowSurrogate(low)) {
-            val cp    = Character.toCodePoint(high, low)
+            val cp = Character.toCodePoint(high, low)
             val cased = convert(cp)
             buf.append(Character.toChars(cased))
           } else {
@@ -678,8 +678,8 @@ final class _String()
 
   def trim(): _String = {
     var start = offset
-    val last  = offset + count - 1
-    var end   = last
+    val last = offset + count - 1
+    var end = last
 
     while ((start <= end) && (value(start) <= ' ')) {
       start += 1
@@ -774,7 +774,7 @@ object _String {
     new CaseInsensitiveComparator()
   private final val ascii = {
     val ascii = new Array[Char](128)
-    var i     = 0
+    var i = 0
     while (i < ascii.length) {
       ascii(i) = i.toChar
       i += 1

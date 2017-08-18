@@ -9,10 +9,10 @@ class Inflater(noHeader: Boolean) {
 
   private var isFinished: Boolean = false
 
-  private[zip] var inLength: Int          = 0
-  private[zip] var inRead: Int            = 0
+  private[zip] var inLength: Int = 0
+  private[zip] var inRead: Int = 0
   private var doesNeedDictionary: Boolean = false
-  private var stream: zlib.z_streamp      = Inflater.createStream(noHeader)
+  private var stream: zlib.z_streamp = Inflater.createStream(noHeader)
 
   def this() = this(noHeader = false)
 
@@ -124,7 +124,7 @@ class Inflater(noHeader: Boolean) {
       throw new IllegalStateException()
     } else {
       val bytes = buf.asInstanceOf[ByteArray].at(off)
-      val err   = zlib.inflateSetDictionary(stream, bytes, nbytes.toUInt)
+      val err = zlib.inflateSetDictionary(stream, bytes, nbytes.toUInt)
       if (err != zlib.Z_OK) {
         throw new IllegalArgumentException(err.toString)
       }
@@ -152,7 +152,7 @@ class Inflater(noHeader: Boolean) {
 
   private def inflateImpl(buf: Array[Byte], off: Int, nbytes: Int): Int = {
     !(stream._5) = nbytes.toUInt
-    val sin  = !(stream._3)
+    val sin = !(stream._3)
     val sout = !(stream._6)
     if (buf.length == 0) {
       !(stream._4) = Inflater.empty.asInstanceOf[ByteArray].at(off)
@@ -179,7 +179,7 @@ class Inflater(noHeader: Boolean) {
         throw new DataFormatException(err.toString)
       }
     } else {
-      val totalIn  = !(stream._3)
+      val totalIn = !(stream._3)
       val totalOut = !(stream._6)
       inRead += (totalIn - sin).toInt
       (totalOut - sout).toInt

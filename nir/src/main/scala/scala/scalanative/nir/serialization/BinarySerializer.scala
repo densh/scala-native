@@ -15,7 +15,7 @@ final class BinarySerializer(buffer: ByteBuffer) {
   // 3. Attr.Align should become serializable;
 
   final def serialize(defns: Seq[Defn]): Unit = {
-    val names     = defns.map(_.name)
+    val names = defns.map(_.name)
     val positions = mutable.UnrolledBuffer.empty[Int]
 
     putInt(Versions.magic)

@@ -36,8 +36,8 @@ package object util {
   def time[T](msg: String)(f: => T): T = {
     import java.lang.System.nanoTime
     val start = nanoTime()
-    val res   = f
-    val end   = nanoTime()
+    val res = f
+    val end = nanoTime()
     println(s"$msg (${(end - start).toFloat / 1000000} ms)")
     res
   }

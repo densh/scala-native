@@ -10,20 +10,20 @@ final class ULong private[scala] (private val underlying: Long)
     with java.io.Serializable
     with Comparable[ULong] {
 
-  @inline final def toByte: Byte   = underlying.toByte
+  @inline final def toByte: Byte = underlying.toByte
   @inline final def toShort: Short = underlying.toShort
-  @inline final def toChar: Char   = underlying.toChar
-  @inline final def toInt: Int     = underlying.toInt
-  @inline final def toLong: Long   = underlying
+  @inline final def toChar: Char = underlying.toChar
+  @inline final def toInt: Int = underlying.toInt
+  @inline final def toLong: Long = underlying
   @inline final def toFloat: Float = toDouble.toFloat
   @inline final def toDouble: Double =
     if (underlying >= 0) underlying.toDouble
     else 18446744073709551616.0 - underlying.toDouble // TODO Verify precision
 
-  @inline final def toUByte: UByte   = new UByte(toByte)
+  @inline final def toUByte: UByte = new UByte(toByte)
   @inline final def toUShort: UShort = new UShort(toShort)
-  @inline final def toUInt: UInt     = new UInt(toInt)
-  @inline final def toULong: ULong   = this
+  @inline final def toUInt: UInt = new UInt(toInt)
+  @inline final def toULong: ULong = this
 
   /**
    * Returns the bitwise negation of this value.
@@ -272,8 +272,8 @@ final class ULong private[scala] (private val underlying: Long)
   @inline final def min(that: ULong): ULong = if (this <= that) this else that
 
   @inline final def toBinaryString: String = toLong.toBinaryString
-  @inline final def toHexString: String    = toLong.toHexString
-  @inline final def toOctalString: String  = toLong.toOctalString
+  @inline final def toHexString: String = toLong.toHexString
+  @inline final def toOctalString: String = toLong.toOctalString
 }
 
 object ULong {

@@ -33,8 +33,8 @@ import som._
  * @author rhundt
  */
 final class LoopStructureGraph {
-  private val root        = new SimpleLoop(null, true)
-  private val loops       = new Vector[SimpleLoop]()
+  private val root = new SimpleLoop(null, true)
+  private val loops = new Vector[SimpleLoop]()
   private var loopCounter = 0
   root.setNestingLevel(0)
   root.setCounter(loopCounter)

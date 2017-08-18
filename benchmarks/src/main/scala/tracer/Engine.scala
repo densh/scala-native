@@ -27,7 +27,7 @@ case class EngineConfiguration(imageWidth: Int = 100,
                                renderReflections: Boolean = false) {
 
   val canvasHeight = imageHeight / pixelHeight
-  val canvasWidth  = imageWidth / pixelWidth
+  val canvasWidth = imageWidth / pixelWidth
 }
 
 class Engine(val config: EngineConfiguration) {
@@ -61,7 +61,7 @@ class Engine(val config: EngineConfiguration) {
       val yp = y * 1.0 / config.canvasHeight * 2 - 1;
       val xp = x * 1.0 / config.canvasWidth * 2 - 1;
 
-      val ray   = scene.camera.getRay(xp, yp);
+      val ray = scene.camera.getRay(xp, yp);
       val color = getPixelColor(ray, scene)
       setPixel(canvasContext, x, y, color)
     }
@@ -111,8 +111,8 @@ class Engine(val config: EngineConfiguration) {
                scene: Scene,
                depth: Int): Color = {
     // Calc ambient
-    var color     = info.color.multiplyScalar(scene.background.ambience)
-    val oldColor  = color
+    var color = info.color.multiplyScalar(scene.background.ambience)
+    val oldColor = color
     val shininess = math.pow(10, info.shape.material.gloss + 1)
 
     for (light <- scene.lights) {

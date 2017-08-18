@@ -64,12 +64,12 @@ final class Integer(val _value: scala.Int)
    * we use the true javalib to lookup symbols, this file contains only
    * implementations.
    */
-  protected def toByte: scala.Byte     = _value.toByte
-  protected def toShort: scala.Short   = _value.toShort
-  protected def toChar: scala.Char     = _value.toChar
-  protected def toInt: scala.Int       = _value
-  protected def toLong: scala.Long     = _value.toLong
-  protected def toFloat: scala.Float   = _value.toFloat
+  protected def toByte: scala.Byte = _value.toByte
+  protected def toShort: scala.Short = _value.toShort
+  protected def toChar: scala.Char = _value.toChar
+  protected def toInt: scala.Int = _value
+  protected def toLong: scala.Long = _value.toLong
+  protected def toFloat: scala.Float = _value.toFloat
   protected def toDouble: scala.Double = _value.toDouble
 
   protected def unary_~ : scala.Int = ~_value
@@ -78,110 +78,110 @@ final class Integer(val _value: scala.Int)
 
   protected def +(x: String): String = _value + x
 
-  protected def <<(x: scala.Int): scala.Int   = _value << x
-  protected def <<(x: scala.Long): scala.Int  = _value << x
-  protected def >>>(x: scala.Int): scala.Int  = _value >>> x
+  protected def <<(x: scala.Int): scala.Int = _value << x
+  protected def <<(x: scala.Long): scala.Int = _value << x
+  protected def >>>(x: scala.Int): scala.Int = _value >>> x
   protected def >>>(x: scala.Long): scala.Int = _value >>> x
-  protected def >>(x: scala.Int): scala.Int   = _value >> x
-  protected def >>(x: scala.Long): scala.Int  = _value >> x
+  protected def >>(x: scala.Int): scala.Int = _value >> x
+  protected def >>(x: scala.Long): scala.Int = _value >> x
 
-  protected def <(x: scala.Byte): scala.Boolean   = _value < x
-  protected def <(x: scala.Short): scala.Boolean  = _value < x
-  protected def <(x: scala.Char): scala.Boolean   = _value < x
-  protected def <(x: scala.Int): scala.Boolean    = _value < x
-  protected def <(x: scala.Long): scala.Boolean   = _value < x
-  protected def <(x: scala.Float): scala.Boolean  = _value < x
+  protected def <(x: scala.Byte): scala.Boolean = _value < x
+  protected def <(x: scala.Short): scala.Boolean = _value < x
+  protected def <(x: scala.Char): scala.Boolean = _value < x
+  protected def <(x: scala.Int): scala.Boolean = _value < x
+  protected def <(x: scala.Long): scala.Boolean = _value < x
+  protected def <(x: scala.Float): scala.Boolean = _value < x
   protected def <(x: scala.Double): scala.Boolean = _value < x
 
-  protected def <=(x: scala.Byte): scala.Boolean   = _value <= x
-  protected def <=(x: scala.Short): scala.Boolean  = _value <= x
-  protected def <=(x: scala.Char): scala.Boolean   = _value <= x
-  protected def <=(x: scala.Int): scala.Boolean    = _value <= x
-  protected def <=(x: scala.Long): scala.Boolean   = _value <= x
-  protected def <=(x: scala.Float): scala.Boolean  = _value <= x
+  protected def <=(x: scala.Byte): scala.Boolean = _value <= x
+  protected def <=(x: scala.Short): scala.Boolean = _value <= x
+  protected def <=(x: scala.Char): scala.Boolean = _value <= x
+  protected def <=(x: scala.Int): scala.Boolean = _value <= x
+  protected def <=(x: scala.Long): scala.Boolean = _value <= x
+  protected def <=(x: scala.Float): scala.Boolean = _value <= x
   protected def <=(x: scala.Double): scala.Boolean = _value <= x
 
-  protected def >(x: scala.Byte): scala.Boolean   = _value > x
-  protected def >(x: scala.Short): scala.Boolean  = _value > x
-  protected def >(x: scala.Char): scala.Boolean   = _value > x
-  protected def >(x: scala.Int): scala.Boolean    = _value > x
-  protected def >(x: scala.Long): scala.Boolean   = _value > x
-  protected def >(x: scala.Float): scala.Boolean  = _value > x
+  protected def >(x: scala.Byte): scala.Boolean = _value > x
+  protected def >(x: scala.Short): scala.Boolean = _value > x
+  protected def >(x: scala.Char): scala.Boolean = _value > x
+  protected def >(x: scala.Int): scala.Boolean = _value > x
+  protected def >(x: scala.Long): scala.Boolean = _value > x
+  protected def >(x: scala.Float): scala.Boolean = _value > x
   protected def >(x: scala.Double): scala.Boolean = _value > x
 
-  protected def >=(x: scala.Byte): scala.Boolean   = _value >= x
-  protected def >=(x: scala.Short): scala.Boolean  = _value >= x
-  protected def >=(x: scala.Char): scala.Boolean   = _value >= x
-  protected def >=(x: scala.Int): scala.Boolean    = _value >= x
-  protected def >=(x: scala.Long): scala.Boolean   = _value >= x
-  protected def >=(x: scala.Float): scala.Boolean  = _value >= x
+  protected def >=(x: scala.Byte): scala.Boolean = _value >= x
+  protected def >=(x: scala.Short): scala.Boolean = _value >= x
+  protected def >=(x: scala.Char): scala.Boolean = _value >= x
+  protected def >=(x: scala.Int): scala.Boolean = _value >= x
+  protected def >=(x: scala.Long): scala.Boolean = _value >= x
+  protected def >=(x: scala.Float): scala.Boolean = _value >= x
   protected def >=(x: scala.Double): scala.Boolean = _value >= x
 
-  protected def |(x: scala.Byte): scala.Int  = _value | x
+  protected def |(x: scala.Byte): scala.Int = _value | x
   protected def |(x: scala.Short): scala.Int = _value | x
-  protected def |(x: scala.Char): scala.Int  = _value | x
-  protected def |(x: scala.Int): scala.Int   = _value | x
+  protected def |(x: scala.Char): scala.Int = _value | x
+  protected def |(x: scala.Int): scala.Int = _value | x
   protected def |(x: scala.Long): scala.Long = _value | x
 
-  protected def &(x: scala.Byte): scala.Int  = _value & x
+  protected def &(x: scala.Byte): scala.Int = _value & x
   protected def &(x: scala.Short): scala.Int = _value & x
-  protected def &(x: scala.Char): scala.Int  = _value & x
-  protected def &(x: scala.Int): scala.Int   = _value & x
+  protected def &(x: scala.Char): scala.Int = _value & x
+  protected def &(x: scala.Int): scala.Int = _value & x
   protected def &(x: scala.Long): scala.Long = _value & x
 
-  protected def ^(x: scala.Byte): scala.Int  = _value ^ x
+  protected def ^(x: scala.Byte): scala.Int = _value ^ x
   protected def ^(x: scala.Short): scala.Int = _value ^ x
-  protected def ^(x: scala.Char): scala.Int  = _value ^ x
-  protected def ^(x: scala.Int): scala.Int   = _value ^ x
+  protected def ^(x: scala.Char): scala.Int = _value ^ x
+  protected def ^(x: scala.Int): scala.Int = _value ^ x
   protected def ^(x: scala.Long): scala.Long = _value ^ x
 
-  protected def +(x: scala.Byte): scala.Int      = _value + x
-  protected def +(x: scala.Short): scala.Int     = _value + x
-  protected def +(x: scala.Char): scala.Int      = _value + x
-  protected def +(x: scala.Int): scala.Int       = _value + x
-  protected def +(x: scala.Long): scala.Long     = _value + x
-  protected def +(x: scala.Float): scala.Float   = _value + x
+  protected def +(x: scala.Byte): scala.Int = _value + x
+  protected def +(x: scala.Short): scala.Int = _value + x
+  protected def +(x: scala.Char): scala.Int = _value + x
+  protected def +(x: scala.Int): scala.Int = _value + x
+  protected def +(x: scala.Long): scala.Long = _value + x
+  protected def +(x: scala.Float): scala.Float = _value + x
   protected def +(x: scala.Double): scala.Double = _value + x
 
-  protected def -(x: scala.Byte): scala.Int      = _value - x
-  protected def -(x: scala.Short): scala.Int     = _value - x
-  protected def -(x: scala.Char): scala.Int      = _value - x
-  protected def -(x: scala.Int): scala.Int       = _value - x
-  protected def -(x: scala.Long): scala.Long     = _value - x
-  protected def -(x: scala.Float): scala.Float   = _value - x
+  protected def -(x: scala.Byte): scala.Int = _value - x
+  protected def -(x: scala.Short): scala.Int = _value - x
+  protected def -(x: scala.Char): scala.Int = _value - x
+  protected def -(x: scala.Int): scala.Int = _value - x
+  protected def -(x: scala.Long): scala.Long = _value - x
+  protected def -(x: scala.Float): scala.Float = _value - x
   protected def -(x: scala.Double): scala.Double = _value - x
 
-  protected def *(x: scala.Byte): scala.Int      = _value * x
-  protected def *(x: scala.Short): scala.Int     = _value * x
-  protected def *(x: scala.Char): scala.Int      = _value * x
-  protected def *(x: scala.Int): scala.Int       = _value * x
-  protected def *(x: scala.Long): scala.Long     = _value * x
-  protected def *(x: scala.Float): scala.Float   = _value * x
+  protected def *(x: scala.Byte): scala.Int = _value * x
+  protected def *(x: scala.Short): scala.Int = _value * x
+  protected def *(x: scala.Char): scala.Int = _value * x
+  protected def *(x: scala.Int): scala.Int = _value * x
+  protected def *(x: scala.Long): scala.Long = _value * x
+  protected def *(x: scala.Float): scala.Float = _value * x
   protected def *(x: scala.Double): scala.Double = _value * x
 
-  protected def /(x: scala.Byte): scala.Int      = _value / x
-  protected def /(x: scala.Short): scala.Int     = _value / x
-  protected def /(x: scala.Char): scala.Int      = _value / x
-  protected def /(x: scala.Int): scala.Int       = _value / x
-  protected def /(x: scala.Long): scala.Long     = _value / x
-  protected def /(x: scala.Float): scala.Float   = _value / x
+  protected def /(x: scala.Byte): scala.Int = _value / x
+  protected def /(x: scala.Short): scala.Int = _value / x
+  protected def /(x: scala.Char): scala.Int = _value / x
+  protected def /(x: scala.Int): scala.Int = _value / x
+  protected def /(x: scala.Long): scala.Long = _value / x
+  protected def /(x: scala.Float): scala.Float = _value / x
   protected def /(x: scala.Double): scala.Double = _value / x
 
-  protected def %(x: scala.Byte): scala.Int      = _value % x
-  protected def %(x: scala.Short): scala.Int     = _value % x
-  protected def %(x: scala.Char): scala.Int      = _value % x
-  protected def %(x: scala.Int): scala.Int       = _value % x
-  protected def %(x: scala.Long): scala.Long     = _value % x
-  protected def %(x: scala.Float): scala.Float   = _value % x
+  protected def %(x: scala.Byte): scala.Int = _value % x
+  protected def %(x: scala.Short): scala.Int = _value % x
+  protected def %(x: scala.Char): scala.Int = _value % x
+  protected def %(x: scala.Int): scala.Int = _value % x
+  protected def %(x: scala.Long): scala.Long = _value % x
+  protected def %(x: scala.Float): scala.Float = _value % x
   protected def %(x: scala.Double): scala.Double = _value % x
 }
 
 object Integer {
-  final val TYPE      = classOf[scala.Int]
+  final val TYPE = classOf[scala.Int]
   final val MIN_VALUE = -2147483648
   final val MAX_VALUE = 2147483647
-  final val SIZE      = 32
-  final val BYTES     = 4
+  final val SIZE = 32
+  final val BYTES = 4
 
   private final val decimalScale: Array[scala.Int] = Array(1000000000,
     100000000, 10000000, 1000000, 100000, 10000, 1000, 100, 10, 1)
@@ -202,8 +202,8 @@ object Integer {
     val length = nm.length()
     if (length == 0) throw new NumberFormatException()
 
-    var i        = 0
-    var first    = nm.charAt(i)
+    var i = 0
+    var first = nm.charAt(i)
     val negative = first == '-'
     if (negative) {
       if (length == 1) throw new NumberFormatException(nm)
@@ -299,7 +299,7 @@ object Integer {
 
     val positive = s.charAt(0) == '+'
     val negative = s.charAt(0) == '-'
-    val offset   = if (positive || negative) 1 else 0
+    val offset = if (positive || negative) 1 else 0
     if (offset > 0 && length == 1) {
       throw new NumberFormatException(s)
     }
@@ -311,7 +311,7 @@ object Integer {
                     _offset: scala.Int,
                     radix: scala.Int,
                     negative: scala.Boolean): scala.Int = {
-    val max    = MIN_VALUE / radix
+    val max = MIN_VALUE / radix
     val length = s.length()
     var result = 0
     var offset = _offset
@@ -364,7 +364,7 @@ object Integer {
       if (i == 0) 1
       else 32 - numberOfLeadingZeros(i)
     val buffer = new Array[Char](count)
-    var k      = i
+    var k = i
     do {
       count -= 1
       buffer(count) = ((k & 1) + '0').toChar
@@ -379,7 +379,7 @@ object Integer {
       if (i == 0) 1
       else ((32 - numberOfLeadingZeros(i)) + 3) / 4
     val buffer = new Array[Char](count)
-    var k      = i
+    var k = i
     do {
       var t = k & 15
       if (t > 9) {
@@ -400,7 +400,7 @@ object Integer {
       if (i == 0) 1
       else ((32 - numberOfLeadingZeros(i)) + 2) / 3
     val buffer = new Array[Char](count)
-    var k      = i
+    var k = i
     do {
       count -= 1
       buffer(count) = ((k & 7) + '0').toChar
@@ -428,9 +428,9 @@ object Integer {
         }
 
         var last_digit = first_digit
-        var quot       = positive_value
+        var quot = positive_value
         do {
-          val res         = quot / 10
+          val res = quot / 10
           var digit_value = quot - ((res << 3) + (res << 1))
           digit_value += '0'
           buffer(last_digit) = digit_value.toChar
@@ -452,19 +452,19 @@ object Integer {
       } else if (i == MIN_VALUE) {
         "-2147483648"
       } else {
-        val buffer         = new Array[Char](11)
+        val buffer = new Array[Char](11)
         var positive_value = if (negative) -i else i
-        var first_digit    = 0
+        var first_digit = 0
         if (negative) {
           buffer(0) = '-'
           first_digit += 1
         }
 
         var last_digit = first_digit
-        var count      = 0
-        var number     = 0
-        var start      = false
-        var k          = 0
+        var count = 0
+        var number = 0
+        var start = false
+        var k = 0
         while (k < 9) {
           count = 0
           number = decimalScale(k)
@@ -526,9 +526,9 @@ object Integer {
       val radix =
         if (_radix < Character.MIN_RADIX || _radix > Character.MAX_RADIX) 10
         else _radix
-      var i        = _i
-      var j        = _i
-      var count    = 2
+      var i = _i
+      var j = _i
+      var count = 2
       val negative = _i < 0
       if (!negative) {
         count = 1
@@ -594,10 +594,10 @@ object Integer {
 
   private def parseUnsigned(s: String, _offset: Int, radix: Int): scala.Int = {
     val unsignedIntMaxValue = -1
-    val max                 = divideUnsigned(unsignedIntMaxValue, radix)
-    var result              = 0
-    var offset              = _offset
-    val length              = s.length()
+    val max = divideUnsigned(unsignedIntMaxValue, radix)
+    var result = 0
+    var offset = _offset
+    val length = s.length()
 
     while (offset < length) {
       val digit = Character.digit(s.charAt(offset), radix)
@@ -643,7 +643,7 @@ object Integer {
       val buffer = new Array[Char](count)
       do {
         val digit = remainderUnsigned(j, radix)
-        val ch    = Character.forDigit(digit.toInt, radix)
+        val ch = Character.forDigit(digit.toInt, radix)
         count -= 1
         buffer(count) = ch
         j = divideUnsigned(j, radix)

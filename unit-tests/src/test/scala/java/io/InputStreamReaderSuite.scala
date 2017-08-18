@@ -29,14 +29,14 @@ object InputStreamReaderSuite extends tests.Suite {
   }
 
   test("closing closes the inner stream") {
-    val in     = new MockInputStream
+    val in = new MockInputStream
     val reader = new InputStreamReader(in)
     reader.close()
     assert(in.isClosed)
   }
 
   test("closing twice is harmless") {
-    val in     = new MockInputStream
+    val in = new MockInputStream
     val reader = new InputStreamReader(in)
     reader.close()
     reader.close()

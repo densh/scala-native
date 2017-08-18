@@ -23,7 +23,7 @@ class ModuleArray(top: Top) extends Inject {
 }
 
 object ModuleArray extends InjectCompanion {
-  val moduleArrayName     = Global.Top("__modules")
+  val moduleArrayName = Global.Top("__modules")
   val moduleArraySizeName = Global.Top("__modules_size")
 
   override def apply(config: Config, top: Top) = new ModuleArray(top)

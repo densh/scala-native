@@ -35,7 +35,7 @@ abstract class NumberFormat extends Format {
 
   protected[this] var groupingUsed: Boolean = true
 
-  def isGroupingUsed(): Boolean             = groupingUsed
+  def isGroupingUsed(): Boolean = groupingUsed
   def setGroupingUsed(value: Boolean): Unit = groupingUsed = value
 }
 

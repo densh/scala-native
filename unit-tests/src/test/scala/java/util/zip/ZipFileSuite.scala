@@ -11,14 +11,14 @@ object ZipFileSuite extends tests.Suite {
 
   test("Constructor(File)") {
     val file = getFile(zipFile)
-    val zip  = new ZipFile(file)
+    val zip = new ZipFile(file)
     assert(file.exists())
     zip.close()
   }
 
   test("Constructor(File, Int)") {
     val file = getFile(zipFile)
-    val zip  = new ZipFile(file, ZipFile.OPEN_DELETE | ZipFile.OPEN_READ)
+    val zip = new ZipFile(file, ZipFile.OPEN_DELETE | ZipFile.OPEN_READ)
     zip.close()
     assert(!file.exists())
 
@@ -37,9 +37,9 @@ object ZipFileSuite extends tests.Suite {
   }
 
   test("entries()") {
-    val zip    = getZipFile(zipFile)
+    val zip = getZipFile(zipFile)
     val enumer = zip.entries()
-    var c      = 0
+    var c = 0
     while (enumer.hasMoreElements()) {
       c += 1
       enumer.nextElement()
@@ -54,14 +54,14 @@ object ZipFileSuite extends tests.Suite {
   }
 
   test("getEntry(String)") {
-    val zip    = getZipFile(zipFile)
+    val zip = getZipFile(zipFile)
     var zentry = zip.getEntry("File1.txt")
     assert(zentry != null)
 
     zentry = zip.getEntry("testdir1/File1.txt")
     assert(zentry != null)
 
-    var r               = 0
+    var r = 0
     var in: InputStream = null
     zentry = zip.getEntry("testdir1/")
     assert(zentry != null)
@@ -87,7 +87,7 @@ object ZipFileSuite extends tests.Suite {
   }
 
   test("getEntry(String) throws an exception when the zip is closed") {
-    val zip    = getZipFile(zipFile)
+    val zip = getZipFile(zipFile)
     val zentry = zip.getEntry("File1.txt")
     assert(zentry != null)
 
@@ -98,14 +98,14 @@ object ZipFileSuite extends tests.Suite {
   }
 
   test("getInputStream(ZipEntry)") {
-    val zip             = getZipFile(zipFile)
+    val zip = getZipFile(zipFile)
     var is: InputStream = null
 
     try {
       val zentry = zip.getEntry("File1.txt")
       is = zip.getInputStream(zentry)
       val rbuf = new Array[Byte](1000)
-      var r    = zentry.getSize().toInt
+      var r = zentry.getSize().toInt
       is.read(rbuf, 0, r)
       assert(new String(rbuf, 0, r, "UTF-8") == "This is text")
     } finally {

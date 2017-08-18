@@ -35,10 +35,10 @@ object Array {
   type Header = CStruct2[Ptr[Type], Int]
 
   implicit class HeaderOps(val self: Ptr[Header]) extends AnyVal {
-    @inline def info: Ptr[Type]                = !(self._1)
+    @inline def info: Ptr[Type] = !(self._1)
     @inline def info_=(value: Ptr[Type]): Unit = !(self._1) = value
-    @inline def length: Int                    = !(self._2)
-    @inline def length_=(value: Int): Unit     = !(self._2) = value
+    @inline def length: Int = !(self._2)
+    @inline def length_=(value: Int): Unit = !(self._2) = value
   }
 
   def copy(from: AnyRef,
@@ -80,8 +80,8 @@ object Array {
       ()
     } else {
       val fromPtr = from.at(fromPos).cast[Ptr[Byte]]
-      val toPtr   = to.at(toPos).cast[Ptr[Byte]]
-      val size    = to.stride * len
+      val toPtr = to.at(toPos).cast[Ptr[Byte]]
+      val size = to.stride * len
 
       `llvm.memmove.p0i8.p0i8.i64`(toPtr, fromPtr, size, 1, false)
     }
@@ -105,7 +105,7 @@ final class BooleanArray private () extends Array[Boolean] {
       throw new IndexOutOfBoundsException(i.toString)
     } else {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
-      val ith   = first + stride * i
+      val ith = first + stride * i
 
       ith.cast[Ptr[Boolean]]
     }
@@ -119,7 +119,7 @@ final class BooleanArray private () extends Array[Boolean] {
   @inline protected override def clone(): BooleanArray = {
     val arrinfo = typeof[BooleanArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Boolean] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize)
+    val arr = GC.alloc_atomic(arrinfo, arrsize)
     `llvm.memcpy.p0i8.p0i8.i64`(arr.cast[Ptr[Byte]],
                                 this.cast[Ptr[Byte]],
                                 arrsize,
@@ -135,7 +135,7 @@ object BooleanArray {
   @inline def alloc(length: Int): BooleanArray = {
     val arrinfo = typeof[BooleanArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Boolean] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
+    val arr = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
     arr.length = length
     arr.cast[BooleanArray]
   }
@@ -156,7 +156,7 @@ final class CharArray private () extends Array[Char] {
       throw new IndexOutOfBoundsException(i.toString)
     } else {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
-      val ith   = first + stride * i
+      val ith = first + stride * i
 
       ith.cast[Ptr[Char]]
     }
@@ -170,7 +170,7 @@ final class CharArray private () extends Array[Char] {
   @inline protected override def clone(): CharArray = {
     val arrinfo = typeof[CharArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Char] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize)
+    val arr = GC.alloc_atomic(arrinfo, arrsize)
     `llvm.memcpy.p0i8.p0i8.i64`(arr.cast[Ptr[Byte]],
                                 this.cast[Ptr[Byte]],
                                 arrsize,
@@ -186,7 +186,7 @@ object CharArray {
   @inline def alloc(length: Int): CharArray = {
     val arrinfo = typeof[CharArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Char] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
+    val arr = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
     arr.length = length
     arr.cast[CharArray]
   }
@@ -207,7 +207,7 @@ final class ByteArray private () extends Array[Byte] {
       throw new IndexOutOfBoundsException(i.toString)
     } else {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
-      val ith   = first + stride * i
+      val ith = first + stride * i
 
       ith.cast[Ptr[Byte]]
     }
@@ -221,7 +221,7 @@ final class ByteArray private () extends Array[Byte] {
   @inline protected override def clone(): ByteArray = {
     val arrinfo = typeof[ByteArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Byte] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize)
+    val arr = GC.alloc_atomic(arrinfo, arrsize)
     `llvm.memcpy.p0i8.p0i8.i64`(arr.cast[Ptr[Byte]],
                                 this.cast[Ptr[Byte]],
                                 arrsize,
@@ -237,7 +237,7 @@ object ByteArray {
   @inline def alloc(length: Int): ByteArray = {
     val arrinfo = typeof[ByteArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Byte] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
+    val arr = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
     arr.length = length
     arr.cast[ByteArray]
   }
@@ -258,7 +258,7 @@ final class ShortArray private () extends Array[Short] {
       throw new IndexOutOfBoundsException(i.toString)
     } else {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
-      val ith   = first + stride * i
+      val ith = first + stride * i
 
       ith.cast[Ptr[Short]]
     }
@@ -272,7 +272,7 @@ final class ShortArray private () extends Array[Short] {
   @inline protected override def clone(): ShortArray = {
     val arrinfo = typeof[ShortArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Short] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize)
+    val arr = GC.alloc_atomic(arrinfo, arrsize)
     `llvm.memcpy.p0i8.p0i8.i64`(arr.cast[Ptr[Byte]],
                                 this.cast[Ptr[Byte]],
                                 arrsize,
@@ -288,7 +288,7 @@ object ShortArray {
   @inline def alloc(length: Int): ShortArray = {
     val arrinfo = typeof[ShortArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Short] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
+    val arr = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
     arr.length = length
     arr.cast[ShortArray]
   }
@@ -309,7 +309,7 @@ final class IntArray private () extends Array[Int] {
       throw new IndexOutOfBoundsException(i.toString)
     } else {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
-      val ith   = first + stride * i
+      val ith = first + stride * i
 
       ith.cast[Ptr[Int]]
     }
@@ -323,7 +323,7 @@ final class IntArray private () extends Array[Int] {
   @inline protected override def clone(): IntArray = {
     val arrinfo = typeof[IntArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Int] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize)
+    val arr = GC.alloc_atomic(arrinfo, arrsize)
     `llvm.memcpy.p0i8.p0i8.i64`(arr.cast[Ptr[Byte]],
                                 this.cast[Ptr[Byte]],
                                 arrsize,
@@ -339,7 +339,7 @@ object IntArray {
   @inline def alloc(length: Int): IntArray = {
     val arrinfo = typeof[IntArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Int] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
+    val arr = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
     arr.length = length
     arr.cast[IntArray]
   }
@@ -360,7 +360,7 @@ final class LongArray private () extends Array[Long] {
       throw new IndexOutOfBoundsException(i.toString)
     } else {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
-      val ith   = first + stride * i
+      val ith = first + stride * i
 
       ith.cast[Ptr[Long]]
     }
@@ -374,7 +374,7 @@ final class LongArray private () extends Array[Long] {
   @inline protected override def clone(): LongArray = {
     val arrinfo = typeof[LongArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Long] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize)
+    val arr = GC.alloc_atomic(arrinfo, arrsize)
     `llvm.memcpy.p0i8.p0i8.i64`(arr.cast[Ptr[Byte]],
                                 this.cast[Ptr[Byte]],
                                 arrsize,
@@ -390,7 +390,7 @@ object LongArray {
   @inline def alloc(length: Int): LongArray = {
     val arrinfo = typeof[LongArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Long] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
+    val arr = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
     arr.length = length
     arr.cast[LongArray]
   }
@@ -411,7 +411,7 @@ final class FloatArray private () extends Array[Float] {
       throw new IndexOutOfBoundsException(i.toString)
     } else {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
-      val ith   = first + stride * i
+      val ith = first + stride * i
 
       ith.cast[Ptr[Float]]
     }
@@ -425,7 +425,7 @@ final class FloatArray private () extends Array[Float] {
   @inline protected override def clone(): FloatArray = {
     val arrinfo = typeof[FloatArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Float] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize)
+    val arr = GC.alloc_atomic(arrinfo, arrsize)
     `llvm.memcpy.p0i8.p0i8.i64`(arr.cast[Ptr[Byte]],
                                 this.cast[Ptr[Byte]],
                                 arrsize,
@@ -441,7 +441,7 @@ object FloatArray {
   @inline def alloc(length: Int): FloatArray = {
     val arrinfo = typeof[FloatArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Float] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
+    val arr = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
     arr.length = length
     arr.cast[FloatArray]
   }
@@ -462,7 +462,7 @@ final class DoubleArray private () extends Array[Double] {
       throw new IndexOutOfBoundsException(i.toString)
     } else {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
-      val ith   = first + stride * i
+      val ith = first + stride * i
 
       ith.cast[Ptr[Double]]
     }
@@ -476,7 +476,7 @@ final class DoubleArray private () extends Array[Double] {
   @inline protected override def clone(): DoubleArray = {
     val arrinfo = typeof[DoubleArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Double] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize)
+    val arr = GC.alloc_atomic(arrinfo, arrsize)
     `llvm.memcpy.p0i8.p0i8.i64`(arr.cast[Ptr[Byte]],
                                 this.cast[Ptr[Byte]],
                                 arrsize,
@@ -492,7 +492,7 @@ object DoubleArray {
   @inline def alloc(length: Int): DoubleArray = {
     val arrinfo = typeof[DoubleArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Double] * length
-    val arr     = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
+    val arr = GC.alloc_atomic(arrinfo, arrsize).cast[Ptr[Header]]
     arr.length = length
     arr.cast[DoubleArray]
   }
@@ -513,7 +513,7 @@ final class ObjectArray private () extends Array[Object] {
       throw new IndexOutOfBoundsException(i.toString)
     } else {
       val first = this.cast[Ptr[Byte]] + sizeof[Header]
-      val ith   = first + stride * i
+      val ith = first + stride * i
 
       ith.cast[Ptr[Object]]
     }
@@ -527,7 +527,7 @@ final class ObjectArray private () extends Array[Object] {
   @inline protected override def clone(): ObjectArray = {
     val arrinfo = typeof[ObjectArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Object] * length
-    val arr     = GC.alloc(arrinfo, arrsize)
+    val arr = GC.alloc(arrinfo, arrsize)
     `llvm.memcpy.p0i8.p0i8.i64`(arr.cast[Ptr[Byte]],
                                 this.cast[Ptr[Byte]],
                                 arrsize,
@@ -543,7 +543,7 @@ object ObjectArray {
   @inline def alloc(length: Int): ObjectArray = {
     val arrinfo = typeof[ObjectArray].cast[Ptr[ClassType]]
     val arrsize = sizeof[Header] + sizeof[Object] * length
-    val arr     = GC.alloc(arrinfo, arrsize).cast[Ptr[Header]]
+    val arr = GC.alloc(arrinfo, arrsize).cast[Ptr[Header]]
     arr.length = length
     arr.cast[ObjectArray]
   }

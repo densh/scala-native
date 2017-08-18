@@ -7,14 +7,14 @@ import java.io.{ByteArrayOutputStream, IOException, OutputStream}
 object GZIPOutputStreamSuite extends tests.Suite {
 
   test("Constructor(OutputStream)") {
-    val out     = new ByteArrayOutputStream()
+    val out = new ByteArrayOutputStream()
     val outGZIP = new TestGZIPOutputStream(out)
     assert(outGZIP != null)
     assert(outGZIP.getChecksum().getValue() == 0)
   }
 
   test("Constructor(OutputStream, Int)") {
-    val out     = new ByteArrayOutputStream()
+    val out = new ByteArrayOutputStream()
     val outGZIP = new TestGZIPOutputStream(out, 100)
     assert(outGZIP != null)
     assert(outGZIP.getChecksum().getValue() == 0)
@@ -22,8 +22,8 @@ object GZIPOutputStreamSuite extends tests.Suite {
 
   test("finish()") {
     val byteArray = Array[Byte](3, 5, 2, 'r', 'g', 'e', 'f', 'd', 'e', 'w')
-    val out       = new ByteArrayOutputStream()
-    val outGZIP   = new TestGZIPOutputStream(out)
+    val out = new ByteArrayOutputStream()
+    val outGZIP = new TestGZIPOutputStream(out)
 
     outGZIP.finish()
     assertThrows[IOException] {
@@ -33,8 +33,8 @@ object GZIPOutputStreamSuite extends tests.Suite {
 
   test("write(Array[Byte], Int, Int)") {
     val byteArray = Array[Byte](3, 5, 2, 'r', 'g', 'e', 'f', 'd', 'e', 'w')
-    val out       = new ByteArrayOutputStream
-    val outGZIP   = new TestGZIPOutputStream(out)
+    val out = new ByteArrayOutputStream
+    val outGZIP = new TestGZIPOutputStream(out)
     outGZIP.write(byteArray, 0, 10)
     assert(outGZIP.getChecksum().getValue() == 3097700292L)
 

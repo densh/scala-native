@@ -7,7 +7,7 @@ import scalanative.nir._
 import scalanative.util.unreachable
 
 class RuntimeTypeInformation(node: Scope) {
-  val name: Global      = node.name member "type"
+  val name: Global = node.name member "type"
   val const: Val.Global = Val.Global(name, Type.Ptr)
   val struct: Type.Struct = node match {
     case cls: Class =>
@@ -24,7 +24,7 @@ class RuntimeTypeInformation(node: Scope) {
       Rt.Type
   }
   val value: Val.Struct = {
-    val typeId  = Val.Int(node.id)
+    val typeId = Val.Int(node.id)
     val typeStr = Val.String(node.name.id)
     val typeKind = Val.Byte(node match {
       case _: Class  => 0

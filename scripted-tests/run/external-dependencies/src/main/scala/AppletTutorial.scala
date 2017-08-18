@@ -57,9 +57,9 @@ trait Mouse extends MouseListener { self: Applet =>
     repaint()
   }
 
-  override def mouseEntered(event: MouseEvent): Unit  = ()
-  override def mouseExited(event: MouseEvent): Unit   = ()
-  override def mousePressed(event: MouseEvent): Unit  = ()
+  override def mouseEntered(event: MouseEvent): Unit = ()
+  override def mouseExited(event: MouseEvent): Unit = ()
+  override def mousePressed(event: MouseEvent): Unit = ()
   override def mouseReleased(event: MouseEvent): Unit = ()
   override def mouseClicked(event: MouseEvent): Unit =
     addItem("mouse clicked! ")

@@ -57,7 +57,7 @@ final class NativePosixFileAttributeView(path: Path, options: Array[LinkOption])
   override def setGroup(group: GroupPrincipal): Unit =
     Zone { implicit z =>
       val _group = getGroup(toCString(group.getName))
-      val err    = unistd.chown(toCString(path.toString), -1.toUInt, !(_group._2))
+      val err = unistd.chown(toCString(path.toString), -1.toUInt, !(_group._2))
 
       if (err != 0) {
         throw new IOException()
@@ -153,16 +153,16 @@ final class NativePosixFileAttributeView(path: Path, options: Array[LinkOption])
     val values =
       List(
         "lastModifiedTime" -> attributes.lastModifiedTime,
-        "lastAccessTime"   -> attributes.lastAccessTime,
-        "creationTime"     -> attributes.creationTime,
-        "size"             -> Long.box(attributes.size),
-        "isRegularFile"    -> Boolean.box(attributes.isRegularFile),
-        "isDirectory"      -> Boolean.box(attributes.isDirectory),
-        "isSymbolicLink"   -> Boolean.box(attributes.isSymbolicLink),
-        "isOther"          -> Boolean.box(attributes.isOther),
-        "fileKey"          -> attributes.fileKey,
-        "permissions"      -> attributes.permissions,
-        "group"            -> attributes.group
+        "lastAccessTime" -> attributes.lastAccessTime,
+        "creationTime" -> attributes.creationTime,
+        "size" -> Long.box(attributes.size),
+        "isRegularFile" -> Boolean.box(attributes.isRegularFile),
+        "isDirectory" -> Boolean.box(attributes.isDirectory),
+        "isSymbolicLink" -> Boolean.box(attributes.isSymbolicLink),
+        "isOther" -> Boolean.box(attributes.isOther),
+        "fileKey" -> attributes.fileKey,
+        "permissions" -> attributes.permissions,
+        "group" -> attributes.group
       )
 
     val map = new HashMap[String, Object]()

@@ -30,7 +30,7 @@ object Shows {
   def cfgToDot(cfg: ControlFlow.Graph): String = {
     def blockToDot(block: Block): String = {
       val successors = block.succ
-      val blockID    = block.name.id
+      val blockID = block.name.id
       if (successors.nonEmpty)
         successors
           .map(succ => succ.name.id.toString)
@@ -59,16 +59,16 @@ object Shows {
     }
 
     def codeString(block: Block): String = {
-      val allInsts       = block.label +: block.insts
-      val codeLines      = allInsts.map(i => nir.Show(i).toString)
+      val allInsts = block.label +: block.insts
+      val codeLines = allInsts.map(i => nir.Show(i).toString)
       val formattedLines = codeLines.head +: codeLines.tail.map("  " + _)
-      val choppedLines   = formattedLines.map(chopLine)
+      val choppedLines = formattedLines.map(chopLine)
       choppedLines.mkString("\n")
     }
 
     def blockToDot(block: Block): String = {
       val successors = block.succ
-      val blockID    = block.name.id
+      val blockID = block.name.id
 
       // \l means "left-justified"
       val nodeLabel = codeString(block)

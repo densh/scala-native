@@ -46,8 +46,8 @@ object ArrayListSuite extends tests.Suite {
   }
 
   test("equals() for empty lists") {
-    val e1  = new ArrayList()
-    val e2  = new ArrayList()
+    val e1 = new ArrayList()
+    val e2 = new ArrayList()
     val ne1 = new ArrayList(Seq(1).asJava)
     assert(e1 == e2)
     assert(e2 == e1)
@@ -58,7 +58,7 @@ object ArrayListSuite extends tests.Suite {
   test("equals() for nonempty lists") {
     val ne1a = new ArrayList(Seq(1, 2, 3).asJava)
     val ne1b = new ArrayList(Seq(1, 2, 3).asJava)
-    val ne2  = new ArrayList(Seq(1).asJava)
+    val ne2 = new ArrayList(Seq(1).asJava)
     assert(ne1a == ne1b)
     assert(ne1b == ne1a)
     assert(ne1a != ne2)
@@ -160,16 +160,16 @@ object ArrayListSuite extends tests.Suite {
   }
 
   test("toArray[T](arr: Array[T]) when arr is shorter") {
-    val al1  = new ArrayList[String](Seq("apple", "banana", "cherry").asJava)
-    val ain  = Array.empty[String]
+    val al1 = new ArrayList[String](Seq("apple", "banana", "cherry").asJava)
+    val ain = Array.empty[String]
     val aout = al1.toArray(ain)
     assert(ain ne aout)
     assert(Array("apple", "banana", "cherry") sameElements aout)
   }
 
   test("toArray[T](arr: Array[T]) when arr is with the same length or longer") {
-    val al1  = new ArrayList[String](Seq("apple", "banana", "cherry").asJava)
-    val ain  = Array.fill(4)("foo")
+    val al1 = new ArrayList[String](Seq("apple", "banana", "cherry").asJava)
+    val ain = Array.fill(4)("foo")
     val aout = al1.toArray(ain)
     assert(ain eq aout)
     assert(Array("apple", "banana", "cherry", null) sameElements aout)
@@ -178,8 +178,8 @@ object ArrayListSuite extends tests.Suite {
   test("Array[E].toArray[T](Array[T]) when T >: E") {
     class SuperClass
     class SubClass extends SuperClass
-    val in   = Seq.fill(2)(new SubClass)
-    val al1  = new ArrayList[SubClass](in.asJava)
+    val in = Seq.fill(2)(new SubClass)
+    val al1 = new ArrayList[SubClass](in.asJava)
     val aout = al1.toArray(Array.empty[SuperClass])
     assert(in.toArray sameElements aout)
   }

@@ -9,9 +9,9 @@ object ArrayIntCopySuite extends tests.Suite {
     }
   }
 
-  val len      = 10
-  val arr      = new Array[Int](len)
-  val arr2     = new Array[Int](len + 2)
+  val len = 10
+  val arr = new Array[Int](len)
+  val arr2 = new Array[Int](len + 2)
   val arrEmpty = new Array[Int](0)
 
   test("array[Int]: init") {

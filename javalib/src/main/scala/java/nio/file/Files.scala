@@ -80,7 +80,7 @@ object Files {
 
   private def copy(in: InputStream, out: OutputStream): Long = {
     var written: Long = 0L
-    var value: Int    = 0
+    var value: Int = 0
 
     while ({ value = in.read; value != -1 }) {
       out.write(value)
@@ -174,7 +174,7 @@ object Files {
                              prefix: String,
                              suffix: String,
                              attrs: Array[FileAttribute[_]]): Path = {
-    val temp     = File.createTempFile(prefix, suffix, dir)
+    val temp = File.createTempFile(prefix, suffix, dir)
     val tempPath = temp.toPath()
     setAttributes(tempPath, attrs)
     tempPath
@@ -392,11 +392,11 @@ object Files {
     !exists(path, options)
 
   def readAllBytes(path: Path): Array[Byte] = {
-    val bytes  = new Array[Byte](size(path).toInt)
+    val bytes = new Array[Byte](size(path).toInt)
     val buffer = new Array[Byte](4096)
-    val input  = newInputStream(path, Array.empty)
+    val input = newInputStream(path, Array.empty)
     var offset = 0
-    var read   = 0
+    var read = 0
     while ({ read = input.read(buffer); read != -1 }) {
       System.arraycopy(buffer, 0, bytes, offset, read)
       offset += read
@@ -408,9 +408,9 @@ object Files {
     readAllLines(path, StandardCharsets.UTF_8)
 
   def readAllLines(path: Path, cs: Charset): List[String] = {
-    val list   = new LinkedList[String]()
+    val list = new LinkedList[String]()
     val reader = newBufferedReader(path, cs)
-    val lines  = reader.lines.iterator
+    val lines = reader.lines.iterator
     while (lines.hasNext()) {
       list.add(lines.next())
     }
@@ -443,7 +443,7 @@ object Files {
       getFileAttributeView(path, viewClass, options).asMap
     } else {
       val attrs = atts.split(",")
-      val map   = new HashMap[String, Object]()
+      val map = new HashMap[String, Object]()
       attrs.foreach { att =>
         val value = getAttribute(path, viewName + ":" + att, options)
         if (value != null)
@@ -530,7 +530,7 @@ object Files {
             if isSymbolicLink(p) && options.contains(
               FileVisitOption.FOLLOW_LINKS) =>
           val newVisited = visited + p
-          val target     = readSymbolicLink(p)
+          val target = readSymbolicLink(p)
           if (newVisited.contains(target))
             throw new FileSystemLoopException(p.toString)
           else walk(p, maxDepth, currentDepth + 1, options, newVisited)
@@ -568,7 +568,7 @@ object Files {
                       options.toArray.asInstanceOf[Array[FileVisitOption]],
                       SSet.empty)
     val dirsToSkip = scala.collection.mutable.Set.empty[Path]
-    val openDirs   = scala.collection.mutable.Stack.empty[Path]
+    val openDirs = scala.collection.mutable.Stack.empty[Path]
     stream.foreach { p =>
       val parent = p.getParent
 
@@ -637,7 +637,7 @@ object Files {
                           StandardOpenOption.WRITE)
       else _options
     val writer = newBufferedWriter(path, cs, options)
-    val it     = lines.iterator
+    val it = lines.iterator
     while (it.hasNext()) {
       writer.append(it.next())
       writer.newLine()
@@ -662,17 +662,17 @@ object Files {
            Class[_ <: BasicFileAttributeView]] =
     SMap(
       classOf[BasicFileAttributes] -> classOf[BasicFileAttributeView],
-      classOf[DosFileAttributes]   -> classOf[DosFileAttributeView],
+      classOf[DosFileAttributes] -> classOf[DosFileAttributeView],
       classOf[PosixFileAttributes] -> classOf[PosixFileAttributeView]
     )
 
   private val viewNamesToClasses: SMap[String, Class[_ <: FileAttributeView]] =
     SMap(
-      "acl"   -> classOf[AclFileAttributeView],
+      "acl" -> classOf[AclFileAttributeView],
       "basic" -> classOf[BasicFileAttributeView],
-      "dos"   -> classOf[DosFileAttributeView],
+      "dos" -> classOf[DosFileAttributeView],
       "owner" -> classOf[FileOwnerAttributeView],
-      "user"  -> classOf[UserDefinedFileAttributeView],
+      "user" -> classOf[UserDefinedFileAttributeView],
       "posix" -> classOf[PosixFileAttributeView]
     )
 

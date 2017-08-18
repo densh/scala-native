@@ -68,7 +68,7 @@ object MemoryLayout {
             case Type.Struct(_, stys) =>
               val innerAlignment = findMax(stys)
               val pad =
-                if (index                    % innerAlignment == 0) 0
+                if (index % innerAlignment == 0) 0
                 else innerAlignment - (index % innerAlignment)
               val (innerSize, innerTys) = impl(stys, index + pad)
 

@@ -19,7 +19,7 @@ class MethodLowering(implicit top: Top) extends Pass {
     insts.foreach {
       case Let(n, Op.Method(obj, MethodRef(cls: Class, meth)))
           if meth.isVirtual =>
-        val vindex  = cls.vtable.index(meth)
+        val vindex = cls.vtable.index(meth)
         val typeptr = let(Op.Load(Type.Ptr, obj))
         val methptrptr = let(
           Op.Elem(cls.rtti.struct,
@@ -34,10 +34,10 @@ class MethodLowering(implicit top: Top) extends Pass {
         let(n, Op.Copy(Val.Global(meth.name, Type.Ptr)))
 
       case Let(n, Op.Method(obj, MethodRef(trt: Trait, meth))) =>
-        val sigid   = top.tables.traitMethodSigs(meth.name.id)
+        val sigid = top.tables.traitMethodSigs(meth.name.id)
         val typeptr = let(Op.Load(Type.Ptr, obj))
-        val idptr   = let(Op.Elem(Rt.Type, typeptr, Seq(Val.Int(0), Val.Int(0))))
-        val id      = let(Op.Load(Type.Int, idptr))
+        val idptr = let(Op.Elem(Rt.Type, typeptr, Seq(Val.Int(0), Val.Int(0))))
+        val id = let(Op.Load(Type.Int, idptr))
         val rowptr = let(
           Op.Elem(Type.Ptr,
                   top.tables.dispatchVal,

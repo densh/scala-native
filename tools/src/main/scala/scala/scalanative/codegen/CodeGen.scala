@@ -16,7 +16,7 @@ object CodeGen {
   /** Generate code for given assembly. */
   def apply(config: tools.Config, assembly: Seq[Defn]): Unit =
     Scope { implicit in =>
-      val env     = assembly.map(defn => defn.name -> defn).toMap
+      val env = assembly.map(defn => defn.name -> defn).toMap
       val workdir = VirtualDirectory.real(config.workdir)
 
       def debug(): Unit = {
@@ -42,7 +42,7 @@ object CodeGen {
             val impl =
               new Impl(config.target, env, sorted, workdir)
             val outpath = k + ".ll"
-            val buffer  = impl.gen()
+            val buffer = impl.gen()
             buffer.flip
             workdir.write(Paths.get(outpath), buffer)
         }
@@ -50,7 +50,7 @@ object CodeGen {
 
       def release(): Unit = {
         val sorted = assembly.sortBy(_.name.show)
-        val impl   = new Impl(config.target, env, sorted, workdir)
+        val impl = new Impl(config.target, env, sorted, workdir)
         val buffer = impl.gen()
         buffer.flip
         workdir.write(Paths.get("out.ll"), buffer)
@@ -69,11 +69,11 @@ object CodeGen {
     import Impl._
 
     var currentBlockName: Local = _
-    var currentBlockSplit: Int  = _
+    var currentBlockSplit: Int = _
 
-    val deps      = mutable.Set.empty[Global]
+    val deps = mutable.Set.empty[Global]
     val generated = mutable.Set.empty[Global]
-    val builder   = new ShowBuilder
+    val builder = new ShowBuilder
     import builder._
 
     def gen(): ByteBuffer = {
@@ -84,7 +84,7 @@ object CodeGen {
       genConsts()
       genDeps()
       val prelude = builder.toString.getBytes("UTF-8")
-      val buffer  = ByteBuffer.allocate(prelude.length + body.length)
+      val buffer = ByteBuffer.allocate(prelude.length + body.length)
       buffer.put(prelude)
       buffer.put(body)
     }
@@ -326,8 +326,8 @@ object CodeGen {
         }).id
 
         val rec, r0, r1, id, cmp = "%_" + fresh().id
-        val fail, succ           = "_" + fresh().id
-        val w0, w1, w2           = "%_" + fresh().id
+        val fail, succ = "_" + fresh().id
+        val w0, w1, w2 = "%_" + fresh().id
 
         def line(s: String) = { newline(); str(s) }
 
@@ -384,7 +384,7 @@ object CodeGen {
     }
 
     val constMap = mutable.Map.empty[Val, Global]
-    val constTy  = mutable.Map.empty[Global, Type]
+    val constTy = mutable.Map.empty[Global, Type]
     def constFor(v: Val): Global =
       if (constMap.contains(v)) {
         constMap(v)
@@ -589,7 +589,7 @@ object CodeGen {
       def isVoid(ty: Type): Boolean =
         ty == Type.Void || ty == Type.Unit || ty == Type.Nothing
 
-      val op   = inst.op
+      val op = inst.op
       val name = inst.name
 
       def genBind() =
