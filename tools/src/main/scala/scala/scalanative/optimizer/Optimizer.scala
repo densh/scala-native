@@ -37,6 +37,12 @@ object Optimizer {
     val transforms = driver.passes.filterNot(_.isInjectionPass)
     val world      = analysis.ClassHierarchy(assembly, dyns)
 
+    val writer = new java.io.PrintWriter(new java.io.File("methods.map"))
+    world.methods.foreach { meth =>
+      writer.write(s"method.${meth.id} = ${meth.name.show}\n")
+    }
+    writer.close
+
     val injected = {
       val buf = mutable.UnrolledBuffer.empty[Defn]
       buf ++= assembly

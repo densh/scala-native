@@ -13,4 +13,5 @@ object Event {
   case class Is(typeId: Int, expected: Int)     extends Event
   case class Box(toTypeId: Int)                 extends Event
   case class Unbox(fromTypeId: Int)             extends Event
+  case class Block(id: Int, time: Int)          extends Event
 }

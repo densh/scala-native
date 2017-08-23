@@ -235,6 +235,13 @@ lazy val tools =
     )
     .dependsOn(nir, util, testingCompilerInterface % Test)
 
+lazy val report =
+  project
+    .in(file("report"))
+    .settings(toolSettings)
+    .settings(noPublishSettings)
+    .dependsOn(tools)
+
 lazy val nscplugin =
   project
     .in(file("nscplugin"))
@@ -436,7 +443,10 @@ lazy val sandbox =
     .settings(
       // nativeOptimizerReporter := OptimizerReporter.toDirectory(
       //   crossTarget.value),
-      scalaVersion := libScalaVersion
+      scalaVersion := libScalaVersion,
+      nativeEnableProfiling := true,
+      nativeProfilingLocation := file("profile.data"),
+      nativeMode := "release"
     )
     .enablePlugins(ScalaNativePlugin)
 

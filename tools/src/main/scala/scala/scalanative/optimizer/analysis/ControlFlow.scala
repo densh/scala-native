@@ -25,7 +25,7 @@ object ControlFlow {
     lazy val splitCount: Int = {
       var count = 0
       insts.foreach {
-        case Inst.Let(_, call: Op.Call) if call.unwind ne Next.None =>
+        case Inst.Let(_, call: Op.Call) =>
           count += 1
         case _ =>
           ()

@@ -70,13 +70,7 @@ object Driver {
       case Mode.Debug   => fastOptPasses
       case Mode.Release => fullOptPasses
     }
-    val profilingPasses =
-      if (config.enableProfiling) {
-        Seq(pass.Profiling)
-      } else {
-        Seq()
-      }
-    new Impl(injectionPasses ++ optPasses ++ profilingPasses ++ loweringPasses)
+    new Impl(injectionPasses ++ optPasses ++ loweringPasses)
   }
 
   /** Create an empty pass-lesss driver. */

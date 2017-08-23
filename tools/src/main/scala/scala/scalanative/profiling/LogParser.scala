@@ -37,6 +37,16 @@ class LogParser(stream: InputStream) {
     result
   }
 
+  private def nextLong(): Long = {
+    var value = 0L
+    var i     = 0
+    while (i < 8) {
+      value += (next().toLong & 0xffL) << (8 * i)
+      i += 1
+    }
+    value
+  }
+
   /** Reads an LEB128 encoded unsigned int from the stream. */
   private def nextLEB128(): Int = {
     var result: Int = 0
@@ -81,6 +91,9 @@ class LogParser(stream: InputStream) {
 
       case TAG_UNBOX =>
         Unbox(nextLEB128())
+
+      case TAG_BLOCK =>
+        Block(nextLEB128(), nextLEB128())
     }
   }
 
@@ -102,6 +115,7 @@ object LogParser {
   val TAG_IS         = 7
   val TAG_BOX        = 8
   val TAG_UNBOX      = 9
+  val TAG_BLOCK      = 10
 
   /** Collect and sort all the parts of the profiling info from `base`. */
   private def profileParts(base: File): Seq[File] = {

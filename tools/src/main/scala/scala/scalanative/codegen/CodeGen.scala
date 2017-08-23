@@ -68,9 +68,12 @@ object CodeGen {
                            workdir: VirtualDirectory) {
     import Impl._
 
-    var currentBlockName: Local = _
-    var currentBlockSplit: Int  = _
+    var currentId: Int            = 0
+    var currentMethodName: Global = _
+    var currentBlockName: Local   = _
+    var currentBlockSplit: Int    = _
 
+    val ids       = mutable.UnrolledBuffer.empty[(Global, Local, Int, Int)]
     val deps      = mutable.Set.empty[Global]
     val generated = mutable.Set.empty[Global]
     val builder   = new ShowBuilder
@@ -83,6 +86,14 @@ object CodeGen {
       genPrelude()
       genConsts()
       genDeps()
+
+      val writer = new java.io.PrintWriter("out.map")
+      ids.foreach {
+        case (methodName, blockName, blockSplit, id) =>
+          writer.write(s"$id=${methodName.show},${blockName.id}.$blockSplit\n")
+      }
+      writer.close
+
       val prelude = builder.toString.getBytes("UTF-8")
       val buffer  = ByteBuffer.allocate(prelude.length + body.length)
       buffer.put(prelude)
@@ -167,6 +178,7 @@ object CodeGen {
       line("declare void @__cxa_end_catch()")
       line(
         "@_ZTIN11scalanative16ExceptionWrapperE = external constant { i8*, i8*, i8* }")
+      line("declare void @log_block(i32)")
     }
 
     def genConsts() =
@@ -256,6 +268,7 @@ object CodeGen {
       }
       if (!isDecl) {
         str(" {")
+        currentMethodName = name
         val cfg = CFG(insts)
         cfg.foreach { block =>
           genBlock(block)(cfg, fresh)
@@ -271,8 +284,8 @@ object CodeGen {
       currentBlockSplit = 0
 
       genBlockHeader()
-      indent()
       genBlockPrologue(block)
+      genBlockLog()
       rep(insts) { inst =>
         genInst(inst)
       }
@@ -283,6 +296,23 @@ object CodeGen {
       newline()
       genBlockSplitName()
       str(":")
+      indent()
+    }
+
+    def genBlockLog(): Unit = {
+      if (!currentMethodName.isTop) {
+        newline()
+        str("call void @log_block(i32 ")
+        str(genBlockId)
+        str(")")
+      }
+    }
+
+    def genBlockId(): Int = {
+      val id = currentId
+      currentId += 1
+      ids += ((currentMethodName, currentBlockName, currentBlockSplit, id))
+      id
     }
 
     def genBlockSplitName(): Unit = {
@@ -717,6 +747,8 @@ object CodeGen {
       case Op.Call(ty, Val.Global(pointee, _), args, Next.None) =>
         val Type.Function(argtys, _) = ty
 
+        val succ = fresh()
+
         touch(pointee)
 
         newline()
@@ -728,6 +760,15 @@ object CodeGen {
         str("(")
         rep(args, sep = ", ")(genVal)
         str(")")
+
+        newline()
+        str("br label %")
+        currentBlockSplit += 1
+        genBlockSplitName()
+
+        unindent()
+        genBlockHeader()
+        genBlockLog()
 
       case Op.Call(ty, Val.Global(pointee, _), args, unwind) =>
         val Type.Function(argtys, _) = ty
@@ -753,11 +794,12 @@ object CodeGen {
 
         unindent()
         genBlockHeader()
-        indent()
+        genBlockLog()
 
       case Op.Call(ty, ptr, args, Next.None) =>
         val Type.Function(argtys, _) = ty
 
+        val succ    = fresh()
         val pointee = fresh()
 
         newline()
@@ -778,6 +820,15 @@ object CodeGen {
         str("(")
         rep(args, sep = ", ")(genVal)
         str(")")
+
+        newline()
+        str("br label %")
+        currentBlockSplit += 1
+        genBlockSplitName()
+
+        unindent()
+        genBlockHeader()
+        genBlockLog()
 
       case Op.Call(ty, ptr, args, unwind) =>
         val Type.Function(_, resty) = ty
@@ -810,7 +861,7 @@ object CodeGen {
 
         unindent()
         genBlockHeader()
-        indent()
+        genBlockLog()
     }
 
     def genOp(op: Op): Unit = op match {

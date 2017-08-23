@@ -6,6 +6,8 @@
 #include <zlib.h>
 #include <sys/stat.h>
 
+int64_t scalanative_cycleclock();
+
 #define CHUNK_SIZE (1024 * 1024 * 4) // 4 MB
 
 #define TAG_CALL       1
@@ -17,6 +19,7 @@
 #define TAG_IS         7
 #define TAG_BOX        8
 #define TAG_UNBOX      9
+#define TAG_BLOCK      10
 
 typedef struct chararray
 {
@@ -48,6 +51,10 @@ char* to_string(char* dst, size_t max_len, jstring* str) {
 
 /** The current batch number. */
 int current_batch = 1;
+
+int64_t last;
+
+int64_t count = 0;
 
 /** The buffer where events are written */
 unsigned char* buffer;
@@ -92,6 +99,7 @@ void block_dump() {
     fwrite(compressed_buffer, compressed_size, 1, out);
     buffer_cursor = buffer;
     fclose(out);
+    printf("Recorded %lld events\n", count);
 }
 
 /** Init the profiling data structures. */
@@ -102,15 +110,14 @@ void profiling_init(jstring* target_directory) {
     dump_directory = target;
     mkdir(dump_directory, 0755);
     buffer_cursor = buffer;
+    last = scalanative_cycleclock();
 }
 
 /** Adds `value` to the current block. */
 void block_push(char value) {
-
     if (buffer_cursor == buffer + CHUNK_SIZE) {
         block_dump();
     }
-
     *buffer_cursor = value;
     buffer_cursor += 1;
 }
@@ -130,6 +137,7 @@ void block_push_leb128(int value) {
 
 /** Log a `call` instruction. */
 void log_call(int typeid, int methid) {
+    count += 1;
     block_push(TAG_CALL);
     block_push_leb128(typeid);
     block_push_leb128(methid);
@@ -137,22 +145,26 @@ void log_call(int typeid, int methid) {
 
 /** Log a `load` instructions. */
 void log_load() {
+    count += 1;
     block_push(TAG_LOAD);
 }
 
 /** Log a `store` instruction. */
 void log_store() {
+    count += 1;
     block_push(TAG_STORE);
 }
 
 /** Log a `classalloc` instruction. */
 void log_classalloc(int typeid) {
+    count += 1;
     block_push(TAG_CLASSALLOC);
     block_push_leb128(typeid);
 }
 
 /** Log a `method` instruction */
 void log_method(int actualTypeid, int scopeTypeid, int methid) {
+    count += 1;
     block_push(TAG_METHOD);
     block_push_leb128(actualTypeid);
     block_push_leb128(scopeTypeid);
@@ -161,6 +173,7 @@ void log_method(int actualTypeid, int scopeTypeid, int methid) {
 
 /** Log a `as` instruction. */
 void log_as(int fromTypeId, int toTypeId) {
+    count += 1;
     block_push(TAG_AS);
     block_push_leb128(fromTypeId);
     block_push_leb128(toTypeId);
@@ -168,6 +181,7 @@ void log_as(int fromTypeId, int toTypeId) {
 
 /** Log a `is` instruction. */
 void log_is(int typeid, int expected) {
+    count += 1;
     block_push(TAG_IS);
     block_push_leb128(typeid);
     block_push_leb128(expected);
@@ -175,13 +189,28 @@ void log_is(int typeid, int expected) {
 
 /** Log a `box` instruction. */
 void log_box(int toTypeId) {
+    count += 1;
     block_push(TAG_BOX);
     block_push_leb128(toTypeId);
 }
 
 /** Log a `unbox` instruction. */
 void log_unbox(int fromTypeId) {
+    count += 1;
     block_push(TAG_UNBOX);
     block_push_leb128(fromTypeId);
 }
 
+int timedelta() {
+    int64_t now = scalanative_cycleclock();
+    int delta = (int) (now - last);
+    last = now;
+    return delta;
+}
+
+void log_block(int id) {
+    count += 1;
+    block_push(TAG_BLOCK);
+    block_push_leb128(id);
+    block_push_leb128(timedelta());
+}
