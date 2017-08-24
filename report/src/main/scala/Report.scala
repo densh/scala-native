@@ -15,56 +15,38 @@ final case class Block(meth: Method, name: String) {
 }
 
 object Report extends App {
-  val parser = LogParser(new java.io.File("profile.data"))
-  val props  = new java.util.Properties()
+  val streams = LogParser(new java.io.File("profile.data"))
+  val props   = new java.util.Properties()
   props.load(new java.io.FileInputStream("out.map"))
 
-  val methods = mutable.Map.empty[String, Method]
-  val blocks  = mutable.Map.empty[Int, Block]
+  import java.util.concurrent._
+  import java.util.concurrent.atomic._
 
-  def handle(id: Int, time: Int): Unit = {
-    val block =
-      if (blocks.contains(id)) {
-        blocks(id)
-      } else {
-        val prop       = props.getProperty(id.toString).split(",")
-        val methodName = prop(0)
-        val blockName  = prop(1)
-        val meth =
-          if (methods.contains(methodName)) {
-            methods(methodName)
-          } else {
-            val method = new Method(methodName)
-            methods(methodName) = method
-            method
-          }
-        val block = new Block(meth, blockName)
-        blocks(id) = block
-        block
-      }
-
-    block.time += time
-    block.count += 1
-    block.meth.time += time
-    block.meth.count += 1
+  val counts  = new ConcurrentHashMap[Int, LongAdder]
+  val times   = new ConcurrentHashMap[Int, LongAdder]
+  val longadd = new java.util.function.Function[Int, LongAdder] {
+    def apply(key: Int): LongAdder = new LongAdder
   }
 
-  while (parser.hasNext) {
-    val Event(id, time) = parser.next()
-    handle(id, time)
+  streams.foreach { events =>
+    events.foreach { event =>
+      val Event(id, time) = event
+      counts.computeIfAbsent(id, longadd).increment()
+      times.computeIfAbsent(id, longadd).add(time)
+    }
   }
 
-  var out = new java.io.PrintWriter("methods.csv")
-  out.write("t,c,name\n")
-  methods.values.foreach { meth =>
-    out.write(s"${meth.time},${meth.count},${meth.name}\n")
-  }
-  out.close
+  // var out = new java.io.PrintWriter("methods.csv")
+  // out.write("t,c,name\n")
+  // methods.values.foreach { meth =>
+  //   out.write(s"${meth.time},${meth.count},${meth.name}\n")
+  // }
+  // out.close
 
-  out = new java.io.PrintWriter("blocks.csv")
-  out.write("t,c,name\n")
-  blocks.values.foreach { block =>
-    out.write(s"${block.time},${block.count},${block.meth.name}:${block.name}\n")
-  }
-  out.close
+  // out = new java.io.PrintWriter("blocks.csv")
+  // out.write("t,c,name\n")
+  // blocks.values.foreach { block =>
+  //   out.write(s"${block.time},${block.count},${block.meth.name}:${block.name}\n")
+  // }
+  // out.close
 }

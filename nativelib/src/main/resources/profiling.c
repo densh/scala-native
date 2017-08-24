@@ -102,27 +102,6 @@ void profiling_init(jstring* target_directory) {
     last = scalanative_cycleclock();
 }
 
-/** Adds `value` to the current block. */
-void block_push(char value) {
-    if (buffer_cursor == buffer + CHUNK_SIZE) {
-        block_dump();
-    }
-    *buffer_cursor = value;
-    buffer_cursor += 1;
-}
-
-/** Pushes an int value encoded as unsigned LEB128 */
-void block_push_leb128(int value) {
-    do {
-        char byte = value & 0x7F;
-        value >>= 7;
-        if (value != 0) {
-            byte |= 0x80;
-        }
-        block_push(byte);
-    } while (value != 0);
-}
-
 int timedelta() {
     int64_t now = scalanative_cycleclock();
     int delta = (int) (now - last);
@@ -132,6 +111,11 @@ int timedelta() {
 
 void log_block(int id) {
     count += 1;
-    block_push_leb128(id);
-    block_push_leb128(timedelta());
+    int *current = (int *) buffer_cursor;
+    *current = id;
+    *(current + 1) = timedelta();
+    buffer_cursor += 8;
+    if (buffer_cursor == buffer + CHUNK_SIZE) {
+        block_dump();
+    }
 }
