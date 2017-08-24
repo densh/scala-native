@@ -28,13 +28,29 @@ object Report extends App {
     def apply(key: Int): LongAdder = new LongAdder
   }
 
+  import scalanative.util.Stats
+
+  var ids = new java.util.concurrent.atomic.AtomicInteger
+
   streams.par.foreach { fn =>
-    val events = fn()
-    events.foreach { event =>
-      val Event(id, time) = event
-      counts.computeIfAbsent(id, longadd).increment()
-      times.computeIfAbsent(id, longadd).add(time)
+    val start = System.nanoTime()
+    val id = ids.getAndIncrement
+    val buffer = fn()
+    var done = false
+    while (!done) {
+      try {
+        val id = buffer.getInt
+        val time = buffer.getInt
+        counts.computeIfAbsent(id, longadd).increment()
+        times.computeIfAbsent(id, longadd).add(time)
+      } catch {
+        case _: Exception =>
+          done = true
+      }
     }
+    val end = System.nanoTime()
+    val t = (end - start) / 1000000.0D
+    println("done " + id + "(" + t + " ms)")
   }
 
   // var out = new java.io.PrintWriter("methods.csv")

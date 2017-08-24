@@ -457,6 +457,9 @@ lazy val benchmarks =
     .settings(noPublishSettings)
     .settings(
       nativeMode := "release",
+      nativeGC := "immix",
+      nativeEnableProfiling := true,
+      nativeProfilingLocation := file("profile.data"),
       sourceGenerators in Compile += Def.task {
         val dir = (scalaSource in Compile).value
         val benchmarks = (dir ** "*Benchmark.scala").get
