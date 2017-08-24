@@ -48,7 +48,7 @@ object LogParser {
     val compressedBytes = Files.readAllBytes(f.toPath)
     val decompresser    = new Inflater()
     val decompressedOut = new ByteArrayOutputStream()
-    val buffer          = new Array[Byte](1024)
+    val buffer          = new Array[Byte](1024 * 1024)
 
     decompresser.setInput(compressedBytes)
     while (!decompresser.finished()) {
@@ -61,21 +61,22 @@ object LogParser {
     buf
   }
 
-  def apply(baseDirectory: File): collection.parallel.ParSeq[Iterator[Event]] = {
+  def apply(baseDirectory: File): Seq[() => Iterator[Event]] = {
     assert(baseDirectory.isDirectory)
 
-    profileFiles(baseDirectory).par.map { file =>
-      new Iterator[Event] {
-        private val parser: LogParser = new LogParser(decompress(file))
-        private var lookahead: Option[Event] = parser.nextEvent()
+    profileFiles(baseDirectory).map { file =>
+      () =>
+        new Iterator[Event] {
+          private var parser: LogParser = new LogParser(decompress(file))
+          private var lookahead: Option[Event] = parser.nextEvent()
 
-        override def hasNext(): Boolean = lookahead.nonEmpty
-        override def next(): Event = {
-          val result = lookahead.get
-          lookahead = parser.nextEvent()
-          result
+          override def hasNext(): Boolean = lookahead.nonEmpty
+          override def next(): Event = {
+            val result = lookahead.get
+            lookahead = parser.nextEvent()
+            result
+          }
         }
-      }
     }
   }
 }

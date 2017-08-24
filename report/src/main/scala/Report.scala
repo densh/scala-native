@@ -28,7 +28,8 @@ object Report extends App {
     def apply(key: Int): LongAdder = new LongAdder
   }
 
-  streams.foreach { events =>
+  streams.par.foreach { fn =>
+    val events = fn()
     events.foreach { event =>
       val Event(id, time) = event
       counts.computeIfAbsent(id, longadd).increment()
