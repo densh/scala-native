@@ -10,17 +10,6 @@ int64_t scalanative_cycleclock();
 
 #define CHUNK_SIZE (1024 * 1024 * 4) // 4 MB
 
-#define TAG_CALL       1
-#define TAG_LOAD       2
-#define TAG_STORE      3
-#define TAG_CLASSALLOC 4
-#define TAG_METHOD     5
-#define TAG_AS         6
-#define TAG_IS         7
-#define TAG_BOX        8
-#define TAG_UNBOX      9
-#define TAG_BLOCK      10
-
 typedef struct chararray
 {
     void* u;
@@ -134,73 +123,6 @@ void block_push_leb128(int value) {
     } while (value != 0);
 }
 
-
-/** Log a `call` instruction. */
-void log_call(int typeid, int methid) {
-    count += 1;
-    block_push(TAG_CALL);
-    block_push_leb128(typeid);
-    block_push_leb128(methid);
-}
-
-/** Log a `load` instructions. */
-void log_load() {
-    count += 1;
-    block_push(TAG_LOAD);
-}
-
-/** Log a `store` instruction. */
-void log_store() {
-    count += 1;
-    block_push(TAG_STORE);
-}
-
-/** Log a `classalloc` instruction. */
-void log_classalloc(int typeid) {
-    count += 1;
-    block_push(TAG_CLASSALLOC);
-    block_push_leb128(typeid);
-}
-
-/** Log a `method` instruction */
-void log_method(int actualTypeid, int scopeTypeid, int methid) {
-    count += 1;
-    block_push(TAG_METHOD);
-    block_push_leb128(actualTypeid);
-    block_push_leb128(scopeTypeid);
-    block_push_leb128(methid);
-}
-
-/** Log a `as` instruction. */
-void log_as(int fromTypeId, int toTypeId) {
-    count += 1;
-    block_push(TAG_AS);
-    block_push_leb128(fromTypeId);
-    block_push_leb128(toTypeId);
-}
-
-/** Log a `is` instruction. */
-void log_is(int typeid, int expected) {
-    count += 1;
-    block_push(TAG_IS);
-    block_push_leb128(typeid);
-    block_push_leb128(expected);
-}
-
-/** Log a `box` instruction. */
-void log_box(int toTypeId) {
-    count += 1;
-    block_push(TAG_BOX);
-    block_push_leb128(toTypeId);
-}
-
-/** Log a `unbox` instruction. */
-void log_unbox(int fromTypeId) {
-    count += 1;
-    block_push(TAG_UNBOX);
-    block_push_leb128(fromTypeId);
-}
-
 int timedelta() {
     int64_t now = scalanative_cycleclock();
     int delta = (int) (now - last);
@@ -210,7 +132,6 @@ int timedelta() {
 
 void log_block(int id) {
     count += 1;
-    block_push(TAG_BLOCK);
     block_push_leb128(id);
     block_push_leb128(timedelta());
 }

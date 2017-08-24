@@ -1,8 +1,6 @@
 package scala.scalanative
 package profiling
 
-import Event._
-
 import java.io.{
   ByteArrayInputStream,
   ByteArrayOutputStream,
@@ -12,6 +10,8 @@ import java.io.{
 }
 import java.nio.file.Files
 import java.util.zip.Inflater
+
+final case class Event(id: Int, time: Int)
 
 /** A class that can parse the logs produced by profiling. */
 class LogParser(stream: InputStream) {
@@ -62,60 +62,16 @@ class LogParser(stream: InputStream) {
   }
 
   /** Reads the next event from the stream, if any. Throws an exception at EOF. */
-  private def nextEventUnsafe(): Event = {
-    val tag = next().toInt
-    tag match {
-      case TAG_CALL =>
-        Call(nextLEB128(), nextLEB128())
-
-      case TAG_LOAD =>
-        Load
-
-      case TAG_STORE =>
-        Store
-
-      case TAG_CLASSALLOC =>
-        Classalloc(nextLEB128())
-
-      case TAG_METHOD =>
-        Method(nextLEB128(), nextLEB128(), nextLEB128())
-
-      case TAG_AS =>
-        As(nextLEB128(), nextLEB128())
-
-      case TAG_IS =>
-        Is(nextLEB128(), nextLEB128())
-
-      case TAG_BOX =>
-        Box(nextLEB128())
-
-      case TAG_UNBOX =>
-        Unbox(nextLEB128())
-
-      case TAG_BLOCK =>
-        Block(nextLEB128(), nextLEB128())
-    }
-  }
+  private def nextEventUnsafe(): Event =
+    Event(nextLEB128(), nextLEB128())
 
   /** Optionally reads an event from the stream, if any. */
   def nextEvent(): Option[Event] =
     try Some(nextEventUnsafe())
     catch { case _: EOFException => None }
-
 }
 
 object LogParser {
-
-  val TAG_CALL       = 1
-  val TAG_LOAD       = 2
-  val TAG_STORE      = 3
-  val TAG_CLASSALLOC = 4
-  val TAG_METHOD     = 5
-  val TAG_AS         = 6
-  val TAG_IS         = 7
-  val TAG_BOX        = 8
-  val TAG_UNBOX      = 9
-  val TAG_BLOCK      = 10
 
   /** Collect and sort all the parts of the profiling info from `base`. */
   private def profileParts(base: File): Seq[File] = {
@@ -158,9 +114,6 @@ private class ZippedPartsInputStream(private var remainingFiles: Seq[File])
   private var currentStream: InputStream = {
     new ByteArrayInputStream(Array.empty)
   }
-  private var remainingStreams: List[InputStream] = {
-    remainingFiles.par.map(decompress).seq.toList
-  }
   private def decompress(f: File): InputStream = {
     val compressedBytes = Files.readAllBytes(f.toPath)
     val decompresser    = new Inflater()
@@ -178,9 +131,8 @@ private class ZippedPartsInputStream(private var remainingFiles: Seq[File])
   override def read(): Int =
     currentStream.read() match {
       case -1 if remainingFiles.nonEmpty =>
-        val head :: tail = remainingStreams
-        currentStream = head
-        remainingStreams = tail
+        currentStream = decompress(remainingFiles.head)
+        remainingFiles = remainingFiles.tail
         read()
       case value =>
         value
