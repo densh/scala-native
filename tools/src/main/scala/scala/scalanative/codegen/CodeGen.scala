@@ -73,6 +73,8 @@ object CodeGen {
     var currentBlockName: Local   = _
     var currentBlockSplit: Int    = _
 
+
+    val externs   = mutable.Map.empty[Global, Int]
     val ids       = mutable.UnrolledBuffer.empty[(Global, Local, Int, Int)]
     val deps      = mutable.Set.empty[Global]
     val generated = mutable.Set.empty[Global]
@@ -300,7 +302,7 @@ object CodeGen {
     }
 
     def genBlockLog(): Unit = {
-      if (!currentMethodName.isTop) {
+      if (!currentMethodName.normalize.isTop) {
         newline()
         str("call void @log_block(i32 ")
         str(genBlockId)
@@ -313,6 +315,26 @@ object CodeGen {
       currentId += 1
       ids += ((currentMethodName, currentBlockName, currentBlockSplit, id))
       id
+    }
+
+    def genExternLog(global: Global): Unit = {
+      if (!currentMethodName.normalize.isTop) {
+        newline()
+        str("call void @log_block(i32 ")
+        str(genExternId(global.normalize))
+        str(")")
+      }
+    }
+
+    def genExternId(global: Global): Int = {
+      if (externs.contains(global)) {
+        externs(global)
+      } else {
+        val id = currentId
+        currentId += 1
+        ids += ((global, Local(0), 0, id))
+        id
+      }
     }
 
     def genBlockSplitName(): Unit = {
@@ -751,6 +773,10 @@ object CodeGen {
 
         touch(pointee)
 
+        if (pointee.normalize.isTop) {
+          genExternLog(pointee)
+        }
+
         newline()
         genBind()
         str("call ")
@@ -776,6 +802,10 @@ object CodeGen {
         val succ = fresh()
 
         touch(pointee)
+
+        if (pointee.normalize.isTop) {
+          genExternLog(pointee)
+        }
 
         newline()
         genBind()

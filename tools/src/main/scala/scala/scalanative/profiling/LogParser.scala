@@ -155,18 +155,12 @@ object LogParser {
 /** An input stream composed of multiple files whose contents are zipped. */
 private class ZippedPartsInputStream(private var remainingFiles: Seq[File])
     extends InputStream {
-  private var currentStream: InputStream = new ByteArrayInputStream(Array.empty)
-
-  override def read(): Int =
-    currentStream.read() match {
-      case -1 if remainingFiles.nonEmpty =>
-        currentStream = decompress(remainingFiles.head)
-        remainingFiles = remainingFiles.tail
-        read()
-      case value =>
-        value
-    }
-
+  private var currentStream: InputStream = {
+    new ByteArrayInputStream(Array.empty)
+  }
+  private var remainingStreams: List[InputStream] = {
+    remainingFiles.par.map(decompress).seq.toList
+  }
   private def decompress(f: File): InputStream = {
     val compressedBytes = Files.readAllBytes(f.toPath)
     val decompresser    = new Inflater()
@@ -181,4 +175,14 @@ private class ZippedPartsInputStream(private var remainingFiles: Seq[File])
 
     new ByteArrayInputStream(decompressedOut.toByteArray)
   }
+  override def read(): Int =
+    currentStream.read() match {
+      case -1 if remainingFiles.nonEmpty =>
+        val head :: tail = remainingStreams
+        currentStream = head
+        remainingStreams = tail
+        read()
+      case value =>
+        value
+    }
 }
