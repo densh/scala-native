@@ -117,5 +117,6 @@ void log_block(int id) {
     buffer_cursor += 8;
     if (buffer_cursor == buffer + CHUNK_SIZE) {
         block_dump();
+        timedelta(); // update last to exclude time of block_dump
     }
 }
