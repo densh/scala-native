@@ -1,3 +1,6 @@
+import java.util.concurrent._
+import java.util.concurrent.atomic._
+
 import scalanative.profiling._
 import scala.collection.mutable
 
@@ -16,41 +19,37 @@ final case class Block(meth: Method, name: String) {
 
 object Report extends App {
   val streams = LogParser(new java.io.File("profile.data"))
-  val props   = new java.util.Properties()
-  props.load(new java.io.FileInputStream("out.map"))
-
-  import java.util.concurrent._
-  import java.util.concurrent.atomic._
-
-  val counts  = new ConcurrentHashMap[Int, LongAdder]
-  val times   = new ConcurrentHashMap[Int, LongAdder]
-  val longadd = new java.util.function.Function[Int, LongAdder] {
-    def apply(key: Int): LongAdder = new LongAdder
-  }
-
-  import scalanative.util.Stats
-
   var ids = new java.util.concurrent.atomic.AtomicInteger
 
-  streams.par.foreach { fn =>
-    val start = System.nanoTime()
+  type ILMap = mutable.Map[Int, Long]
+
+  val (counts, times) = streams.par.map { fn =>
     val id = ids.getAndIncrement
+    val start = System.nanoTime()
+    val counts = mutable.Map.empty[Int, Long]
+    val times  = mutable.Map.empty[Int, Long]
     val buffer = fn()
     var done = false
     while (!done) {
       try {
-        val id = buffer.getInt
+        val id   = buffer.getInt
         val time = buffer.getInt
-        counts.computeIfAbsent(id, longadd).increment()
-        times.computeIfAbsent(id, longadd).add(time)
+        counts(id) = if (counts.contains(id)) counts(id) + 1L else 1L
+        times(id)  = if (times.contains(id)) times(id) + time else time
       } catch {
         case _: Exception =>
           done = true
       }
     }
     val end = System.nanoTime()
-    val t = (end - start) / 1000000.0D
-    println("done " + id + "(" + t + " ms)")
+    if (id % 100 == 0) {
+      val t = (end - start) / 1000000.0D
+      println("done " + id + "(" + t + " ms)")
+    }
+    (counts, times)
+  }.fold[(ILMap, ILMap)]((mutable.Map.empty, mutable.Map.empty)) {
+    case ((counts1, times1), (counts2, times2)) =>
+      (counts1 ++ counts2, times1 ++ times2)
   }
 
   // var out = new java.io.PrintWriter("methods.csv")
@@ -60,10 +59,16 @@ object Report extends App {
   // }
   // out.close
 
-  // out = new java.io.PrintWriter("blocks.csv")
-  // out.write("t,c,name\n")
-  // blocks.values.foreach { block =>
-  //   out.write(s"${block.time},${block.count},${block.meth.name}:${block.name}\n")
-  // }
-  // out.close
+  val props = new java.util.Properties()
+  props.load(new java.io.FileInputStream("out.map"))
+
+  val out = new java.io.PrintWriter("blocks.csv")
+  out.write("t,c,name\n")
+  counts.foreach {
+    case (id, count) =>
+      val name = props.getProperty(id.toString)
+      val time = times(id)
+      out.write(s"$time,$count,$name\n")
+  }
+  out.close
 }
