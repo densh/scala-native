@@ -42,7 +42,7 @@ class Main(config: tools.Config) extends Inject {
         Inst.None
     val profilingDump =
       if (config.enableProfiling)
-        Inst.Let(Op.Call(block_dumpSig, block_dump, Seq.empty, Next.None))
+        Inst.Let(Op.Call(profiling_dumpSig, profiling_dump, Seq.empty, Next.None))
       else
         Inst.None
 
@@ -121,9 +121,9 @@ object Main extends InjectCompanion {
   val profiling_initDecl =
     Defn.Declare(Attrs.None, profiling_init.name, profiling_initSig)
 
-  val block_dumpSig  = Type.Function(Seq.empty, Type.Void)
-  val block_dump     = Val.Global(Global.Top("block_dump"), Type.Ptr)
-  val block_dumpDecl = Defn.Declare(Attrs.None, block_dump.name, block_dumpSig)
+  val profiling_dumpSig  = Type.Function(Seq.empty, Type.Void)
+  val profiling_dump     = Val.Global(Global.Top("profiling_dump"), Type.Ptr)
+  val profiling_dumpDecl = Defn.Declare(Attrs.None, profiling_dump.name, profiling_dumpSig)
 
   override val depends =
     Seq(ObjectArray.name,
@@ -133,7 +133,7 @@ object Main extends InjectCompanion {
         PrintStackTraceName)
 
   override val injects =
-    Seq(InitDecl, block_dumpDecl, profiling_initDecl)
+    Seq(InitDecl, profiling_dumpDecl, profiling_initDecl)
 
   override def apply(config: tools.Config, top: Top) =
     new Main(config)

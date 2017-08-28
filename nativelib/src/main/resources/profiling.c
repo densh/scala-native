@@ -55,13 +55,13 @@ unsigned char* buffer_cursor;
 /** The directory where dumps will be written */
 char* dump_directory;
 
-void put_int(int value) {
+void profiling_put(int value) {
     int *current = (int *) buffer_cursor;
     *current = value;
     buffer_cursor += 4;
 }
 
-int timedelta() {
+int profiling_timedelta() {
     int64_t now = scalanative_cycleclock();
     int delta = (int) (now - last);
     last = now;
@@ -69,7 +69,7 @@ int timedelta() {
 }
 
 /** Sets `dst` to the path to the next profiling file output */
-void next_file(char* dst) {
+void profiling_next_file(char* dst) {
     if (0 == strcmp(dump_directory, "/dev/null")) {
        strcpy(dst, dump_directory);
     } else {
@@ -84,14 +84,14 @@ void next_file(char* dst) {
 }
 
 /** Dumps all the blocks in `dump_location`. */
-void block_dump() {
-    put_int(timedelta());
+void profiling_dump() {
+    profiling_put(profiling_timedelta());
 
     char filename[PATH_MAX] = { 0 };
     unsigned char compressed_buffer[CHUNK_SIZE];
     unsigned long compressed_size = CHUNK_SIZE;
 
-    next_file(filename);
+    profiling_next_file(filename);
     FILE* out = fopen(filename, "wb");
 
     if (out == NULL) {
@@ -119,14 +119,14 @@ void profiling_init(jstring* target_directory) {
     mkdir(dump_directory, 0755);
     buffer_cursor = buffer;
     last = scalanative_cycleclock();
-    put_int(-1); // main id
+    profiling_put(-1); // main id
 }
 
-void log_block(int id) {
-    put_int(timedelta());
-    put_int(id);
+void profiling_log(int id) {
+    profiling_put(profiling_timedelta());
+    profiling_put(id);
     if (buffer_cursor + 4 == buffer + CHUNK_SIZE) {
-        block_dump();
-        put_int(id);
+        profiling_dump();
+        profiling_put(id);
     }
 }

@@ -181,7 +181,7 @@ object CodeGen {
       line("declare void @__cxa_end_catch()")
       line(
         "@_ZTIN11scalanative16ExceptionWrapperE = external constant { i8*, i8*, i8* }")
-      line("declare void @log_block(i32)")
+      line("declare void @profiling_log(i32)")
     }
 
     def genConsts() =
@@ -305,7 +305,7 @@ object CodeGen {
     def genBlockLog(): Unit = {
       if (!currentMethodName.normalize.isTop) {
         newline()
-        str("call void @log_block(i32 ")
+        str("call void @profiling_log(i32 ")
         str(genBlockId)
         str(")")
       }
@@ -321,7 +321,7 @@ object CodeGen {
     def genExternLog(global: Global): Unit = {
       if (!currentMethodName.normalize.isTop) {
         newline()
-        str("call void @log_block(i32 ")
+        str("call void @profiling_log(i32 ")
         str(genExternId(global.normalize))
         str(")")
       }
