@@ -5,6 +5,7 @@
 #include <string.h>
 #include <zlib.h>
 #include <sys/stat.h>
+#include <stddef.h>
 
 int64_t scalanative_cycleclock();
 
@@ -54,6 +55,19 @@ unsigned char* buffer_cursor;
 /** The directory where dumps will be written */
 char* dump_directory;
 
+void put_int(int value) {
+    int *current = (int *) buffer_cursor;
+    *current = value;
+    buffer_cursor += 4;
+}
+
+int timedelta() {
+    int64_t now = scalanative_cycleclock();
+    int delta = (int) (now - last);
+    last = now;
+    return delta;
+}
+
 /** Sets `dst` to the path to the next profiling file output */
 void next_file(char* dst) {
     if (0 == strcmp(dump_directory, "/dev/null")) {
@@ -71,6 +85,8 @@ void next_file(char* dst) {
 
 /** Dumps all the blocks in `dump_location`. */
 void block_dump() {
+    put_int(timedelta());
+
     char filename[PATH_MAX] = { 0 };
     unsigned char compressed_buffer[CHUNK_SIZE];
     unsigned long compressed_size = CHUNK_SIZE;
@@ -88,7 +104,10 @@ void block_dump() {
     fwrite(compressed_buffer, compressed_size, 1, out);
     buffer_cursor = buffer;
     fclose(out);
-    printf("Recorded %lld events\n", count);
+    count += 1;
+    printf("Recorded %lld batches\n", count);
+
+    last = scalanative_cycleclock();
 }
 
 /** Init the profiling data structures. */
@@ -100,23 +119,14 @@ void profiling_init(jstring* target_directory) {
     mkdir(dump_directory, 0755);
     buffer_cursor = buffer;
     last = scalanative_cycleclock();
-}
-
-int timedelta() {
-    int64_t now = scalanative_cycleclock();
-    int delta = (int) (now - last);
-    last = now;
-    return delta;
+    put_int(-1); // main id
 }
 
 void log_block(int id) {
-    count += 1;
-    int *current = (int *) buffer_cursor;
-    *current = id;
-    *(current + 1) = timedelta();
-    buffer_cursor += 8;
-    if (buffer_cursor == buffer + CHUNK_SIZE) {
+    put_int(timedelta());
+    put_int(id);
+    if (buffer_cursor + 4 == buffer + CHUNK_SIZE) {
         block_dump();
-        timedelta(); // update last to exclude time of block_dump
+        put_int(id);
     }
 }

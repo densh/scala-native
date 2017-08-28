@@ -62,12 +62,34 @@ object Report extends App {
   val props = new java.util.Properties()
   props.load(new java.io.FileInputStream("out.map"))
 
-  val out = new java.io.PrintWriter("blocks.csv")
+  var out = new java.io.PrintWriter("blocks.csv")
   out.write("t,c,name\n")
   counts.foreach {
     case (id, count) =>
       val name = props.getProperty(id.toString)
       val time = times(id)
+      out.write(s"$time,$count,$name\n")
+  }
+  out.close
+
+  val methodcounts = mutable.Map.empty[String, Long]
+  val methodtimes  = mutable.Map.empty[String, Long]
+  counts.foreach {
+    case (id, count) =>
+      val meth = props.getProperty(id.toString).split(",").head
+      if (!methodcounts.contains(meth)) {
+        methodcounts(meth) = 0
+        methodtimes(meth) = 0
+      }
+      methodcounts(meth) += count
+      methodtimes(meth) += times(id)
+  }
+
+  out = new java.io.PrintWriter("methods.csv")
+  out.write("t,c,name\n")
+  methodcounts.foreach {
+    case (name, count) =>
+      val time = methodtimes(name)
       out.write(s"$time,$count,$name\n")
   }
   out.close

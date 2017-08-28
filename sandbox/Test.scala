@@ -1,5 +1,9 @@
 object Test {
   def main(args: Array[String]): Unit = {
-    println("Hello, World!")
+    var i = 0
+    while (i < 1000) {
+      println("Hello, World!")
+      i += 1
+    }
   }
 }

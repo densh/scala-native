@@ -90,6 +90,7 @@ object CodeGen {
       genDeps()
 
       val writer = new java.io.PrintWriter("out.map")
+      writer.write("-1=@main,0.0\n")
       ids.foreach {
         case (methodName, blockName, blockSplit, id) =>
           writer.write(s"$id=${methodName.show},${blockName.id}.$blockSplit\n")
@@ -333,6 +334,7 @@ object CodeGen {
         val id = currentId
         currentId += 1
         ids += ((global, Local(0), 0, id))
+        externs(global) = id
         id
       }
     }
@@ -773,8 +775,9 @@ object CodeGen {
 
         touch(pointee)
 
-        if (pointee.normalize.isTop) {
-          genExternLog(pointee)
+        val npointee = pointee.normalize
+        if (npointee.isTop) {
+          genExternLog(npointee)
         }
 
         newline()
@@ -803,8 +806,9 @@ object CodeGen {
 
         touch(pointee)
 
-        if (pointee.normalize.isTop) {
-          genExternLog(pointee)
+        val npointee = pointee.normalize
+        if (npointee.isTop) {
+          genExternLog(npointee)
         }
 
         newline()
