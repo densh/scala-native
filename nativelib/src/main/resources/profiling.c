@@ -39,26 +39,30 @@ char* to_string(char* dst, size_t max_len, jstring* str) {
     return dst;
 }
 
+typedef struct {
+    void *start;
+    void *cursor;
+    void *next;
+} profiling_chunk;
+
 /** The current batch number. */
 int current_batch = 1;
 
 int64_t last;
 
-int64_t count = 0;
+/** First chunk in the list of chunks. */
+profiling_chunk *head;
 
-/** The buffer where events are written */
-unsigned char* buffer;
-
-/** Current position in the buffer */
-unsigned char* buffer_cursor;
+/** Current event log chunk. */
+profiling_chunk *chunk;
 
 /** The directory where dumps will be written */
 char* dump_directory;
 
 void profiling_put(int value) {
-    int *current = (int *) buffer_cursor;
+    int *current = (int *) chunk->cursor;
     *current = value;
-    buffer_cursor += 4;
+    chunk->cursor += 4;
 }
 
 int profiling_timedelta() {
@@ -85,39 +89,54 @@ void profiling_next_file(char* dst) {
 
 /** Dumps all the blocks in `dump_location`. */
 void profiling_dump() {
-    profiling_put(profiling_timedelta());
+    profiling_chunk *current = head;
+    int64_t count = 0;
 
-    char filename[PATH_MAX] = { 0 };
-    unsigned char compressed_buffer[CHUNK_SIZE];
-    unsigned long compressed_size = CHUNK_SIZE;
+    while (current != NULL) {
+        char filename[PATH_MAX] = { 0 };
+        unsigned char compressed_buffer[CHUNK_SIZE];
+        unsigned long compressed_size = CHUNK_SIZE;
 
-    profiling_next_file(filename);
-    FILE* out = fopen(filename, "wb");
+        profiling_next_file(filename);
+        FILE* out = fopen(filename, "wb");
 
-    if (out == NULL) {
-        printf("Couldn't open '%s'. Errno %d", filename, errno);
-        perror(filename);
-        exit(1);
+        if (out == NULL) {
+            printf("Couldn't open '%s'. Errno %d", filename, errno);
+            perror(filename);
+            exit(1);
+        }
+
+        compress(compressed_buffer, &compressed_size, current->start, current->cursor - current->start);
+        fwrite(compressed_buffer, compressed_size, 1, out);
+        fclose(out);
+        count += 1;
+        if (count % 100 == 0) {
+            printf("Dumped %lld batches\n", count);
+        }
+
+        current = current->next;
     }
 
-    compress(compressed_buffer, &compressed_size, buffer, buffer_cursor - buffer);
-    fwrite(compressed_buffer, compressed_size, 1, out);
-    buffer_cursor = buffer;
-    fclose(out);
-    count += 1;
-    printf("Recorded %lld batches\n", count);
+    printf("Finished dumping %lld batches\n", count);
+}
 
-    last = scalanative_cycleclock();
+void profiling_new_chunk() {
+    profiling_chunk *next = calloc(1, sizeof(profiling_chunk));
+    next->start = calloc(CHUNK_SIZE, sizeof(unsigned char));
+    next->cursor = next->start;
+    chunk->next = next;
+    chunk = next;
 }
 
 /** Init the profiling data structures. */
 void profiling_init(jstring* target_directory) {
     char* target = calloc(target_directory->count + 1, sizeof(char));
-    buffer = calloc(CHUNK_SIZE, sizeof(unsigned char));
+    head = chunk = calloc(1, sizeof(profiling_chunk));
+    chunk->start = calloc(CHUNK_SIZE, sizeof(unsigned char));
     to_string(target, target_directory->count, target_directory);
     dump_directory = target;
     mkdir(dump_directory, 0755);
-    buffer_cursor = buffer;
+    chunk->cursor = chunk->start;
     last = scalanative_cycleclock();
     profiling_put(-1); // main id
 }
@@ -125,8 +144,10 @@ void profiling_init(jstring* target_directory) {
 void profiling_log(int id) {
     profiling_put(profiling_timedelta());
     profiling_put(id);
-    if (buffer_cursor + 4 == buffer + CHUNK_SIZE) {
-        profiling_dump();
+    if (chunk->cursor + 4 == chunk->start + CHUNK_SIZE) {
+        profiling_put(profiling_timedelta());
+        profiling_new_chunk();
         profiling_put(id);
+        last = scalanative_cycleclock(); // skip new chunk alloc&init time
     }
 }
