@@ -6,6 +6,7 @@
 #include <zlib.h>
 #include <sys/stat.h>
 #include <stddef.h>
+#include <inttypes.h>
 
 int64_t scalanative_cycleclock();
 
@@ -111,13 +112,13 @@ void profiling_dump() {
         fclose(out);
         count += 1;
         if (count % 100 == 0) {
-            printf("Dumped %lld batches\n", count);
+            printf("Dumped %" PRId64 " batches\n", count);
         }
 
         current = current->next;
     }
 
-    printf("Finished dumping %lld batches\n", count);
+    printf("Finished dumping %" PRId64 " batches\n", count);
 }
 
 void profiling_new_chunk() {
