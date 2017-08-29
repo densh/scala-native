@@ -8,8 +8,6 @@
 #include <stddef.h>
 #include <inttypes.h>
 
-int64_t scalanative_cycleclock();
-
 #define CHUNK_SIZE (1024 * 1024 * 4) // 4 MB
 
 typedef struct chararray
@@ -34,22 +32,20 @@ char* to_string(char* dst, size_t max_len, jstring* str) {
 
     for (int i = 0; i < length; ++i) {
         dst[i] = (char) str->value->chars[i];
-    }
-    dst[length] = '\0';
+    } dst[length] = '\0';
 
     return dst;
 }
 
 typedef struct {
     void *start;
+    void *end;
     void *cursor;
     void *next;
 } profiling_chunk;
 
 /** The current batch number. */
 int current_batch = 1;
-
-int64_t last;
 
 /** First chunk in the list of chunks. */
 profiling_chunk *head;
@@ -67,13 +63,6 @@ void profiling_put(int value) {
     int *current = (int *) chunk->cursor;
     *current = value;
     chunk->cursor += 4;
-}
-
-int profiling_timedelta() {
-    int64_t now = scalanative_cycleclock();
-    int delta = (int) (now - last);
-    last = now;
-    return delta;
 }
 
 /** Sets `dst` to the path to the next profiling file output */
@@ -96,7 +85,7 @@ void profiling_dump() {
     profiling_chunk *current = head;
     int64_t count = 0;
 
-    printf("Dumping profiling batches\n", count);
+    printf("Dumping profiling batches\n");
 
     while (current != NULL) {
         char filename[PATH_MAX] = { 0 };
@@ -129,6 +118,7 @@ void profiling_dump() {
 void profiling_new_chunk() {
     profiling_chunk *next = calloc(1, sizeof(profiling_chunk));
     next->start = calloc(CHUNK_SIZE, sizeof(unsigned char));
+    next->end = next->start + CHUNK_SIZE;
     next->cursor = next->start;
     chunk->next = next;
     chunk = next;
@@ -143,21 +133,18 @@ void profiling_init(jstring* target_directory) {
     char* target = calloc(target_directory->count + 1, sizeof(char));
     head = chunk = calloc(1, sizeof(profiling_chunk));
     chunk->start = calloc(CHUNK_SIZE, sizeof(unsigned char));
+    chunk->end = chunk->start + CHUNK_SIZE;
+    chunk->next = NULL;
     to_string(target, target_directory->count, target_directory);
     dump_directory = target;
     mkdir(dump_directory, 0755);
     chunk->cursor = chunk->start;
-    last = scalanative_cycleclock();
-    profiling_put(-1); // main id
+    profiling_put(-1); // main
 }
 
 void profiling_log(int id) {
-    profiling_put(profiling_timedelta());
     profiling_put(id);
-    if (chunk->cursor + 4 == chunk->start + CHUNK_SIZE) {
-        profiling_put(profiling_timedelta());
+    if (chunk->cursor == chunk->end) {
         profiling_new_chunk();
-        profiling_put(id);
-        last = scalanative_cycleclock(); // skip new chunk alloc&init time
     }
 }

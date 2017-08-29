@@ -20,7 +20,8 @@ object System {
   }
 
   def exit(status: Int): Unit = {
-    Runtime.getRuntime().exit(status)
+    throw new Exception("exit")
+    // Runtime.getRuntime().exit(status)
   }
 
   def identityHashCode(x: Object): scala.Int =

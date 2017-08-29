@@ -40,7 +40,7 @@ object CodeGen {
           case (k, defns) =>
             val sorted = defns.sortBy(_.name.show)
             val impl =
-              new Impl(config.target, env, sorted, workdir)
+              new Impl(config, env, sorted, workdir)
             val outpath = k + ".ll"
             val buffer  = impl.gen()
             buffer.flip
@@ -50,7 +50,7 @@ object CodeGen {
 
       def release(): Unit = {
         val sorted = assembly.sortBy(_.name.show)
-        val impl   = new Impl(config.target, env, sorted, workdir)
+        val impl   = new Impl(config, env, sorted, workdir)
         val buffer = impl.gen()
         buffer.flip
         workdir.write(Paths.get("out.ll"), buffer)
@@ -63,7 +63,7 @@ object CodeGen {
       release()
     }
 
-  private final class Impl(target: String,
+  private final class Impl(config: tools.Config,
                            env: Map[Global, Defn],
                            defns: Seq[Defn],
                            workdir: VirtualDirectory) {
@@ -170,9 +170,9 @@ object CodeGen {
     }
 
     def genPrelude(): Unit = {
-      if (target.nonEmpty) {
+      if (config.target.nonEmpty) {
         str("target triple = \"")
-        str(target)
+        str(config.target)
         str("\"")
         newline()
       }
@@ -182,7 +182,9 @@ object CodeGen {
       line("declare void @__cxa_end_catch()")
       line(
         "@_ZTIN11scalanative16ExceptionWrapperE = external constant { i8*, i8*, i8* }")
-      line("declare void @profiling_log(i32)")
+      if (config.enableProfiling) {
+        line("declare void @profiling_log(i32)")
+      }
     }
 
     def genConsts() =
@@ -304,7 +306,7 @@ object CodeGen {
     }
 
     def genBlockLog(): Unit = {
-      if (!currentMethodName.normalize.isTop) {
+      if (config.enableProfiling && !currentMethodName.normalize.isTop) {
         newline()
         str("call void @profiling_log(i32 ")
         str(genBlockId)
@@ -320,7 +322,7 @@ object CodeGen {
     }
 
     def genExternLog(global: Global): Unit = {
-      if (!currentMethodName.normalize.isTop) {
+      if (config.enableProfiling && !currentMethodName.normalize.isTop) {
         newline()
         str("call void @profiling_log(i32 ")
         str(genExternId(global.normalize))
