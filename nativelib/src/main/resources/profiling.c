@@ -57,6 +57,9 @@ profiling_chunk *head;
 /** Current event log chunk. */
 profiling_chunk *chunk;
 
+/** Number of chunks allocated. */
+int64_t chunks;
+
 /** The directory where dumps will be written */
 char* dump_directory;
 
@@ -93,6 +96,8 @@ void profiling_dump() {
     profiling_chunk *current = head;
     int64_t count = 0;
 
+    printf("Dumping profiling batches\n", count);
+
     while (current != NULL) {
         char filename[PATH_MAX] = { 0 };
         unsigned char compressed_buffer[CHUNK_SIZE];
@@ -127,6 +132,10 @@ void profiling_new_chunk() {
     next->cursor = next->start;
     chunk->next = next;
     chunk = next;
+    chunks += 1;
+    if (chunks % 100 == 0) {
+        printf("Allocated %" PRId64 " chunks\n", chunks);
+    }
 }
 
 /** Init the profiling data structures. */
