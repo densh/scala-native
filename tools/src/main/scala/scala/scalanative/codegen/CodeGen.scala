@@ -56,11 +56,10 @@ object CodeGen {
         workdir.write(Paths.get("out.ll"), buffer)
       }
 
-      // config.mode match {
-      //   case tools.Mode.Debug   => debug()
-      //   case tools.Mode.Release => release()
-      // }
-      release()
+      config.mode match {
+        case tools.Mode.Debug   if !config.enableProfiling => debug()
+        case tools.Mode.Release                            => release()
+      }
     }
 
   private final class Impl(config: tools.Config,
