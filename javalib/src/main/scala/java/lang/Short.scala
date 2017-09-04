@@ -228,12 +228,29 @@ object Short {
   @inline def toUnsignedLong(x: scala.Short): scala.Long =
     shortToULong(x)
 
-  @inline def valueOf(shortValue: scala.Short): Short =
-    new Short(shortValue)
+  @inline def valueOf(shortValue: scala.Short): Short = {
+    if (shortValue.toByte.toShort != shortValue) {
+      new Short(shortValue)
+    } else {
+      ShortCache.cache(shortValue + 128)
+    }
+  }
 
   @inline def valueOf(s: String): Short =
     valueOf(parseShort(s))
 
   @inline def valueOf(s: String, radix: scala.Int): Short =
     valueOf(parseShort(s, radix))
+}
+
+private[lang] object ShortCache {
+  private[lang] val cache = new Array[java.lang.Short](256)
+
+  locally {
+    var i = 0
+    while (i < 256) {
+      cache(i) = new java.lang.Short((i - 128).toShort)
+      i += 1
+    }
+  }
 }

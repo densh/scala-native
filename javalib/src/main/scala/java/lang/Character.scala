@@ -1111,7 +1111,13 @@ object Character {
 
   def hashCode(value: scala.Char): scala.Int = value
 
-  def valueOf(charValue: scala.Char): Character = new Character(charValue)
+  def valueOf(charValue: scala.Char): Character = {
+    if (charValue > 127) {
+      new Character(charValue)
+    } else {
+      CharacterCache.cache(charValue.toInt)
+    }
+  }
 
   def getType(ch: scala.Char): Int = getType(ch.toInt)
 
@@ -2148,4 +2154,16 @@ object Character {
   // def getNumericValue(c: scala.Char): Int
   // def reverseBytes(ch: scala.Char): scala.Char
   // ...
+}
+
+private[lang] object CharacterCache {
+  private[lang] val cache = new Array[java.lang.Character](128)
+
+  locally {
+    var i = 0
+    while (i < 128) {
+      cache(i) = new java.lang.Character(i.toChar)
+      i += 1
+    }
+  }
 }

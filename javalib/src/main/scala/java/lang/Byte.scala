@@ -226,11 +226,23 @@ object Byte {
     byteToULong(x)
 
   @inline def valueOf(byteValue: scala.Byte): Byte =
-    new Byte(byteValue)
+    ByteCache.cache(byteValue + 128)
 
   @inline def valueOf(s: String): Byte =
     valueOf(parseByte(s))
 
   @inline def valueOf(s: String, radix: scala.Int): Byte =
     valueOf(parseByte(s, radix))
+}
+
+private[lang] object ByteCache {
+  private[lang] val cache = new Array[java.lang.Byte](256)
+
+  locally {
+    var i = 0
+    while (i < 256) {
+      cache(i) = new java.lang.Byte((i - 128).toByte)
+      i += 1
+    }
+  }
 }
