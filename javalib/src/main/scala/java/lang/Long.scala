@@ -472,7 +472,7 @@ object Long {
     if (longValue.toByte.toLong != longValue) {
       new Long(longValue)
     } else {
-      LongCache.cache((longValue + 128).toInt)
+      LongCache.get(longValue)
     }
   }
 
@@ -565,13 +565,16 @@ object Long {
 }
 
 private[lang] object LongCache {
-  private[lang] val cache = new Array[java.lang.Long](256)
-
-  locally {
-    var i = 0
-    while (i < 256) {
-      cache(i) = new java.lang.Long(i - 128)
-      i += 1
+  private[this] val cache = new Array[java.lang.Long](256)
+  @inline private[lang] def get(value: scala.Long): java.lang.Long = {
+    val idx = (value + 128).toInt
+    val box = cache(idx)
+    if (box != null) {
+      box
+    } else {
+      val newbox = new java.lang.Long(value)
+      cache(idx) = newbox
+      newbox
     }
   }
 }

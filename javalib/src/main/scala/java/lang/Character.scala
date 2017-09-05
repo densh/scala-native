@@ -1115,7 +1115,7 @@ object Character {
     if (charValue > 127) {
       new Character(charValue)
     } else {
-      CharacterCache.cache(charValue.toInt)
+      CharacterCache.get(charValue)
     }
   }
 
@@ -2157,13 +2157,16 @@ object Character {
 }
 
 private[lang] object CharacterCache {
-  private[lang] val cache = new Array[java.lang.Character](128)
-
-  locally {
-    var i = 0
-    while (i < 128) {
-      cache(i) = new java.lang.Character(i.toChar)
-      i += 1
+  private[this] val cache = new Array[java.lang.Character](128)
+  @inline private[lang] def get(value: scala.Char): java.lang.Character = {
+    val idx = value.toInt
+    val box = cache(idx)
+    if (box != null) {
+      box
+    } else {
+      val newbox = new java.lang.Character(value)
+      cache(idx) = newbox
+      newbox
     }
   }
 }

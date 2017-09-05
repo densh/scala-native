@@ -568,7 +568,7 @@ object Integer {
     if (intValue.toByte.toInt != intValue) {
       new Integer(intValue)
     } else {
-      IntegerCache.cache(intValue + 128)
+      IntegerCache.get(intValue)
     }
   }
 
@@ -660,13 +660,16 @@ object Integer {
 }
 
 private[lang] object IntegerCache {
-  private[lang] val cache = new Array[java.lang.Integer](256)
-
-  locally {
-    var i = 0
-    while (i < 256) {
-      cache(i) = new java.lang.Integer(i - 128)
-      i += 1
+  private[this] val cache = new Array[java.lang.Integer](256)
+  @inline private[lang] def get(value: scala.Int): java.lang.Integer = {
+    val idx = value + 128
+    val box = cache(idx)
+    if (box != null) {
+      box
+    } else {
+      val newbox = new java.lang.Integer(value)
+      cache(idx) = newbox
+      newbox
     }
   }
 }

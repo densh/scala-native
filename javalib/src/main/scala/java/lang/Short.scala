@@ -232,7 +232,7 @@ object Short {
     if (shortValue.toByte.toShort != shortValue) {
       new Short(shortValue)
     } else {
-      ShortCache.cache(shortValue + 128)
+      ShortCache.get(shortValue)
     }
   }
 
@@ -244,13 +244,16 @@ object Short {
 }
 
 private[lang] object ShortCache {
-  private[lang] val cache = new Array[java.lang.Short](256)
-
-  locally {
-    var i = 0
-    while (i < 256) {
-      cache(i) = new java.lang.Short((i - 128).toShort)
-      i += 1
+  private[this] val cache = new Array[java.lang.Short](256)
+  @inline private[lang] def get(value: scala.Short): java.lang.Short = {
+    val idx = value + 128
+    val box = cache(idx)
+    if (box != null) {
+      box
+    } else {
+      val newbox = new java.lang.Short(value)
+      cache(idx) = newbox
+      newbox
     }
   }
 }
