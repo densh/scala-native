@@ -565,7 +565,7 @@ object Integer {
     intToULong(x)
 
   @inline def valueOf(intValue: scala.Int): Integer = {
-    if (intValue.toByte.toInt != intValue) {
+    if (intValue < -128 || intValue > 127) {
       new Integer(intValue)
     } else {
       IntegerCache.cache(intValue + 128)

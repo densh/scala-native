@@ -469,7 +469,7 @@ object Long {
   }
 
   @inline def valueOf(longValue: scala.Long): Long = {
-    if (longValue.toByte.toLong != longValue) {
+    if (longValue < -128 || longValue > 127) {
       new Long(longValue)
     } else {
       LongCache.cache((longValue + 128).toInt)
