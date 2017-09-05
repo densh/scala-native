@@ -233,7 +233,7 @@ object Short {
   import ShortCache.cache
 
   @inline def valueOf(shortValue: scala.Short): Short = {
-    if (shortValue < -128 || shortValue > 127) {
+    if (shortValue.toByte.toShort != shortValue) {
       new Short(shortValue)
     } else {
       ShortCache.cache(shortValue + 128)
