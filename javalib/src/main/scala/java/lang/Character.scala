@@ -1111,21 +1111,11 @@ object Character {
 
   def hashCode(value: scala.Char): scala.Int = value
 
-  import CharacterCache.cache
-
   def valueOf(charValue: scala.Char): Character = {
-    if (charValue >= 127) {
+    if (charValue > 127) {
       new Character(charValue)
     } else {
-      val idx    = charValue.toInt
-      val cached = cache(idx)
-      if (cached != null) {
-        cached
-      } else {
-        val newchar = new Character(charValue)
-        cache(idx) = newchar
-        newchar
-      }
+      CharacterCache.cache(charValue.toInt)
     }
   }
 
@@ -2167,5 +2157,13 @@ object Character {
 }
 
 private[lang] object CharacterCache {
-  private[lang] val cache = new Array[java.lang.Character](127)
+  private[lang] val cache = new Array[java.lang.Character](128)
+
+  locally {
+    var i = 0
+    while (i < 128) {
+      cache(i) = new java.lang.Character(i.toChar)
+      i += 1
+    }
+  }
 }

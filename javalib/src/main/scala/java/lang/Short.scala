@@ -236,15 +236,7 @@ object Short {
     if (shortValue < -128 || shortValue > 127) {
       new Short(shortValue)
     } else {
-      val idx    = shortValue + 128
-      val cached = cache(idx)
-      if (cached != null) {
-        cached
-      } else {
-        val newshort = new Short(shortValue)
-        cache(idx) = newshort
-        newshort
-      }
+      ShortCache.cache(shortValue + 128)
     }
   }
 
@@ -257,4 +249,12 @@ object Short {
 
 private[lang] object ShortCache {
   private[lang] val cache = new Array[java.lang.Short](256)
+
+  locally {
+    var i = 0
+    while (i < 256) {
+      cache(i) = new java.lang.Short((i - 128).toShort)
+      i += 1
+    }
+  }
 }

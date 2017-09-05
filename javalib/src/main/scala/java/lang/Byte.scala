@@ -225,19 +225,8 @@ object Byte {
   @inline def toUnsignedLong(x: scala.Byte): scala.Long =
     byteToULong(x)
 
-  import ByteCache.cache
-
-  @inline def valueOf(byteValue: scala.Byte): Byte = {
-    val idx    = byteValue - MIN_VALUE
-    val cached = cache(idx)
-    if (cached != null) {
-      cached
-    } else {
-      val newbyte = new Byte(byteValue)
-      cache(idx) = newbyte
-      newbyte
-    }
-  }
+  @inline def valueOf(byteValue: scala.Byte): Byte =
+    ByteCache.cache(byteValue + 128)
 
   @inline def valueOf(s: String): Byte =
     valueOf(parseByte(s))
@@ -248,4 +237,12 @@ object Byte {
 
 private[lang] object ByteCache {
   private[lang] val cache = new Array[java.lang.Byte](256)
+
+  locally {
+    var i = 0
+    while (i < 256) {
+      cache(i) = new java.lang.Byte((i - 128).toByte)
+      i += 1
+    }
+  }
 }

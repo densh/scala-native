@@ -570,15 +570,7 @@ object Integer {
     if (intValue < -128 || intValue > 127) {
       new Integer(intValue)
     } else {
-      val idx    = intValue + 128
-      val cached = cache(idx)
-      if (cached != null) {
-        cached
-      } else {
-        val newint = new Integer(intValue)
-        cache(idx) = newint
-        newint
-      }
+      IntegerCache.cache(intValue + 128)
     }
   }
 
@@ -671,4 +663,12 @@ object Integer {
 
 private[lang] object IntegerCache {
   private[lang] val cache = new Array[java.lang.Integer](256)
+
+  locally {
+    var i = 0
+    while (i < 256) {
+      cache(i) = new java.lang.Integer(i - 128)
+      i += 1
+    }
+  }
 }
