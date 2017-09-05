@@ -468,7 +468,6 @@ object Long {
     }
   }
 
-
   @inline def valueOf(longValue: scala.Long): Long = {
     if (longValue.toByte.toLong != longValue) {
       new Long(longValue)

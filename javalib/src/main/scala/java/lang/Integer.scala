@@ -564,8 +564,6 @@ object Integer {
   @inline def toUnsignedLong(x: scala.Int): scala.Long =
     intToULong(x)
 
-  import IntegerCache.cache
-
   @inline def valueOf(intValue: scala.Int): Integer = {
     if (intValue.toByte.toInt != intValue) {
       new Integer(intValue)

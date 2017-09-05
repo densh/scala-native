@@ -228,10 +228,6 @@ object Short {
   @inline def toUnsignedLong(x: scala.Short): scala.Long =
     shortToULong(x)
 
-  private val cache = new Array[java.lang.Short](256)
-
-  import ShortCache.cache
-
   @inline def valueOf(shortValue: scala.Short): Short = {
     if (shortValue.toByte.toShort != shortValue) {
       new Short(shortValue)
