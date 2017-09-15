@@ -84,6 +84,18 @@ object ClassHierarchy {
     def attrs                       = Attrs.None
     var tables: TraitDispatchTables = _
     var moduleArray: ModuleArray    = _
+
+    def classWithName(name: Global): Option[Class] =
+      classes find (_.name == name)
+
+    def classWithId(id: Int): Option[Class] =
+      classes find (_.id == id)
+
+    def traitWithName(name: Global): Option[Trait] =
+      traits find (_.name == name)
+
+    def traitWithId(id: Int): Option[Trait] =
+      traits find (_.id == id)
   }
 
   def apply(defns: Seq[Defn], dyns: Seq[String]): Top = {
@@ -311,6 +323,12 @@ object ClassHierarchy {
     assignMethodIds()
     completeClassMembers()
     completeTop()
+
+    val out = new java.io.PrintWriter("out.map")
+    top.nodes.values.toSeq.sortBy(_.id).foreach { node =>
+      out.write(s"${node.id}=${node.name.show}\n")
+    }
+    out.close
 
     top
   }

@@ -4,6 +4,8 @@ package tools
 import java.io.File
 import nir.Global
 
+import java.io.File
+
 sealed trait Config {
 
   /** Entry point for linking. */
@@ -24,6 +26,9 @@ sealed trait Config {
   /** Should stubs be linked? */
   def linkStubs: Boolean
 
+  /** Is virtual dispatch profiling enabled? */
+  def profileMode: ProfileMode
+
   /** Create new config with given entry point. */
   def withEntry(value: Global): Config
 
@@ -41,6 +46,9 @@ sealed trait Config {
 
   /** Create a new config with given behavior for stubs. */
   def withLinkStubs(value: Boolean): Config
+
+  /** Create a new config with virtual dispatch profiling enabled or disabled */
+  def withProfileMode(mode: ProfileMode): Config
 }
 
 object Config {
@@ -52,14 +60,16 @@ object Config {
          workdir = new File(""),
          target = "",
          mode = Mode.Debug,
-         linkStubs = false)
+         linkStubs = false,
+         profileMode = NoProfile)
 
   private final case class Impl(entry: Global,
                                 paths: Seq[File],
                                 workdir: File,
                                 target: String,
                                 mode: Mode,
-                                linkStubs: Boolean)
+                                linkStubs: Boolean,
+                                profileMode: ProfileMode)
       extends Config {
     def withEntry(value: Global): Config =
       copy(entry = value)
@@ -78,5 +88,8 @@ object Config {
 
     def withLinkStubs(value: Boolean): Config =
       copy(linkStubs = value)
+
+    def withProfileMode(value: ProfileMode): Config =
+      copy(profileMode = value)
   }
 }

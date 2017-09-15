@@ -80,4 +80,15 @@ class VirtualTable(cls: Class,
       .getOrElse {
         entries.indexOf(meth)
       }
+  def at(index: Int): Val =
+    values(index)
+
+  override def toString =
+    entries
+      .zip(values)
+      .map {
+        case (meth, value) =>
+          s"${meth.name.show} -> ${value.show}"
+      }
+      .mkString("VirtualTable(\n\t", ",\n\t", "\n)")
 }

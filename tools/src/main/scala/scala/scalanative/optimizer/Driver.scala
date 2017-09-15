@@ -1,7 +1,7 @@
 package scala.scalanative
 package optimizer
 
-import tools.Mode
+import scalanative.tools._
 
 sealed trait Driver {
 
@@ -70,7 +70,15 @@ object Driver {
       case Mode.Debug   => fastOptPasses
       case Mode.Release => fullOptPasses
     }
-    new Impl(injectionPasses ++ optPasses ++ loweringPasses)
+    def prof = config.profileMode match {
+      case NoProfile =>
+        Seq()
+      case UseProfile(file) =>
+        Seq(pass.InlineCaching)
+      case CollectProfile(file) =>
+        Seq(pass.TypeProfiling)
+    }
+    new Impl(injectionPasses ++ optPasses ++ prof ++ loweringPasses)
   }
 
   /** Create an empty pass-lesss driver. */

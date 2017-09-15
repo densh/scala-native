@@ -2,6 +2,7 @@ package scala.scalanative
 package optimizer
 package inject
 
+import scalanative.tools._
 import scala.collection.mutable.Buffer
 import analysis.ClassHierarchy.Top
 import nir._
@@ -9,7 +10,7 @@ import nir._
 /** Introduces `main` function that sets up
  *  the runtime and calls the given entry point.
  */
-class Main(entry: Global) extends Inject {
+class Main(profileMode: ProfileMode, entry: Global) extends Inject {
   import Main._
 
   override def apply(buf: Buffer[Defn]): Unit = {
@@ -30,10 +31,19 @@ class Main(entry: Global) extends Inject {
     val exc    = Val.Local(fresh(), nir.Rt.Object)
     val unwind = Next.Unwind(fresh())
 
-    buf += Defn.Define(
-      Attrs.None,
-      MainName,
-      MainSig,
+    val dumpProfilingInsts: Seq[Inst] = profileMode match {
+      case CollectProfile(file) =>
+        Seq(
+          Inst.Let(
+            Op.Call(DumpLogFileSig,
+                    DumpLogFile,
+                    Seq(Val.String(file.getAbsolutePath)),
+                    Next.None)))
+      case _ =>
+        Seq()
+    }
+
+    val mainInsts =
       Seq(
         Inst.Label(fresh(), Seq(argc, argv)),
         Inst.Let(stackBottom.name, Op.Stackalloc(Type.Ptr, Val.Long(0))),
@@ -47,13 +57,20 @@ class Main(entry: Global) extends Inject {
                  Op.Call(RtInitSig, RtInit, Seq(rt, argc, argv), unwind)),
         Inst.Let(module.name, Op.Module(entry.top, unwind)),
         Inst.Let(Op.Call(entryMainTy, entryMain, Seq(module, arr), unwind)),
-        Inst.Let(Op.Call(RtLoopSig, RtLoop, Seq(module), unwind)),
+        Inst.Let(Op.Call(RtLoopSig, RtLoop, Seq(module), unwind))
+      ) ++ dumpProfilingInsts ++ Seq(
         Inst.Ret(Val.Int(0)),
         Inst.Label(unwind.name, Seq(exc)),
         Inst.Let(
           Op.Call(PrintStackTraceSig, PrintStackTrace, Seq(exc), Next.None)),
         Inst.Ret(Val.Int(1))
       )
+
+    buf += Defn.Define(
+      Attrs.None,
+      MainName,
+      MainSig,
+      mainInsts
     )
 
     buf += Defn.Var(Attrs.None, stackBottomName, Type.Ptr, Val.Null)
@@ -97,6 +114,17 @@ object Main extends InjectCompanion {
 
   val stackBottomName = Global.Top("__stack_bottom")
 
+  val DumpLogFileSig = Type.Function(Seq(nir.Rt.String), Type.Void)
+  val DumpLogFile    = Val.Global(Global.Top("method_call_dump_file"), Type.Ptr)
+  val DumpLogFileDecl =
+    Defn.Declare(Attrs.None, DumpLogFile.name, DumpLogFileSig)
+
+  val DumpLogConsoleSig = Type.Function(Seq(), Type.Void)
+  val DumpLogConsole =
+    Val.Global(Global.Top("method_call_dump_console"), Type.Ptr)
+  val DumpLogConsoleDecl =
+    Defn.Declare(Attrs.None, DumpLogConsole.name, DumpLogConsoleSig)
+
   override val depends =
     Seq(ObjectArray.name,
         Rt.name,
@@ -105,8 +133,8 @@ object Main extends InjectCompanion {
         PrintStackTraceName)
 
   override val injects =
-    Seq(InitDecl)
+    Seq(InitDecl, DumpLogFileDecl, DumpLogConsoleDecl)
 
   override def apply(config: tools.Config, top: Top) =
-    new Main(config.entry)
+    new Main(config.profileMode, config.entry)
 }

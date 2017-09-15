@@ -226,6 +226,12 @@ lazy val tools =
         "org.scalatest" %% "scalatest" % "3.0.0" % "test"
       ),
       fullClasspath in Test := ((fullClasspath in Test) dependsOn setUpTestingCompiler).value,
+      libraryDependencies ++= {
+        if (scalaVersion.value startsWith "2.11")
+          Seq("org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4")
+        else
+          Seq()
+      },
       publishLocal := publishLocal
         .dependsOn(publishLocal in nir)
         .dependsOn(publishLocal in util)
@@ -434,9 +440,10 @@ lazy val sandbox =
     .in(file("sandbox"))
     .settings(noPublishSettings)
     .settings(
-      // nativeOptimizerReporter := OptimizerReporter.toDirectory(
-      //   crossTarget.value),
-      scalaVersion := libScalaVersion
+      nativeOptimizerReporter := OptimizerReporter.toDirectory(
+        crossTarget.value),
+      scalaVersion := libScalaVersion,
+      nativeProfileMode := CollectProfile(file("profile.data"))
     )
     .enablePlugins(ScalaNativePlugin)
 
@@ -446,7 +453,11 @@ lazy val benchmarks =
     .settings(projectSettings)
     .settings(noPublishSettings)
     .settings(
+      nativeProfileMode := CollectProfile(file("profile.data")),
       nativeMode := "release",
+      nativeGC := "boehm",
+      nativeOptimizerReporter := OptimizerReporter.toDirectory(
+        crossTarget.value),
       sourceGenerators in Compile += Def.task {
         val dir = (scalaSource in Compile).value
         val benchmarks = (dir ** "*Benchmark.scala").get

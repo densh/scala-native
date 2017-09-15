@@ -16,6 +16,8 @@ object Main {
 
     println(opts.format.show(results))
 
-    if (success) exit(0) else exit(1)
+    if (!success) {
+      throw new Exception("Some benchmark checks failed.")
+    }
   }
 }

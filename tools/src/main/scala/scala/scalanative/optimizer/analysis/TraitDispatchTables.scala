@@ -11,6 +11,7 @@ class TraitDispatchTables(top: Top) {
   val dispatchVal                           = Val.Global(dispatchName, Type.Ptr)
   var dispatchTy: Type                      = _
   var dispatchDefn: Defn                    = _
+  var dispatchArray: Array[Val]             = _
   var dispatchOffset: mutable.Map[Int, Int] = _
 
   val classHasTraitName       = Global.Top("__class_has_trait")
@@ -113,6 +114,7 @@ class TraitDispatchTables(top: Top) {
 
     dispatchOffset = offsets
     dispatchTy = Type.Ptr
+    dispatchArray = compressed
     dispatchDefn = Defn.Const(Attrs.None, dispatchName, value.ty, value)
   }
 

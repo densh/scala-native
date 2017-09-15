@@ -51,6 +51,15 @@ object ScalaNativePlugin extends AutoPlugin {
 
     val nativeGC =
       settingKey[String]("GC choice, either \"none\", \"boehm\" or \"immix\".")
+
+    val nativeProfileMode =
+      settingKey[ProfileMode]("")
+
+    type ProfileMode = tools.ProfileMode
+    val NoProfile = tools.NoProfile
+    def CollectProfile(file: java.io.File): ProfileMode =
+      tools.CollectProfile(file)
+    def UseProfile(file: java.io.File): ProfileMode = tools.UseProfile(file)
   }
 
   override def globalSettings: Seq[Setting[_]] =

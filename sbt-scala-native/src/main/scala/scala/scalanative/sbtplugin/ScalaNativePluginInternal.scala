@@ -122,7 +122,9 @@ object ScalaNativePluginInternal {
     nativeOptimizerReporter := tools.OptimizerReporter.empty,
     nativeOptimizerReporter in NativeTest := (nativeOptimizerReporter in Test).value,
     nativeGC := "boehm",
-    nativeGC in NativeTest := (nativeGC in Test).value
+    nativeGC in NativeTest := (nativeGC in Test).value,
+    nativeProfileMode := NoProfile,
+    nativeProfileMode in NativeTest := (nativeProfileMode in Test).value
   )
 
   lazy val scalaNativeGlobalSettings: Seq[Setting[_]] = Seq(
@@ -184,6 +186,7 @@ object ScalaNativePluginInternal {
       val classpath = fullClasspath.value.map(_.data).filter(_.exists)
       val entry     = nir.Global.Top(mainClass.toString + "$")
       val cwd       = nativeWorkdir.value
+      val profile   = nativeProfileMode.value
 
       tools.Config.empty
         .withEntry(entry)
@@ -192,6 +195,7 @@ object ScalaNativePluginInternal {
         .withTarget(nativeTarget.value)
         .withMode(mode(nativeMode.value))
         .withLinkStubs(nativeLinkStubs.value)
+        .withProfileMode(profile)
     },
     nativeUnpackLib := {
       val cwd       = nativeWorkdir.value
