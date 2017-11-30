@@ -29,14 +29,14 @@ class Throwable(s: String, private var e: Throwable)
   def fillInStackTrace(): Throwable = {
     val cursor  = stackalloc[scala.Byte](2048)
     val context = stackalloc[scala.Byte](2048)
-    val ip      = stackalloc[CUnsignedLongLong]
+    val startIp = stackalloc[CUnsignedLong](1)
     var buffer  = mutable.ArrayBuffer.empty[StackTraceElement]
 
     unwind.get_context(context)
     unwind.init_local(cursor, context)
     while (unwind.step(cursor) > 0) {
-      unwind.get_reg(cursor, unwind.UNW_REG_IP, ip)
-      buffer += StackTraceElement.cached(cursor, !ip)
+      unwind.get_proc_start_ip(cursor, startIp)
+      buffer += StackTraceElement.cached(cursor, !startIp)
     }
 
     this.stackTrace = buffer.toArray
