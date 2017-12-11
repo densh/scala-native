@@ -9,12 +9,13 @@
 #include "Object.h"
 #include "State.h"
 #include "utils/MathUtils.h"
-#include "Constants.h"
+
+#define INITIAL_HEAP_SIZE (1024 * 1024UL)
 
 void scalanative_collect();
 
 void scalanative_init() {
-    heap = Heap_Create(INITIAL_SMALL_HEAP_SIZE, INITIAL_LARGE_HEAP_SIZE);
+    heap = Heap_Create(INITIAL_HEAP_SIZE);
     stack = Stack_Alloc(INITIAL_STACK_SIZE);
 }
 
