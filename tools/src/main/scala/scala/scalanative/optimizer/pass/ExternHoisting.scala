@@ -7,11 +7,11 @@ import analysis.ClassHierarchyExtractors._
 import nir._
 
 /** Hoists external members from external modules to top-level scope. */
-class ExternHoisting(implicit top: Top) extends Pass {
+class ExternHoisting extends Pass {
   private def stripName(n: Global): Global = {
     val id = n.id
     assert(id.startsWith("extern."))
-    Global.Member(Global.Top("__extern"), id.substring(7)) // strip extern. prefix
+    Global.Top(id.substring(7)) // strip extern. prefix
   }
 
   override def onDefns(defns: Seq[Defn]): Seq[Defn] = {
@@ -34,10 +34,7 @@ class ExternHoisting(implicit top: Top) extends Pass {
   }
 
   override def onVal(value: Val) = value match {
-    case Val.Global(n @ Global.Member(_, id), ty)
-        if id.startsWith("extern.__") =>
-      Val.Global(stripName(n), ty)
-    case Val.Global(n @ Ref(node), ty) if node.attrs.isExtern =>
+    case Val.Global(n @ Global.Member(_, id), ty) if id.startsWith("extern.") =>
       Val.Global(stripName(n), ty)
     case _ =>
       super.onVal(value)
@@ -46,5 +43,5 @@ class ExternHoisting(implicit top: Top) extends Pass {
 
 object ExternHoisting extends PassCompanion {
   override def apply(config: tools.Config, top: Top) =
-    new ExternHoisting()(top)
+    new ExternHoisting
 }

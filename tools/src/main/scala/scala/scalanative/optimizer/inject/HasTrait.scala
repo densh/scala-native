@@ -20,7 +20,7 @@ class HasTrait(implicit top: Top) extends Inject {
     val result           = Val.Local(fresh(), Type.Bool)
 
     Defn.Define(
-      Attrs(isExtern = true, inline = Attr.AlwaysInline),
+      Attrs(inline = Attr.AlwaysInline),
       ClassHasTraitName,
       ClassHasTraitSig,
       Seq(
@@ -42,7 +42,7 @@ class HasTrait(implicit top: Top) extends Inject {
     val result          = Val.Local(fresh(), Type.Bool)
 
     Defn.Define(
-      Attrs(isExtern = true, inline = Attr.AlwaysInline),
+      Attrs(inline = Attr.AlwaysInline),
       TraitHasTraitName,
       TraitHasTraitSig,
       Seq(
@@ -64,13 +64,11 @@ class HasTrait(implicit top: Top) extends Inject {
 }
 
 object HasTrait extends InjectCompanion {
-  val ClassHasTraitName =
-    Global.Member(Global.Top("__extern"), "extern.__check_class_has_trait")
-  val ClassHasTraitSig = Type.Function(Seq(Type.Int, Type.Int), Type.Bool)
+  val ClassHasTraitName = Global.Top("__check_class_has_trait")
+  val ClassHasTraitSig  = Type.Function(Seq(Type.Int, Type.Int), Type.Bool)
 
-  val TraitHasTraitName =
-    Global.Member(Global.Top("__extern"), "extern.__check_trait_has_trait")
-  val TraitHasTraitSig = Type.Function(Seq(Type.Int, Type.Int), Type.Bool)
+  val TraitHasTraitName = Global.Top("__check_trait_has_trait")
+  val TraitHasTraitSig  = Type.Function(Seq(Type.Int, Type.Int), Type.Bool)
 
   override def apply(config: tools.Config, top: Top) =
     new HasTrait()(top)

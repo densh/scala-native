@@ -1077,18 +1077,24 @@ trait NirGenExpr { self: NirGenPhase =>
 
       val array    = genExpr(arrayp)
       def elemcode = genArrayCode(arrayp.tpe)
-      val method =
-        if (code == ARRAY_CLONE) {
-          RuntimeArrayCloneMethod(elemcode)
-        } else if (scalaPrimitives.isArrayGet(code)) {
-          RuntimeArrayApplyMethod(elemcode)
-        } else if (scalaPrimitives.isArraySet(code)) {
-          RuntimeArrayUpdateMethod(elemcode)
-        } else {
-          RuntimeArrayLengthMethod(elemcode)
-        }
 
-      genApplyMethod(method, statically = true, array, argsp)
+      def arrayCall(meth: Symbol): Val =
+        genApplyMethod(meth, statically = true, array, argsp)
+
+      if (code == ARRAY_CLONE) {
+        arrayCall(RuntimeArrayCloneMethod(elemcode))
+      } else if (scalaPrimitives.isArrayGet(code)) {
+        val elem = arrayCall(RuntimeArrayApplyMethod(elemcode))
+        if (elemcode == 'O') {
+          buf.as(genType(app.tpe, box = false), elem)
+        } else {
+          elem
+        }
+      } else if (scalaPrimitives.isArraySet(code)) {
+        arrayCall(RuntimeArrayUpdateMethod(elemcode))
+      } else {
+        arrayCall(RuntimeArrayLengthMethod(elemcode))
+      }
     }
 
     def boxValue(st: SimpleType, value: Val): Val = {

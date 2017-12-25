@@ -7,17 +7,17 @@ import ClassHierarchy._
 import nir._
 
 class VirtualTable(cls: Class,
-                   javaEquals: Method,
-                   javaHashCode: Method,
-                   scalaEquals: Method,
-                   scalaHashCode: Method) {
-  private val entries: mutable.UnrolledBuffer[Method] =
+                   javaEquals: Option[Method],
+                   javaHashCode: Option[Method],
+                   scalaEquals: Option[Method],
+                   scalaHashCode: Option[Method]) {
+  val entries: mutable.UnrolledBuffer[Method] =
     cls.parent.fold {
       mutable.UnrolledBuffer.empty[Method]
     } { parent =>
       parent.vtable.entries.clone
     }
-  private val values: mutable.UnrolledBuffer[Val] =
+  val values: mutable.UnrolledBuffer[Val] =
     cls.parent.fold {
       mutable.UnrolledBuffer.empty[Val]
     } { parent =>
@@ -36,16 +36,16 @@ class VirtualTable(cls: Class,
         .collect {
           case ovmeth if ovmeth.inClass =>
             values(index(ovmeth)) = meth.value
-            if (ovmeth eq javaEquals) {
+            if (javaEquals.fold(false)(_ eq ovmeth)) {
               javaEqualsOverride = Some(meth.value)
             }
-            if (ovmeth eq javaHashCode) {
+            if (javaHashCode.fold(false)(_ eq ovmeth)) {
               javaHashCodeOverride = Some(meth.value)
             }
-            if (ovmeth eq scalaEquals) {
+            if (scalaEquals.fold(false)(_ eq ovmeth)) {
               scalaEqualsOverride = Some(meth.value)
             }
-            if (ovmeth eq scalaHashCode) {
+            if (scalaHashCode.fold(false)(_ eq ovmeth)) {
               scalaHashCodeOverride = Some(meth.value)
             }
         }
@@ -60,11 +60,11 @@ class VirtualTable(cls: Class,
     // We short-circuit scala_== and scala_## to immeditately point to the
     // equals and hashCode implementation for the reference types to avoid
     // double virtual dispatch overhead.
-    if (javaEqualsOverride.nonEmpty && scalaEqualsOverride.isEmpty) {
-      values(index(scalaEquals)) = javaEqualsOverride.get
+    if (scalaEquals.nonEmpty && javaEqualsOverride.nonEmpty && scalaEqualsOverride.isEmpty) {
+      values(index(scalaEquals.get)) = javaEqualsOverride.get
     }
-    if (javaHashCodeOverride.nonEmpty && scalaHashCodeOverride.isEmpty) {
-      values(index(scalaHashCode)) = javaHashCodeOverride.get
+    if (scalaHashCode.nonEmpty && javaHashCodeOverride.nonEmpty && scalaHashCodeOverride.isEmpty) {
+      values(index(scalaHashCode.get)) = javaHashCodeOverride.get
     }
   }
   val ty: Type =
@@ -80,4 +80,6 @@ class VirtualTable(cls: Class,
       .getOrElse {
         entries.indexOf(meth)
       }
+  def at(index: Int): Val =
+    values(index)
 }

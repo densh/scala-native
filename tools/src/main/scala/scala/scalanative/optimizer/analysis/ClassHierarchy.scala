@@ -34,6 +34,9 @@ object ClassHierarchy {
                     val traitNames: Seq[Global])
       extends Scope {
     val traits = mutable.UnrolledBuffer.empty[Trait]
+
+    def is(trt: Trait): Boolean =
+      this.id == trt.id || traits.exists(_.is(trt))
   }
 
   final class Class(val attrs: Attrs,
@@ -51,21 +54,29 @@ object ClassHierarchy {
     var vtable: VirtualTable   = _
     var layout: FieldLayout    = _
     var dynmap: DynamicHashMap = _
+
+    def is(cls: Class): Boolean =
+      id == cls.id || parent.exists(_.is(cls))
+
+    def is(trt: Trait): Boolean =
+      traits.exists(_.is(trt)) || parent.exists(_.is(trt))
   }
 
   final class Method(val attrs: Attrs,
                      val name: Global,
                      val ty: nir.Type,
-                     val isConcrete: Boolean)
+                     val insts: Seq[Inst])
       extends Node {
     val overrides = mutable.UnrolledBuffer.empty[Method]
     val overriden = mutable.UnrolledBuffer.empty[Method]
     val value =
       if (isConcrete) Val.Global(name, Type.Ptr)
       else Val.Null
-    def isVirtual =
+    def isConcrete: Boolean =
+      insts.nonEmpty
+    def isVirtual: Boolean =
       !isConcrete || overriden.nonEmpty
-    def isStatic =
+    def isStatic: Boolean =
       !isVirtual
   }
 
@@ -130,12 +141,10 @@ object ClassHierarchy {
         enter(defn.name, new Field(defn.attrs, defn.name, defn.ty))
 
       case defn: Defn.Declare =>
-        enter(defn.name,
-              new Method(defn.attrs, defn.name, defn.ty, isConcrete = false))
+        enter(defn.name, new Method(defn.attrs, defn.name, defn.ty, Seq.empty))
 
       case defn: Defn.Define =>
-        enter(defn.name,
-              new Method(defn.attrs, defn.name, defn.ty, isConcrete = true))
+        enter(defn.name, new Method(defn.attrs, defn.name, defn.ty, defn.insts))
 
       case defn: Defn.Struct =>
         enter(defn.name, new Struct(defn.attrs, defn.name, defn.tys))
@@ -200,10 +209,11 @@ object ClassHierarchy {
                       dyns = dyns)
     top.members ++= nodes.values
 
-    val javaEquals    = nodes(javaEqualsName).asInstanceOf[Method]
-    val javaHashCode  = nodes(javaHashCodeName).asInstanceOf[Method]
-    val scalaEquals   = nodes(scalaEqualsName).asInstanceOf[Method]
-    val scalaHashCode = nodes(scalaHashCodeName).asInstanceOf[Method]
+    val javaEquals   = nodes.get(javaEqualsName).map(_.asInstanceOf[Method])
+    val javaHashCode = nodes.get(javaHashCodeName).map(_.asInstanceOf[Method])
+    val scalaEquals  = nodes.get(scalaEqualsName).map(_.asInstanceOf[Method])
+    val scalaHashCode = nodes.get(scalaHashCodeName) map (_.asInstanceOf[
+      Method])
 
     def assignMethodIds(): Unit = {
       var id = 0
@@ -238,10 +248,14 @@ object ClassHierarchy {
     }
 
     def completeFields(): Unit = fields.foreach { node =>
-      val owner = nodes(node.name.top).asInstanceOf[Class]
-      node.in = owner
-      owner.members += node
-      owner.fields += node
+      if (node.name.isTop) {
+        node.in = top
+      } else {
+        val owner = nodes(node.name.top).asInstanceOf[Class]
+        node.in = owner
+        owner.members += node
+        owner.fields += node
+      }
     }
 
     def completeTraits(): Unit =

@@ -12,18 +12,21 @@ class TraitDispatchTables(top: Top) {
   var dispatchTy: Type                      = _
   var dispatchDefn: Defn                    = _
   var dispatchOffset: mutable.Map[Int, Int] = _
+  var dispatchArray: Array[Val]             = _
 
   val classHasTraitName       = Global.Top("__class_has_trait")
   val classHasTraitVal        = Val.Global(classHasTraitName, Type.Ptr)
   var classHasTraitTy: Type   = _
   var classHasTraitDefn: Defn = _
 
+  var classHasTraitTable: Array[Array[Boolean]] = _
+
   val traitHasTraitName       = Global.Top("__trait_has_trait")
   val traitHasTraitVal        = Val.Global(traitHasTraitName, Type.Ptr)
   var traitHasTraitTy: Type   = _
   var traitHasTraitDefn: Defn = _
 
-  val (traitInlineSigs, traitDispatchSigs) = {
+  val (traitInlineSigs, traitDispatchSigs, traitDispatchImpls) = {
     // Collect signatures of trait methods
     val methods = top.methods.filter(_.inTrait)
     val sigs    = mutable.Set.empty[String]
@@ -58,16 +61,17 @@ class TraitDispatchTables(top: Top) {
           (sig, impls.head)
         }
     }
-    val tableImpls = impls.toSeq
-      .collect {
-        case (sig, impls) if impls.size > 1 =>
-          sig
-      }
+    val tableImpls = impls.filter {
+      case (sig, impls) =>
+        impls.size > 1
+    }
+    val tableSigs = tableImpls.toSeq
+      .map { case (sig, _) => sig }
       .sorted
       .zipWithIndex
       .toMap
 
-    (inlineImpls, tableImpls)
+    (inlineImpls, tableSigs, tableImpls)
   }
 
   def initDispatch(): Unit = {
@@ -147,6 +151,7 @@ class TraitDispatchTables(top: Top) {
     dispatchOffset = offsets
     dispatchTy = Type.Ptr
     dispatchDefn = Defn.Const(Attrs.None, dispatchName, value.ty, value)
+    dispatchArray = compressed
   }
 
   def markTraits(row: Array[Boolean], cls: Class): Unit = {
@@ -163,9 +168,11 @@ class TraitDispatchTables(top: Top) {
   }
 
   def initClassHasTrait(): Unit = {
+    val rows = new Array[Array[Boolean]](top.classes.length)
     val columns = top.classes.sortBy(_.id).map { cls =>
       val row = new Array[Boolean](top.traits.length)
       markTraits(row, cls)
+      rows(cls.id) = row
       Val.Array(Type.Bool, row.map(Val.Bool))
     }
     val table = Val.Array(Type.Array(Type.Bool, top.traits.length), columns)
@@ -173,6 +180,7 @@ class TraitDispatchTables(top: Top) {
     classHasTraitTy = table.ty
     classHasTraitDefn =
       Defn.Const(Attrs.None, classHasTraitName, table.ty, table)
+    classHasTraitTable = rows
   }
 
   def initTraitHasTrait(): Unit = {

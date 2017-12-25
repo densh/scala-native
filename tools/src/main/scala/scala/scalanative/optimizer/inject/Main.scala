@@ -47,7 +47,7 @@ class Main(entry: Global) extends Inject {
                  Op.Call(RtInitSig, RtInit, Seq(rt, argc, argv), unwind)),
         Inst.Let(module.name, Op.Module(entry.top, unwind)),
         Inst.Let(Op.Call(entryMainTy, entryMain, Seq(module, arr), unwind)),
-        Inst.Let(Op.Call(RtLoopSig, RtLoop, Seq(module), unwind)),
+        Inst.Let(Op.Call(RtLoopSig, RtLoop, Seq(rt), unwind)),
         Inst.Ret(Val.Int(0)),
         Inst.Label(unwind.name, Seq(exc)),
         Inst.Let(

@@ -22,7 +22,10 @@ object Show {
   def apply(v: Global): String = {
     val b = newBuilder; b.global_(v); b.toString
   }
-  def apply(v: Inst): String  = { val b = newBuilder; b.inst_(v); b.toString }
+  def apply(v: Inst): String = { val b = newBuilder; b.inst_(v); b.toString }
+  def apply(v: Seq[Inst]): String = {
+    val b = newBuilder; b.insts_(v); b.toString
+  }
   def apply(v: Local): String = { val b = newBuilder; b.local_(v); b.toString }
   def apply(v: Next): String  = { val b = newBuilder; b.next_(v); b.toString }
   def apply(v: Op): String    = { val b = newBuilder; b.op_(v); b.toString }
@@ -479,19 +482,8 @@ object Show {
         global_(name)
         str(" : ")
         type_(ty)
-        str(" {")
-        rep(insts) {
-          case inst: Inst.Label =>
-            newline()
-            inst_(inst)
-          case inst =>
-            indent()
-            newline()
-            inst_(inst)
-            unindent()
-        }
-        newline()
-        str("}")
+        str(" ")
+        insts_(insts)
       case Defn.Struct(attrs, name, tys) =>
         attrs_(attrs)
         str("struct ")
@@ -525,6 +517,22 @@ object Show {
           str(" : ")
           rep(parents, sep = ", ")(global_)
         }
+    }
+
+    def insts_(insts: Seq[Inst]): Unit = {
+      str("{")
+      rep(insts) {
+        case inst: Inst.Label =>
+          newline()
+          inst_(inst)
+        case inst =>
+          indent()
+          newline()
+          inst_(inst)
+          unindent()
+      }
+      newline()
+      str("}")
     }
 
     def type_(ty: Type): Unit = ty match {
