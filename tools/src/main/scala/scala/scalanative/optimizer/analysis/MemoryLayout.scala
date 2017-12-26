@@ -32,13 +32,11 @@ object MemoryLayout {
   final case class Padding(size: Long, offset: Long) extends PositionedType
 
   def sizeOf(ty: Type): Long = ty match {
-    case primitive: Type.Primitive => math.max(primitive.width / WORD_SIZE, 1)
-    case Type.Array(arrTy, n)      => sizeOf(arrTy) * n
-    case Type.Struct(_, tys)       => MemoryLayout(tys).size
-    case Type.Nothing | Type.Ptr | _: Type.Trait | _: Type.Module |
-        _: Type.Class =>
-      8
-    case _ => unsupported(s"sizeOf $ty")
+    case primitive: Type.Primitive  => math.max(primitive.width / WORD_SIZE, 1)
+    case Type.Array(arrTy, n)       => sizeOf(arrTy) * n
+    case Type.Struct(_, tys)        => MemoryLayout(tys).size
+    case Type.Ptr | _: Type.RefKind => 8
+    case _                          => unsupported(s"sizeOf $ty")
   }
 
   def apply(tys: Seq[Type]): MemoryLayout = {

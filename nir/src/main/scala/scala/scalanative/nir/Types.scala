@@ -45,7 +45,7 @@ sealed abstract class Type {
       case nir.Type.Unit            => sb.str("unit")
       case nir.Type.Class(name)     => printGlobal(name)
       case nir.Type.Trait(name)     => printGlobal(name)
-      case nir.Type.Module(name)    => printGlobal(name)
+      case nir.Type.Exact(name)     => sb.str("!"); printGlobal(name)
     }
 
     def printGlobal(global: nir.Global): Unit = global match {
@@ -113,11 +113,11 @@ object Type {
 
   final case object Nothing extends Type
 
-  sealed abstract class RefKind         extends Type
-  final case object Unit                extends RefKind
-  final case class Class(name: Global)  extends RefKind with Named
-  final case class Trait(name: Global)  extends RefKind with Named
-  final case class Module(name: Global) extends RefKind with Named
+  sealed abstract class RefKind        extends Type
+  final case object Unit               extends RefKind
+  final case class Class(name: Global) extends RefKind with Named
+  final case class Trait(name: Global) extends RefKind with Named
+  final case class Exact(name: Global) extends RefKind with Named
 
   val unbox = Map[Type, Type](
     Type.Class(Global.Top("java.lang.Boolean"))               -> Type.Bool,

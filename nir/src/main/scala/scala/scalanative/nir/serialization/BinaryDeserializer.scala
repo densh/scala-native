@@ -290,7 +290,7 @@ final class BinaryDeserializer(_buffer: => ByteBuffer) {
     case T.NothingType => Type.Nothing
     case T.ClassType   => Type.Class(getGlobal)
     case T.TraitType   => Type.Trait(getGlobal)
-    case T.ModuleType  => Type.Module(getGlobal)
+    case T.ExactType   => Type.Exact(getGlobal)
   }
 
   private def getVals(): Seq[Val] = getSeq(getVal)

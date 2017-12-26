@@ -580,8 +580,8 @@ object Show {
       case Type.Trait(name) =>
         str("trait ")
         global_(name)
-      case Type.Module(name) =>
-        str("module ")
+      case Type.Exact(name) =>
+        str("exact ")
         global_(name)
     }
 

@@ -114,8 +114,8 @@ class ModuleLowering(implicit top: Top) extends Pass {
   }
 
   override def onType(ty: Type): Type = ty match {
-    case Type.Module(n) => Type.Class(n)
-    case _              => super.onType(ty)
+    case Type.Exact(n) => Type.Class(n)
+    case _             => super.onType(ty)
   }
 
   def isStaticModule(name: Global): Boolean =

@@ -111,7 +111,7 @@ trait NirGenType { self: NirGenPhase =>
     case ArrayClass =>
       genRefType(RuntimeArrayClass(genPrimCode(st.targs.head)))
     case _ if st.isStruct      => genStruct(st)
-    case _ if st.isScalaModule => nir.Type.Module(genTypeName(st.sym))
+    case _ if st.isScalaModule => nir.Type.Exact(genTypeName(st.sym))
     case _ if st.isInterface   => nir.Type.Trait(genTypeName(st.sym))
     case _                     => nir.Type.Class(genTypeName(st.sym))
   }

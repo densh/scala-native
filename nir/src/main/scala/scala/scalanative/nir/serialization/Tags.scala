@@ -187,7 +187,7 @@ object Tags {
   final val NothingType  = 1 + UnitType
   final val ClassType    = 1 + NothingType
   final val TraitType    = 1 + ClassType
-  final val ModuleType   = 1 + TraitType
+  final val ExactType    = 1 + TraitType
 
   // Values
 

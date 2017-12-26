@@ -37,8 +37,8 @@ object Type extends Base[nir.Type] {
   val Nothing = P("nothing".! map (_ => nir.Type.Nothing))
   val Class   = P("class" ~ Global.parser map (nir.Type.Class(_)))
   val Trait   = P("trait" ~ Global.parser map (nir.Type.Trait(_)))
-  val Module  = P("module" ~ Global.parser map (nir.Type.Module(_)))
+  val Exact   = P("exact" ~ Global.parser map (nir.Type.Exact(_)))
 
   override val parser: P[nir.Type] =
-    None | Void | Vararg | Ptr | Bool | Byte | Short | Int | Long | Float | Double | Array | Function | NoneStruct | Struct | Unit | Nothing | Class | Trait | Module
+    None | Void | Vararg | Ptr | Bool | Byte | Short | Int | Long | Float | Double | Array | Function | NoneStruct | Struct | Unit | Nothing | Class | Trait | Exact
 }

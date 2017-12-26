@@ -15,7 +15,7 @@ class Main(entry: Global) extends Inject {
   override def apply(buf: Buffer[Defn]): Unit = {
     implicit val fresh = Fresh()
     val entryMainTy =
-      Type.Function(Seq(Type.Module(entry.top), ObjectArray), Type.Void)
+      Type.Function(Seq(Type.Exact(entry.top), ObjectArray), Type.Void)
     val entryMainName =
       Global.Member(entry, "main_scala.scalanative.runtime.ObjectArray_unit")
     val entryMain = Val.Global(entryMainName, Type.Ptr)
@@ -24,7 +24,7 @@ class Main(entry: Global) extends Inject {
 
     val argc   = Val.Local(fresh(), Type.Int)
     val argv   = Val.Local(fresh(), Type.Ptr)
-    val module = Val.Local(fresh(), Type.Module(entry.top))
+    val module = Val.Local(fresh(), Type.Exact(entry.top))
     val rt     = Val.Local(fresh(), Rt)
     val arr    = Val.Local(fresh(), ObjectArray)
     val exc    = Val.Local(fresh(), nir.Rt.Object)
@@ -66,7 +66,7 @@ object Main extends InjectCompanion {
     Type.Class(Global.Top("scala.scalanative.runtime.ObjectArray"))
 
   val Rt =
-    Type.Module(Global.Top("scala.scalanative.runtime.package$"))
+    Type.Exact(Global.Top("scala.scalanative.runtime.package$"))
   val RtInitSig =
     Type.Function(Seq(Rt, Type.Int, Type.Ptr), ObjectArray)
   val RtInit =

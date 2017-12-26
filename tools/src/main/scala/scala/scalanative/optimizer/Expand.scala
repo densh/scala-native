@@ -36,7 +36,7 @@ class Expand(implicit top: Top) {
 
     /** Returns a new name for the expandsion of a method with given types. */
     def expandedName: Global = {
-      val suffix = argtys.map(_.mangled).mkString("<",";",">")
+      val suffix = argtys.map(_.mangled).mkString("<", ";", ">")
       name match {
         case Global.Top(id)        => Global.Top(id + suffix)
         case Global.Member(in, id) => Global.Member(in, id + suffix)
@@ -59,13 +59,6 @@ class Expand(implicit top: Top) {
     out
   }
 
-  def singleInhabited(ty: Type): Boolean = ty match {
-    case ClassRef(cls) if cls.range.size == 1 =>
-      true
-    case _ =>
-      false
-  }
-
   def classWithTraitCount(trtName: Global): Int = {
     val trtId = top.nodes(trtName).asInstanceOf[Trait].id
     val table = top.tables.classHasTraitTable
@@ -86,6 +79,18 @@ class Expand(implicit top: Top) {
       Some(ty2)
     case (TraitRef(_), ty2) if ty2 == Rt.Object =>
       Some(ty1)
+    case (ScopeRef(scope), Type.Exact(ClassRef(cls))) =>
+      if (cls.is(scope)) {
+        Some(ty2)
+      } else {
+        None
+      }
+    case (Type.Exact(ClassRef(cls)), ScopeRef(scope)) =>
+      if (cls.is(scope)) {
+        Some(ty1)
+      } else {
+        None
+      }
     case (ClassRef(cls1), ClassRef(cls2)) =>
       if (cls1.id == cls2.id) {
         Some(ty1)
@@ -170,7 +175,9 @@ class Expand(implicit top: Top) {
     }
   }
 
-  def expandInsts(expName: Global, insts: Seq[Inst], argtys: Seq[Type]): Seq[nir.Inst] = {
+  def expandInsts(expName: Global,
+                  insts: Seq[Inst],
+                  argtys: Seq[Type]): Seq[nir.Inst] = {
     val env   = mutable.Map.empty[Local, State]
     val fresh = nir.Fresh(insts)
     val buf   = new nir.Buffer()(fresh)
@@ -178,12 +185,19 @@ class Expand(implicit top: Top) {
     def known(v: Val): State = v match {
       case Val.Local(name, _)  => env(name)
       case Val.Global(name, _) => GlobalOf(name)
-      case _                   => HasType(v.ty)
+      case _                   => HasType(exactify(v.ty))
     }
 
     def withTy(v: Val, ty: Type): Val = v match {
       case Val.Local(name, _) => Val.Local(name, ty)
       case _                  => v
+    }
+
+    def exactify(ty: Type): Type = ty match {
+      case ClassRef(cls) if cls.range.size == 1 =>
+        Type.Exact(cls.name)
+      case _ =>
+        ty
     }
 
     val cfg = ControlFlow.Graph(insts)
@@ -210,11 +224,10 @@ class Expand(implicit top: Top) {
           known(func) match {
             case GlobalOf(methName) =>
               val expansion = enqueue(methName, argtys).get
-              val expanded = Val.Global(expansion.expandedName, Type.Ptr)
+              val expanded  = Val.Global(expansion.expandedName, Type.Ptr)
               buf.let(name, Op.Call(sig, expanded, args, unwind))
 
             case MethodOf(obj, methName) =>
-              val single     = singleInhabited(known(obj).ty)
               val impls      = resolveMethod(known(obj).ty, methName)
               val expansions = impls.flatMap(impl => enqueue(impl.name, argtys))
 
@@ -227,7 +240,8 @@ class Expand(implicit top: Top) {
                   buf.let(name, Op.Call(sig, expanded, args, unwind))
                 case expansions =>
                   val expandedName = enqueue(methName, argtys).get.expandedName
-                  val meth         = buf.method(withTy(obj, known(obj).ty), expandedName)
+                  val meth =
+                    buf.method(withTy(obj, known(obj).ty), expandedName)
                   buf.let(name, Op.Call(sig, meth, args, unwind))
               }
 
@@ -240,7 +254,7 @@ class Expand(implicit top: Top) {
             case Op.Method(obj, meth) =>
               env(name) = MethodOf(obj, meth)
             case _ =>
-              env(name) = HasType(op.resty)
+              env(name) = HasType(exactify(op.resty))
               buf += inst
           }
 
@@ -266,18 +280,20 @@ class Expand(implicit top: Top) {
       if (meth.isStatic) {
         add(Val.Global(methName, Type.Ptr))
       } else {
-        def loop(cls: Class): Unit = {
+        def addExactClass(cls: Class): Unit =
           add(cls.vtable.at(cls.vtable.index(meth)))
-          cls.subclasses.foreach(loop)
+        def addWithSubclasses(cls: Class): Unit = {
+          addExactClass(cls)
+          cls.subclasses.foreach(addWithSubclasses)
         }
-        val clsName = ty match {
-          case Type.Class(name)  => name
-          case Type.Module(name) => name
-          case Type.Trait(_)     => Rt.Object.name
-          case _                 => util.unreachable
+        def classWithName(clsName: Global): Class =
+          top.nodes(clsName).asInstanceOf[Class]
+        ty match {
+          case Type.Exact(name) => addExactClass(classWithName(name))
+          case Type.Class(name) => addWithSubclasses(classWithName(name))
+          case Type.Trait(_)    => addWithSubclasses(classWithName(Rt.Object.name))
+          case _                => util.unreachable
         }
-        val cls = top.nodes(clsName).asInstanceOf[Class]
-        loop(cls)
       }
     } else if (meth.inTrait) {
       val sig = meth.name.id
@@ -286,7 +302,7 @@ class Expand(implicit top: Top) {
         add(top.tables.traitInlineSigs(sig))
       } else {
         ty match {
-          case ClassRef(cls) if cls.range.size == 1 =>
+          case Type.Exact(ClassRef(cls)) =>
             val sigid  = top.tables.traitDispatchSigs(sig)
             val offset = top.tables.dispatchOffset(sigid)
             add(top.tables.dispatchArray(offset + cls.range.start))

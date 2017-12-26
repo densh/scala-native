@@ -14,13 +14,13 @@ class BoxingLowering extends Pass {
       val (module, id) = BoxingLowering.BoxTo(ty)
 
       val boxTy =
-        Type.Function(Seq(Type.Module(module), Type.unbox(ty)), ty)
+        Type.Function(Seq(Type.Exact(module), Type.unbox(ty)), ty)
 
       Inst.Let(name,
                Op.Call(boxTy,
                        Val.Global(Global.Member(module, id), Type.Ptr),
                        Seq(
-                         Val.Undef(Type.Module(module)),
+                         Val.Undef(Type.Exact(module)),
                          from
                        ),
                        Next.None))
@@ -29,13 +29,13 @@ class BoxingLowering extends Pass {
       val (module, id) = BoxingLowering.UnboxTo(ty)
 
       val unboxTy =
-        Type.Function(Seq(Type.Module(module), ty), Type.unbox(ty))
+        Type.Function(Seq(Type.Exact(module), ty), Type.unbox(ty))
 
       Inst.Let(name,
                Op.Call(unboxTy,
                        Val.Global(Global.Member(module, id), Type.Ptr),
                        Seq(
-                         Val.Undef(Type.Module(module)),
+                         Val.Undef(Type.Exact(module)),
                          from
                        ),
                        Next.None))

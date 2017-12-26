@@ -113,7 +113,7 @@ trait NirGenName { self: NirGenPhase =>
       case nir.Type.Unit            => sb.str("unit")
       case nir.Type.Class(name)     => printGlobal(name)
       case nir.Type.Trait(name)     => printGlobal(name)
-      case nir.Type.Module(name)    => printGlobal(name)
+      case nir.Type.Exact(name)     => sb.str("!"); printGlobal(name)
     }
 
     def printGlobal(global: nir.Global): Unit = global match {

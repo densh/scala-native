@@ -60,6 +60,12 @@ object ClassHierarchy {
 
     def is(trt: Trait): Boolean =
       traits.exists(_.is(trt)) || parent.exists(_.is(trt))
+
+    def is(scope: Scope): Boolean = scope match {
+      case cls: Class => is(cls)
+      case trt: Trait => is(trt)
+      case _          => util.unreachable
+    }
   }
 
   final class Method(val attrs: Attrs,

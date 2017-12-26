@@ -18,11 +18,11 @@ sealed abstract class Op {
     case Op.Conv(_, ty, _)                       => ty
     case Op.Select(_, v, _)                      => v.ty
 
-    case Op.Classalloc(n)     => Type.Class(n)
+    case Op.Classalloc(n)     => Type.Exact(n)
     case Op.Field(_, _)       => Type.Ptr
     case Op.Method(_, _)      => Type.Ptr
     case Op.Dynmethod(_, _)   => Type.Ptr
-    case Op.Module(n, _)      => Type.Module(n)
+    case Op.Module(n, _)      => Type.Exact(n)
     case Op.As(ty, _)         => ty
     case Op.Is(_, _)          => Type.Bool
     case Op.Copy(v)           => v.ty
