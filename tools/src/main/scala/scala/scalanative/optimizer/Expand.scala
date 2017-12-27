@@ -30,15 +30,20 @@ class Expand(implicit top: Top) {
     }
 
     /** Returns a new name for the expandsion of a method with given types. */
-    def expandedName: Global = {
-      val suffix = argtys.map(_.mangled).mkString("<", ";", ">")
-      name match {
-        case Global.Top(id) => Global.Top(id + suffix)
-        case Global.Member(in, id) =>
-          Global.Member(in, id + suffix)
-        case _ => util.unreachable
+    def expandedName: Global =
+      if (name.isTop) {
+        name
+      } else {
+        val suffix = argtys.map(_.mangled).mkString("<", ";", ">")
+        name match {
+          case Global.Top(id) =>
+            Global.Top(id + suffix)
+          case Global.Member(in, id) =>
+            Global.Member(in, id + suffix)
+          case _ =>
+            util.unreachable
+        }
       }
-    }
 
     /** Original method. */
     def meth: Method = top.nodes(name).asInstanceOf[Method]
@@ -198,15 +203,15 @@ class Expand(implicit top: Top) {
   }
 
   def shortCircuit(expand: Expand): Result =
-    if (!results.contains(expand)) {
+    if (results.contains(expand)) {
+      results(expand)
+    } else {
       //println(s"short circuiting ${expand.expandedName}")
       val Type.Function(_, retty) = expand.meth.ty
       val sig                     = Type.Function(expand.argtys, retty)
       val res                     = new Result(expand.expandedName, sig)
       results(expand) = res
       res
-    } else {
-      results(expand)
     }
 
   def request(expand: Expand): Option[Result] =
@@ -425,30 +430,33 @@ class Expand(implicit top: Top) {
       // println(s"completing ${expand.expandedName.show}")
 
       val meth  = expand.meth
-      val name  = expand.expandedName
       val attrs = meth.attrs.copy(overrides = Seq.empty)
-      val retty =
-        if (insts.isEmpty) {
-          val Type.Function(_, origRetty) = meth.ty
-          origRetty
+      val name  = expand.expandedName
+      val sig =
+        if (results.contains(expand)) {
+          results(expand).sig
         } else {
-          val retvals = insts.collect {
-            case Inst.Ret(v) => v.ty
-          }
-          retvals match {
-            case Seq() =>
-              Type.Nothing
-            case Seq(ty) =>
-              ty
-            case head +: tail =>
-              tail.foldLeft[Type](head)(top.lub)
-          }
+          val retty =
+            if (insts.isEmpty) {
+              val Type.Function(_, origRetty) = meth.ty
+              origRetty
+            } else {
+              val retvals = insts.collect {
+                case Inst.Ret(v) => v.ty
+              }
+              retvals match {
+                case Seq() =>
+                  Type.Nothing
+                case Seq(ty) =>
+                  ty
+                case head +: tail =>
+                  tail.foldLeft[Type](head)(top.lub)
+              }
+            }
+          val res = new Result(name, Type.Function(expand.argtys, retty))
+          results(expand) = res
+          res.sig
         }
-      val sig = Type.Function(expand.argtys, retty)
-
-      if (!results.contains(expand)) {
-        results(expand) = new Result(name, sig)
-      }
 
       done(expand) = if (insts.isEmpty) {
         Defn.Declare(attrs, name, sig)

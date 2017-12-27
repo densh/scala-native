@@ -49,7 +49,12 @@ object CodeGen {
       }
 
       def release(): Unit = {
-        val sorted = assembly.sortBy(_.name.show)
+        val sorted = assembly.sortBy(_.name.show).filter {
+          case Defn.Declare(_, Global.Top(name), _) =>
+            name != "__check_class_has_trait" && name != "__check_trait_has_trait"
+          case _ =>
+            true
+        }
         val impl   = new Impl(config.target, env, sorted, workdir)
         val buffer = impl.gen()
         buffer.flip

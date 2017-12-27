@@ -42,7 +42,6 @@ class AllocLowering(implicit top: Top) extends Pass {
 }
 
 object AllocLowering extends PassCompanion {
-
   val LARGE_OBJECT_MIN_SIZE = 8192
 
   val allocSig = Type.Function(Seq(Type.Ptr, Type.Long), Type.Ptr)
