@@ -57,6 +57,7 @@ object ClassHierarchy {
     var vtable: VirtualTable   = _
     var layout: FieldLayout    = _
     var dynmap: DynamicHashMap = _
+    var allocated: Boolean     = _
 
     def is(cls: Class): Boolean =
       id == cls.id || parent.exists(_.is(cls))
@@ -179,6 +180,8 @@ object ClassHierarchy {
         None
       case (Type.Char, Type.Short) | (Type.Short, Type.Char) =>
         Some(Type.Char)
+      case (Type.Nothing, _) | (_, Type.Nothing) =>
+        Some(Type.Nothing)
       case _ =>
         util.unsupported(s"glb(${ty1.show}, ${ty2.show})")
     }
@@ -351,6 +354,14 @@ object ClassHierarchy {
           val ovmeth = nodes(name).asInstanceOf[Method]
           meth.overrides += ovmeth
           ovmeth.overriden += meth
+        }
+        meth.insts.foreach {
+          case Inst.Let(_, Op.Classalloc(name)) =>
+            nodes(name).asInstanceOf[Class].allocated = true
+          case Inst.Let(_, Op.Module(name, _)) =>
+            nodes(name).asInstanceOf[Class].allocated = true
+          case _ =>
+            ()
         }
       }
     }

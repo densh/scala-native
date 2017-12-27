@@ -35,10 +35,10 @@ object Optimizer {
 
     val injects    = driver.passes.filter(_.isInjectionPass)
     val transforms = driver.passes.filterNot(_.isInjectionPass)
+    val world      = analysis.ClassHierarchy(assembly, dyns)
 
     val injected = {
-      val world = analysis.ClassHierarchy(assembly, dyns)
-      val buf   = mutable.UnrolledBuffer.empty[Defn]
+      val buf = mutable.UnrolledBuffer.empty[Defn]
       buf ++= assembly
       injects.foreach { make =>
         make(config, world) match {
@@ -51,21 +51,12 @@ object Optimizer {
     }
 
     val expandedMethods = Expand(injected, dyns, inject.Main.MainName)
-
-    val out = new java.io.PrintWriter("out.hnir")
+    val out             = new java.io.PrintWriter("out.hnir")
     expandedMethods.foreach { defn =>
       out.write(defn.show)
       out.write("\n\n")
     }
     out.close
-
-    val nonMethods = injected.filter {
-      case _: Defn.Define  => false
-      case _: Defn.Declare => false
-      case _               => true
-    }
-    val expanded = nonMethods ++ expandedMethods
-    val world    = analysis.ClassHierarchy(expanded, dyns)
 
     def loop(batchId: Int,
              batchDefns: Seq[Defn],
@@ -83,7 +74,7 @@ object Optimizer {
           loop(batchId, passResult, rest)
       }
 
-    partition(expanded).par
+    partition(injected).par
       .map {
         case (batchId, batchDefns) =>
           onStart(batchId, batchDefns)
