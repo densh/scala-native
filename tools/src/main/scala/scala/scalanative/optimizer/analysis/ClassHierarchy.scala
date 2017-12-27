@@ -54,10 +54,11 @@ object ClassHierarchy {
 
     var parent: Option[Class]  = _
     var range: Range           = _
-    var vtable: VirtualTable   = _
     var layout: FieldLayout    = _
     var dynmap: DynamicHashMap = _
     var allocated: Boolean     = _
+    var vtable: VirtualTable   = _
+    var vtree: VirtualTree     = _
 
     def is(cls: Class): Boolean =
       id == cls.id || parent.exists(_.is(cls))
@@ -76,6 +77,15 @@ object ClassHierarchy {
       case trt: Trait => glb(trt)
       case _          => util.unreachable
     }
+
+    def isVirtual(sig: String): Boolean =
+      vtree.isVirtual(sig)
+
+    def respondsTo(sig: String): Boolean =
+      vtree.exact.contains(sig)
+
+    def respond(sig: String): Val =
+      vtree.exact(sig)
   }
 
   final class Method(val attrs: Attrs,
@@ -83,17 +93,13 @@ object ClassHierarchy {
                      val ty: nir.Type,
                      val insts: Seq[Inst])
       extends Node {
-    val overrides = mutable.UnrolledBuffer.empty[Method]
-    val overriden = mutable.UnrolledBuffer.empty[Method]
     val value =
       if (isConcrete) Val.Global(name, Type.Ptr)
       else Val.Null
     def isConcrete: Boolean =
       insts.nonEmpty
     def isVirtual: Boolean =
-      !isConcrete || overriden.nonEmpty
-    def isStatic: Boolean =
-      !isVirtual
+      in.asInstanceOf[Class].isVirtual(name.id)
   }
 
   final class Field(val attrs: Attrs, val name: Global, val ty: nir.Type)
@@ -350,11 +356,6 @@ object ClassHierarchy {
         meth.in = owner
         owner.members += meth
         owner.methods += meth
-        meth.attrs.overrides.foreach { name =>
-          val ovmeth = nodes(name).asInstanceOf[Method]
-          meth.overrides += ovmeth
-          ovmeth.overriden += meth
-        }
         meth.insts.foreach {
           case Inst.Let(_, Op.Classalloc(name)) =>
             nodes(name).asInstanceOf[Class].allocated = true
@@ -420,22 +421,14 @@ object ClassHierarchy {
     }
 
     def completeClassMembers(): Unit = top.classes.foreach { cls =>
-      cls.vtable = new VirtualTable(cls,
-                                    javaEquals,
-                                    javaHashCode,
-                                    scalaEquals,
-                                    scalaHashCode)
       cls.layout = new FieldLayout(cls)
       cls.dynmap = new DynamicHashMap(cls, dyns)
+      cls.vtable = new VirtualTable(cls)
       cls.rtti = new RuntimeTypeInformation(cls)
     }
 
     def completeTop(): Unit = {
       top.tables = new TraitDispatchTables(top)
-      println("trait methods:" + top.methods.filter(_.inTrait).size)
-      println("trait inline sigs:" + top.tables.traitInlineSigs.size)
-      println("trait dispatch sigs:" + top.tables.traitDispatchSigs.size)
-      println("dispatch array size: " + top.tables.dispatchArray.size)
       top.moduleArray = new ModuleArray(top)
     }
 
@@ -446,6 +439,7 @@ object ClassHierarchy {
     completeClasses()
     assignClassIds()
     assignMethodIds()
+    VirtualTree.fill(top)
     completeClassMembers()
     completeTop()
 

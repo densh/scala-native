@@ -6,80 +6,28 @@ import scala.collection.mutable
 import ClassHierarchy._
 import nir._
 
-class VirtualTable(cls: Class,
-                   javaEquals: Option[Method],
-                   javaHashCode: Option[Method],
-                   scalaEquals: Option[Method],
-                   scalaHashCode: Option[Method]) {
-  val entries: mutable.UnrolledBuffer[Method] =
-    cls.parent.fold {
-      mutable.UnrolledBuffer.empty[Method]
-    } { parent =>
-      parent.vtable.entries.clone
-    }
-  val values: mutable.UnrolledBuffer[Val] =
-    cls.parent.fold {
-      mutable.UnrolledBuffer.empty[Val]
-    } { parent =>
-      parent.vtable.values.clone
-    }
-  locally {
-    // Go through all methods and update vtable entries and values
-    // according to override annotations. Additionally, discover
-    // if Java's hashCode/equals and Scala's ==/## are overriden.
-    var javaEqualsOverride: Option[Val]    = None
-    var javaHashCodeOverride: Option[Val]  = None
-    var scalaEqualsOverride: Option[Val]   = None
-    var scalaHashCodeOverride: Option[Val] = None
-    cls.methods.foreach { meth =>
-      meth.overrides
-        .collect {
-          case ovmeth if ovmeth.inClass =>
-            values(index(ovmeth)) = meth.value
-            if (javaEquals.fold(false)(_ eq ovmeth)) {
-              javaEqualsOverride = Some(meth.value)
-            }
-            if (javaHashCode.fold(false)(_ eq ovmeth)) {
-              javaHashCodeOverride = Some(meth.value)
-            }
-            if (scalaEquals.fold(false)(_ eq ovmeth)) {
-              scalaEqualsOverride = Some(meth.value)
-            }
-            if (scalaHashCode.fold(false)(_ eq ovmeth)) {
-              scalaHashCodeOverride = Some(meth.value)
-            }
-        }
-        .headOption
-        .getOrElse {
-          if (meth.isVirtual) {
-            entries += meth
-            values += meth.value
-          }
-        }
-    }
-    // We short-circuit scala_== and scala_## to immeditately point to the
-    // equals and hashCode implementation for the reference types to avoid
-    // double virtual dispatch overhead.
-    if (scalaEquals.nonEmpty && javaEqualsOverride.nonEmpty && scalaEqualsOverride.isEmpty) {
-      values(index(scalaEquals.get)) = javaEqualsOverride.get
-    }
-    if (scalaHashCode.nonEmpty && javaHashCodeOverride.nonEmpty && scalaHashCodeOverride.isEmpty) {
-      values(index(scalaHashCode.get)) = javaHashCodeOverride.get
+final class VirtualTable(cls: Class) {
+  // TODO: short-circuit == to equals and ## to hashCode
+  // javaEquals: Option[Method],
+  // javaHashCode: Option[Method],
+  // scalaEquals: Option[Method],
+  // scalaHashCode: Option[Method]
+  val index: mutable.Map[String, Int] =
+    cls.parent.fold(mutable.Map.empty[String, Int])(_.vtable.index.clone())
+  val at: mutable.UnrolledBuffer[Val] =
+    cls.parent.fold(mutable.UnrolledBuffer.empty[Val])(_.vtable.at.clone())
+  cls.methods.foreach { meth =>
+    val sig  = meth.name.id
+    val impl = meth.value
+
+    if (index.contains(sig)) {
+      at(index(sig)) = impl
+    } else if (cls.isVirtual(sig)) {
+      index(sig) = index.size
+      at += impl
     }
   }
-  val ty: Type =
-    Type.Array(Type.Ptr, values.length)
-  val value: Val =
-    Val.Array(Type.Ptr, values)
-  def index(meth: Method): Int =
-    meth.overrides
-      .collectFirst {
-        case ovmeth if ovmeth.inClass =>
-          index(ovmeth)
-      }
-      .getOrElse {
-        entries.indexOf(meth)
-      }
-  def at(index: Int): Val =
-    values(index)
+  def ty: Type                 = Type.Array(Type.Ptr, at.length)
+  def value: Val               = Val.Array(Type.Ptr, at)
+  def index(meth: Method): Int = index(meth.name.id)
 }

@@ -469,20 +469,22 @@ class Expand(implicit top: Top) {
 
     val meth  = top.nodes(methName).asInstanceOf[Method]
     val impls = mutable.UnrolledBuffer.empty[Val.Global]
-    val srcs  = mutable.UnrolledBuffer.empty[String]
 
     def add(ty: Type, v: Val): Unit = v match {
-      case v: Val.Global => impls += v; srcs += s"  - ${ty.show} impl ${v.show}"
-      case _             => ()
+      case v @ Val.Global(name, _)
+          if top.nodes(name).asInstanceOf[Method].isConcrete =>
+        impls += v
+      case _ =>
+        ()
     }
 
     if (meth.inClass) {
-      if (meth.isStatic) {
+      if (!meth.isVirtual) {
         add(ty, Val.Global(methName, Type.Ptr))
       } else {
         def addExactClass(cls: Class): Unit =
           if (cls.allocated) {
-            add(cls.ty, cls.vtable.at(cls.vtable.index(meth)))
+            add(cls.ty, cls.respond(meth.name.id))
           }
         def addWithSubclasses(cls: Class): Unit = {
           addExactClass(cls)
@@ -498,7 +500,10 @@ class Expand(implicit top: Top) {
               top
                 .nodes(Global.Top("scala.scalanative.runtime.BoxedUnit$"))
                 .asInstanceOf[Class])
-          case ty => util.unsupported(ty)
+          case Type.Nothing =>
+            ()
+          case ty =>
+            util.unsupported(ty)
         }
       }
     } else if (meth.inTrait) {
@@ -541,19 +546,17 @@ class Expand(implicit top: Top) {
               top
                 .nodes(Global.Top("scala.scalanative.runtime.BoxedUnit$"))
                 .asInstanceOf[Class])
-          case ty => util.unsupported(ty)
+          case Type.Nothing =>
+            ()
+          case ty =>
+            util.unsupported(ty)
         }
       }
     } else {
       util.unreachable
     }
 
-    val res = impls.distinct
-    // if (res.size > 1) {
-    //   println(s"dynamic method call ${ty.show} on ${methName.show}")
-    //   srcs.foreach(println)
-    // }
-    res
+    impls.distinct
   }
 }
 
@@ -564,7 +567,7 @@ object Expand {
     val hoisted  = (new pass.ExternHoisting).onDefns(defns)
     val top      = analysis.ClassHierarchy(hoisted, dyns)
     val expander = new Expand()(top)
-    val methods  = expander.loop(entries)
+    val methods  = expander.loop(entries).sortBy(_.name.show)
 
     methods ++ (defns.filter {
       case _: Defn.Declare | _: Defn.Define => false

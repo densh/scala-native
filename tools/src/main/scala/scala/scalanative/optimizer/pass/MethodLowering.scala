@@ -17,21 +17,20 @@ class MethodLowering(implicit top: Top) extends Pass {
     import buf._
 
     insts.foreach {
-      case Let(n, Op.Method(obj, MethodRef(cls: Class, meth)))
-          if meth.isVirtual =>
-        val vindex  = cls.vtable.index(meth)
-        val typeptr = let(Op.Load(Type.Ptr, obj))
-        val methptrptr = let(
-          Op.Elem(cls.rtti.struct,
-                  typeptr,
-                  Seq(Val.Int(0),
-                      Val.Int(5), // index of vtable in type struct
-                      Val.Int(vindex))))
-
-        let(n, Op.Load(Type.Ptr, methptrptr))
-
-      case Let(n, Op.Method(obj, MethodRef(_: Class, meth))) if meth.isStatic =>
-        let(n, Op.Copy(Val.Global(meth.name, Type.Ptr)))
+      case Let(n, Op.Method(obj, MethodRef(cls: Class, meth))) =>
+        if (!meth.isVirtual) {
+          let(n, Op.Copy(Val.Global(meth.name, Type.Ptr)))
+        } else {
+          val vindex  = cls.vtable.index(meth)
+          val typeptr = let(Op.Load(Type.Ptr, obj))
+          val methptrptr = let(
+            Op.Elem(cls.rtti.struct,
+                    typeptr,
+                    Seq(Val.Int(0),
+                        Val.Int(5), // index of vtable in type struct
+                        Val.Int(vindex))))
+          let(n, Op.Load(Type.Ptr, methptrptr))
+        }
 
       case Let(n, Op.Method(obj, MethodRef(trt: Trait, meth))) =>
         val sig = meth.name.id
