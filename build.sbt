@@ -456,6 +456,7 @@ lazy val sandbox =
     .in(file("sandbox"))
     .settings(noPublishSettings)
     .settings(
+      nativeMode := "release",
       nativeOptimizerReporter := OptimizerReporter.toDirectory(
         crossTarget.value),
       scalaVersion := libScalaVersion

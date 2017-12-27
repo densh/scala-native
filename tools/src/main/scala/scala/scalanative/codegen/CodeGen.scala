@@ -379,6 +379,8 @@ object CodeGen {
         touch(name)
         str("%")
         genGlobal(name)
+      case _: Type.RefKind =>
+        genType(Type.Ptr)
       case ty =>
         unsupported(ty)
     }

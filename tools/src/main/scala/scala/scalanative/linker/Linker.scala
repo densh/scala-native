@@ -46,7 +46,7 @@ object Linker {
       def processDirect =
         while (direct.nonEmpty) {
           val workitem = direct.pop()
-          if (!workitem.isIntrinsic && !resolved.contains(workitem) &&
+          if (!resolved.contains(workitem) &&
               !unresolved.contains(workitem)) {
 
             load(workitem)

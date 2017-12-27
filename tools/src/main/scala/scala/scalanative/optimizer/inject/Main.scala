@@ -109,4 +109,7 @@ object Main extends InjectCompanion {
 
   override def apply(config: tools.Config, top: Top) =
     new Main(config.entry)
+
+  def apply(config: tools.Config) =
+    new Main(config.entry)
 }

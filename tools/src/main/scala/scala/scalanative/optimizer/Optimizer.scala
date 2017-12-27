@@ -25,6 +25,13 @@ object Optimizer {
     }
   }
 
+  def main(config: tools.Config): Seq[Defn] = {
+    val pass = inject.Main(config)
+    val buf  = mutable.UnrolledBuffer.empty[Defn]
+    pass(buf)
+    buf
+  }
+
   /** Run all of the passes on given assembly. */
   def apply(config: tools.Config,
             driver: Driver,
@@ -33,30 +40,29 @@ object Optimizer {
             reporter: Reporter): Seq[Defn] = {
     import reporter._
 
-    val injects    = driver.passes.filter(_.isInjectionPass)
-    val transforms = driver.passes.filterNot(_.isInjectionPass)
-    val world      = analysis.ClassHierarchy(assembly, dyns)
+    val chaDeps  = optimizer.analysis.ClassHierarchy.depends
+    val passDeps = driver.passes.flatMap(_.depends).distinct
+    val deps     = (chaDeps ++ passDeps).distinct
+    val injects  = driver.passes.flatMap(_.injects)
+    val entries  = inject.Main.MainName +: (injects.map(_.name) ++ deps)
+    val expanded = Expand(assembly ++ main(config), dyns, entries)
 
+    val injectors  = driver.passes.filter(_.isInjectionPass)
+    val transforms = driver.passes.filterNot(_.isInjectionPass)
+    val world      = analysis.ClassHierarchy(expanded, dyns)
     val injected = {
       val buf = mutable.UnrolledBuffer.empty[Defn]
-      buf ++= assembly
-      injects.foreach { make =>
+      buf ++= expanded
+      buf ++= driver.passes.flatMap(_.injects)
+      injectors.foreach { make =>
         make(config, world) match {
-          case NoPass         => ()
-          case inject: Inject => inject(buf)
-          case _              => util.unreachable
+          case NoPass | _: inject.Main => ()
+          case inject: Inject          => inject(buf)
+          case _                       => util.unreachable
         }
       }
       buf
     }
-
-    val expandedMethods = Expand(injected, dyns, inject.Main.MainName)
-    val out             = new java.io.PrintWriter("out.hnir")
-    expandedMethods.foreach { defn =>
-      out.write(defn.show)
-      out.write("\n\n")
-    }
-    out.close
 
     def loop(batchId: Int,
              batchDefns: Seq[Defn],

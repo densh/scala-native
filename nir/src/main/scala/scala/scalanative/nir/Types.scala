@@ -28,7 +28,7 @@ sealed abstract class Type {
       case nir.Type.Ptr         => sb.str("ptr")
       case nir.Type.Bool        => sb.str("bool")
       case nir.Type.Char        => sb.str("char")
-      case nir.Type.I(w, false) => sb.str("u"); sb.str(w)
+      case nir.Type.I(w, false) => sb.str("i"); sb.str(w)
       case nir.Type.I(w, true)  => sb.str("i"); sb.str(w)
       case nir.Type.Float       => sb.str("f32")
       case nir.Type.Double      => sb.str("f64")

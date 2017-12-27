@@ -78,27 +78,32 @@ class Expand(implicit top: Top) {
   private val done     = mutable.Map.empty[Expand, Defn]
   private val active   = mutable.Queue.empty[Task]
   private var waiting  = mutable.Queue.empty[Resume]
-  private val insert   = mutable.UnrolledBuffer.empty[Expand]
-  private var progress = 0
 
   /** Entry point of expander work-scheduling loop. */
-  def loop(entry: Global): Seq[Defn] = {
-    val expandMain = new Expand(entry, Seq(Type.Int, Type.Ptr))
-    active.enqueue(expandMain)
-    enqueued += expandMain
+  def loop(entries: Seq[Global]): Seq[Defn] = {
+    entries.foreach {
+      case MethodRef(_, meth) =>
+        val sig    = meth.ty.asInstanceOf[Type.Function]
+        val expand = new Expand(meth.name, sig.argtys)
+        active.enqueue(expand)
+        enqueued += expand
+      case _ =>
+        ()
+    }
 
     while (!active.isEmpty) {
-      println(
-        "progress: " + progress + ", done: " + done.size + ", active: " + active.size + ", waiting: " + waiting.size)
+      //println("done: " + done.size + ", active: " + active.size + ", waiting: " + waiting.size)
 
       // Execute all tasks which are not blocked by anything.
       while (!active.isEmpty) {
         val task = active.dequeue()
         task match {
           case task: Expand =>
+            assert(!done.contains(task))
             assert(!started.contains(task))
             start(task)
           case task: Resume =>
+            assert(!done.contains(task.state.expand))
             assert(task.deps.isEmpty)
             resume(task.state)
           case _ =>
@@ -147,7 +152,7 @@ class Expand(implicit top: Top) {
     }
 
     if (waiting.nonEmpty) {
-      println("Got stuck while expanding!")
+      //println("Got stuck while expanding!")
       val sorted = waiting.toSeq.sortBy(_.expand.expandedName.show)
       val txt    = new java.io.PrintWriter("out.txt")
       val dot    = new java.io.PrintWriter("out.dot")
@@ -168,11 +173,11 @@ class Expand(implicit top: Top) {
       dot.close
       Seq.empty
     } else {
-      insert.distinct.map(done)
+      done.values.toSeq
     }
   }
 
-  def expand_?(name: Global, argtys: Seq[Type]): Option[Expand] = {
+  def canExpand(name: Global, argtys: Seq[Type]): Option[Expand] = {
     val Type.Function(origintys, _) = top.nodes(name).asInstanceOf[Method].ty
 
     if (name.isTop) {
@@ -185,31 +190,31 @@ class Expand(implicit top: Top) {
       }
 
       if (exptys.size != origintys.size) {
-        // println(s"can't expand ${name.show} with ${argtys.map(_.show)}")
-        // println(s"  incomplete glb ${exptys.map(_.show)}")
-        // println(s"  wrt to origin ${origintys.map(_.show)}")
         None
       } else {
-        Some(new Expand(name, exptys))
+        Some(new Expand(name, argtys))
       }
     }
   }
 
-  def shortCircuit(expand: Expand): Result = {
-    println(s"short circuiting ${expand.expandedName}")
-    val Type.Function(_, retty) = expand.meth.ty
-    val sig                     = Type.Function(expand.argtys, retty)
-    val res                     = new Result(expand.expandedName, sig)
-    results(expand) = res
-    res
-  }
+  def shortCircuit(expand: Expand): Result =
+    if (!results.contains(expand)) {
+      //println(s"short circuiting ${expand.expandedName}")
+      val Type.Function(_, retty) = expand.meth.ty
+      val sig                     = Type.Function(expand.argtys, retty)
+      val res                     = new Result(expand.expandedName, sig)
+      results(expand) = res
+      res
+    } else {
+      results(expand)
+    }
 
-  def request_?(expand: Expand): Option[Result] =
+  def request(expand: Expand): Option[Result] =
     if (results.contains(expand)) {
       results.get(expand)
     } else {
       if (!enqueued.contains(expand)) {
-        println(s"requesting new ${expand.expandedName.show}")
+        //println(s"requesting new ${expand.expandedName.show}")
         active.enqueue(expand)
         enqueued += expand
       }
@@ -238,8 +243,7 @@ class Expand(implicit top: Top) {
     }
 
   def start(expand: Expand): Unit = {
-    println(s"starting ${expand.expandedName.show}")
-    insert += expand
+    //println(s"starting ${expand.expandedName.show}")
     started += expand
 
     val insts                   = expand.meth.insts
@@ -269,7 +273,7 @@ class Expand(implicit top: Top) {
   }
 
   def suspend(state: State, deps: Expand*): Unit = {
-    println(s"suspending ${state.expand.expandedName.show}")
+    //println(s"suspending ${state.expand.expandedName.show}")
 
     waiting.enqueue(new Resume(state, deps))
   }
@@ -277,7 +281,7 @@ class Expand(implicit top: Top) {
   def resume(state: State): Unit = {
     import state._
 
-    println(s"resuming ${state.expand.expandedName.show}")
+    // println(s"resuming ${state.expand.expandedName.show}")
     // println("<<<")
     // var i = 0
     // while (i < blocks.size) {
@@ -327,7 +331,7 @@ class Expand(implicit top: Top) {
               val adaptedParams = mutable.UnrolledBuffer.empty[Val.Local]
               params.zip(expand.argtys).foreach {
                 case (param, ty) =>
-                  env(param.name) = HasType(exactify(ty))
+                  env(param.name) = HasType(exactify(top.glb(param.ty, ty).get))
                   adaptedParams += Val.Local(param.name, ty)
               }
               buf.label(name, adaptedParams)
@@ -346,8 +350,8 @@ class Expand(implicit top: Top) {
 
             known(func) match {
               case GlobalOf(methName) =>
-                val subexpand = expand_?(methName, argtys).get
-                val results   = request_?(subexpand)
+                val subexpand = canExpand(methName, argtys).get
+                val results   = request(subexpand)
                 if (results.isEmpty) return suspend(state, subexpand)
                 val res  = results.head
                 val func = Val.Global(res.name, Type.Ptr)
@@ -357,39 +361,30 @@ class Expand(implicit top: Top) {
               case MethodOf(obj, methName) =>
                 val impls = resolveMethod(known(obj).ty, methName)
                 val subexpands =
-                  impls.flatMap(impl => expand_?(impl.name, argtys))
+                  impls.flatMap(impl => canExpand(impl.name, argtys))
+                val results = subexpands.flatMap(request)
+                if (results.size != subexpands.size)
+                  return suspend(state, subexpands: _*)
 
-                subexpands match {
+                results match {
                   case Seq() =>
                     buf.unreachable
                     buf.label(fresh())
                     env(name) = HasType(exactify(sig.retty))
-                  case Seq(subexpand) if expand == subexpand =>
-                    val retty = exactify(origSig.retty)
-                    val func  = Val.Global(expand.expandedName, Type.Ptr)
-                    buf.let(name,
-                            Op.Call(Type.Function(expand.argtys, retty),
-                                    func,
-                                    args,
-                                    unwind))
-                    env(name) = HasType(retty)
-                  case Seq(subexpand) =>
-                    val results = subexpands.flatMap(request_?)
-                    if (results.isEmpty) return suspend(state, subexpand)
-                    val res  = results.head
+                  case Seq(res) =>
                     val func = Val.Global(res.name, Type.Ptr)
                     buf.let(name, Op.Call(res.sig, func, args, unwind))
                     env(name) = HasType(exactify(res.sig.retty))
                   case _ =>
-                    val origtys = origSig.argtys
-                    impls
-                      .flatMap(impl => expand_?(impl.name, origtys))
-                      .foreach(request_?)
-                    val expandedName =
-                      expand_?(methName, origtys).get.expandedName
-                    val meth =
-                      buf.method(exactifyValue(obj), expandedName)
-                    buf.let(name, Op.Call(sig, meth, args, unwind))
+                    // println(
+                    //   s"generic case of ${methName.show} with ${argtys.map(_.show)}:")
+                    // subexpands.foreach(s =>
+                    //   println("  - " + s.expandedName.show))
+                    val generic = canExpand(methName, argtys).get
+                    request(generic)
+                    val func =
+                      buf.method(exactifyValue(obj), generic.expandedName)
+                    buf.let(name, Op.Call(sig, func, args, unwind))
                     env(name) = HasType(exactify(sig.retty))
                 }
 
@@ -415,13 +410,11 @@ class Expand(implicit top: Top) {
         }
 
         instIdx += 1
-        progress += 1
       }
 
       instIdx = 0
 
       blockIdx += 1
-      progress += 1
     }
 
     complete(expand, buf.toSeq)
@@ -429,7 +422,7 @@ class Expand(implicit top: Top) {
 
   def complete(expand: Expand, insts: Seq[Inst]): Unit = {
     if (!done.contains(expand)) {
-      println(s"completing ${expand.expandedName.show}")
+      // println(s"completing ${expand.expandedName.show}")
 
       val meth  = expand.meth
       val name  = expand.expandedName
@@ -453,7 +446,9 @@ class Expand(implicit top: Top) {
         }
       val sig = Type.Function(expand.argtys, retty)
 
-      results(expand) = new Result(name, sig)
+      if (!results.contains(expand)) {
+        results(expand) = new Result(name, sig)
+      }
 
       done(expand) = if (insts.isEmpty) {
         Defn.Declare(attrs, name, sig)
@@ -461,7 +456,7 @@ class Expand(implicit top: Top) {
         Defn.Define(attrs, name, sig, insts)
       }
 
-      println(s"done ${expand.expandedName.show}")
+      //println(s"done ${expand.expandedName.show}")
     }
   }
 
@@ -470,6 +465,8 @@ class Expand(implicit top: Top) {
 
   /** Returns all possible resolutions of a given method on given type. */
   def resolveMethod(ty: Type, methName: Global): Seq[Val.Global] = {
+    //println(s"resolving method ${methName.show} on ${ty.show}")
+
     val meth  = top.nodes(methName).asInstanceOf[Method]
     val impls = mutable.UnrolledBuffer.empty[Val.Global]
     val srcs  = mutable.UnrolledBuffer.empty[String]
@@ -521,8 +518,19 @@ class Expand(implicit top: Top) {
           addExactClass(cls)
           cls.subclasses.foreach(addWithSubclasses)
         }
-        def addAllTraitImpls(): Unit =
-          top.tables.traitDispatchImpls(sig).foreach(add(ty, _))
+        def addAllTraitImpls(): Unit = {
+          val trt = meth.in.asInstanceOf[Trait]
+          top.tables.traitDispatchImpls(sig).foreach {
+            case impl @ Val.Global(name, _) =>
+              val implMeth = top.nodes(name).asInstanceOf[Method]
+              val implCls  = implMeth.in.asInstanceOf[Class]
+              if (implCls.is(trt)) {
+                add(ty, impl)
+              }
+            case _ =>
+              ()
+          }
+        }
 
         ty match {
           case Type.Exact(ClassRef(cls)) => addExactClass(cls)
@@ -550,10 +558,17 @@ class Expand(implicit top: Top) {
 }
 
 object Expand {
-  def apply(defns: Seq[Defn], dyns: Seq[String], entry: Global): Seq[Defn] = {
+  def apply(defns: Seq[Defn],
+            dyns: Seq[String],
+            entries: Seq[Global]): Seq[Defn] = {
     val hoisted  = (new pass.ExternHoisting).onDefns(defns)
     val top      = analysis.ClassHierarchy(hoisted, dyns)
     val expander = new Expand()(top)
-    expander.loop(entry)
+    val methods  = expander.loop(entries)
+
+    methods ++ (defns.filter {
+      case _: Defn.Declare | _: Defn.Define => false
+      case _                                => true
+    })
   }
 }

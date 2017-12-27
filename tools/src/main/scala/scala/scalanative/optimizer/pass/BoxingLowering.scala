@@ -11,7 +11,7 @@ class BoxingLowering extends Pass {
 
   override def onInst(inst: Inst): Inst = inst match {
     case Inst.Let(name, box @ Op.Box(ty, from)) =>
-      val (module, id) = BoxingLowering.BoxTo(ty)
+      val (module, id) = BoxingLowering.BoxToExpanded(ty)
 
       val boxTy =
         Type.Function(Seq(Type.Exact(module), Type.unbox(ty)), ty)
@@ -26,7 +26,7 @@ class BoxingLowering extends Pass {
                        Next.None))
 
     case Inst.Let(name, unbox @ Op.Unbox(ty, from)) =>
-      val (module, id) = BoxingLowering.UnboxTo(ty)
+      val (module, id) = BoxingLowering.UnboxToExpanded(ty)
 
       val unboxTy =
         Type.Function(Seq(Type.Exact(module), ty), Type.unbox(ty))
@@ -85,6 +85,13 @@ object BoxingLowering extends PassCompanion {
       Type.Class(Global.Top(name)) -> (module, id)
   }.toMap
 
+  val BoxToExpanded: Map[Type, (Global, String)] =
+    BoxTo.map {
+      case (ty, (module, id)) =>
+        val valuety = Type.unbox(ty)
+        (ty, (module, id + "<!" + module.id + ";" + valuety.mangled + ">"))
+    }
+
   val UnboxTo: Map[Type, (Global, String)] = Seq(
     ("java.lang.Boolean", BoxesRunTime, "unboxToBoolean_java.lang.Object_bool"),
     ("java.lang.Character", BoxesRunTime, "unboxToChar_java.lang.Object_char"),
@@ -110,4 +117,10 @@ object BoxingLowering extends PassCompanion {
     case (name, module, id) =>
       Type.Class(Global.Top(name)) -> (module, id)
   }.toMap
+
+  val UnboxToExpanded: Map[Type, (Global, String)] =
+    UnboxTo.map {
+      case (ty, (module, id)) =>
+        (ty, (module, id + "<!" + module.id + ";java.lang.Object>"))
+    }
 }

@@ -432,6 +432,10 @@ object ClassHierarchy {
 
     def completeTop(): Unit = {
       top.tables = new TraitDispatchTables(top)
+      println("trait methods:" + top.methods.filter(_.inTrait).size)
+      println("trait inline sigs:" + top.tables.traitInlineSigs.size)
+      println("trait dispatch sigs:" + top.tables.traitDispatchSigs.size)
+      println("dispatch array size: " + top.tables.dispatchArray.size)
       top.moduleArray = new ModuleArray(top)
     }
 
