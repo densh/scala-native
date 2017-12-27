@@ -26,11 +26,11 @@ trait Pass extends AnyPass {
       defn.copy(ty = onType(ty), rhs = onVal(value))
     case defn @ Defn.Const(_, _, ty, value) =>
       defn.copy(ty = onType(ty), rhs = onVal(value))
-    case defn @ Defn.Declare(_, _, ty) =>
-      defn.copy(ty = onType(ty))
-    case defn @ Defn.Define(_, _, ty, insts) =>
+    case defn @ Defn.Declare(_, _, sig) =>
+      defn.copy(sig = onType(sig))
+    case defn @ Defn.Define(_, _, sig, insts) =>
       _fresh = Fresh(insts)
-      defn.copy(ty = onType(ty), insts = onInsts(insts))
+      defn.copy(sig = onType(sig), insts = onInsts(insts))
     case defn @ Defn.Struct(_, _, tys) =>
       defn.copy(tys = tys.map(onType))
     case defn @ Defn.Trait(_, _, _) =>

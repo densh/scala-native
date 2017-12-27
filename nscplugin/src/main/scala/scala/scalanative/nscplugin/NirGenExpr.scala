@@ -608,13 +608,13 @@ trait NirGenExpr { self: NirGenPhase =>
 
         val sig =
           Type.Function(
-            methodSig.args.head ::
-              methodSig.args.tail.map(ty => Type.box.getOrElse(ty, ty)).toList,
+            methodSig.argtys.head ::
+              methodSig.argtys.tail.map(ty => Type.box.getOrElse(ty, ty)).toList,
             nir.Type.Class(nir.Global.Top("java.lang.Object")))
 
-        val callerType = methodSig.args.head
+        val callerType = methodSig.argtys.head
         val boxedArgTypes =
-          methodSig.args.tail.map(ty => nir.Type.box.getOrElse(ty, ty)).toList
+          methodSig.argtys.tail.map(ty => nir.Type.box.getOrElse(ty, ty)).toList
 
         val retType   = nir.Type.Class(nir.Global.Top("java.lang.Object"))
         val signature = nir.Type.Function(callerType :: boxedArgTypes, retType)
@@ -624,7 +624,7 @@ trait NirGenExpr { self: NirGenPhase =>
         val values = self +: args
 
         val call = buf.call(signature, method, values, curUnwind)
-        buf.as(nir.Type.box.getOrElse(methodSig.ret, methodSig.ret), call)
+        buf.as(nir.Type.box.getOrElse(methodSig.retty, methodSig.retty), call)
       }
 
       // If the signature matches an array update, tests at runtime if it really is an array update.
@@ -1569,7 +1569,7 @@ trait NirGenExpr { self: NirGenPhase =>
     def genApplyExternAccessor(sym: Symbol, argsp: Seq[Tree]): Val = {
       argsp match {
         case Seq() =>
-          val ty   = genMethodSig(sym).ret
+          val ty   = genMethodSig(sym).retty
           val name = genMethodName(sym)
           val elem = Val.Global(name, Type.Ptr)
           buf.load(ty, elem)
@@ -1588,9 +1588,9 @@ trait NirGenExpr { self: NirGenPhase =>
       val sig   = genMethodSig(sym)
       val argsPt =
         if (owner.isExternModule || owner.isImplClass)
-          sig.args
+          sig.argtys
         else
-          sig.args.tail
+          sig.argtys.tail
       val args = genMethodArgs(sym, argsp, argsPt)
       val method =
         if (statically || owner.isStruct || owner.isExternModule) {

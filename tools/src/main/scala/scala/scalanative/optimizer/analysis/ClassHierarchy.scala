@@ -5,6 +5,7 @@ package analysis
 import scala.collection.mutable
 import util.unreachable
 import nir._
+import ClassHierarchyExtractors._
 
 object ClassHierarchy {
   sealed abstract class Node {
@@ -35,6 +36,8 @@ object ClassHierarchy {
       extends Scope {
     val traits = mutable.UnrolledBuffer.empty[Trait]
 
+    def ty: Type = Type.Trait(name)
+
     def is(trt: Trait): Boolean =
       this.id == trt.id || traits.exists(_.is(trt))
   }
@@ -64,6 +67,12 @@ object ClassHierarchy {
     def is(scope: Scope): Boolean = scope match {
       case cls: Class => is(cls)
       case trt: Trait => is(trt)
+      case _          => util.unreachable
+    }
+
+    def glb(scope: Scope): Option[Type] = scope match {
+      case cls: Class => glb(cls)
+      case trt: Trait => glb(trt)
       case _          => util.unreachable
     }
   }
@@ -101,6 +110,98 @@ object ClassHierarchy {
     def attrs                       = Attrs.None
     var tables: TraitDispatchTables = _
     var moduleArray: ModuleArray    = _
+
+    private implicit val top: Top = this
+
+    /** Pick the most specific type out of the two, aka greatest lower bound. */
+    def glb(ty1: Type, ty2: Type): Option[Type] = (ty1, ty2) match {
+      case _ if ty1 == ty2 =>
+        Some(ty1)
+      case (_, TraitRef(_)) if ty1 == Rt.Object =>
+        Some(ty2)
+      case (TraitRef(_), ty2) if ty2 == Rt.Object =>
+        Some(ty1)
+      case (ScopeRef(scope), Type.Exact(ClassRef(cls))) =>
+        if (cls.is(scope)) {
+          Some(ty2)
+        } else {
+          None
+        }
+      case (Type.Exact(ClassRef(cls)), ScopeRef(scope)) =>
+        if (cls.is(scope)) {
+          Some(ty1)
+        } else {
+          None
+        }
+      case (ClassRef(cls1), ClassRef(cls2)) =>
+        if (cls1.id == cls2.id) {
+          Some(ty1)
+        } else if (cls1.is(cls2) && !cls2.is(cls1)) {
+          Some(ty1)
+        } else if (cls2.is(cls1) && !cls1.is(cls2)) {
+          Some(ty2)
+        } else {
+          None
+        }
+      case (ClassRef(cls), TraitRef(trt)) =>
+        if (cls.is(trt)) {
+          Some(ty1)
+        } else {
+          None
+        }
+      case (TraitRef(trt), ClassRef(cls)) =>
+        if (cls.is(trt)) {
+          Some(ty2)
+        } else {
+          None
+        }
+      case (TraitRef(trt1), TraitRef(trt2)) =>
+        if (trt1.is(trt2) && !trt2.is(trt1)) {
+          Some(ty1)
+        } else if (trt2.is(trt1) && !trt1.is(trt2)) {
+          Some(ty2)
+        } else if (trt1.is(trt1) && trt2.is(trt1)) {
+          Some(ty1)
+        } else {
+          None
+        }
+      case (_: Type.RefKind, Type.Ptr) =>
+        Some(ty1)
+      case (Type.Ptr, _: Type.RefKind) =>
+        Some(ty2)
+      case (_: Type.RefKind, Type.Unit) =>
+        Some(ty2)
+      case (Type.Unit, _: Type.RefKind) =>
+        Some(ty1)
+      case (_: Type.RefKind, _: Type.Primitive) =>
+        None
+      case (_: Type.Primitive, _: Type.RefKind) =>
+        None
+      case (Type.Char, Type.Short) | (Type.Short, Type.Char) =>
+        Some(Type.Char)
+      case _ =>
+        util.unsupported(s"glb(${ty1.show}, ${ty2.show})")
+    }
+
+    /** Least upper bound. */
+    def lub(ty1: Type, ty2: Type): Type = (ty1, ty2) match {
+      case _ if ty1 == ty2 =>
+        ty1
+      case (Rt.Object, _: Type.RefKind) | (_: Type.RefKind, Rt.Object) =>
+        Rt.Object
+      case (Type.Ptr, _: Type.RefKind) | (_: Type.RefKind, Type.Ptr) =>
+        Type.Ptr
+      case (ClassRef(cls1), ClassRef(cls2)) =>
+        if (cls2.is(cls1)) {
+          cls1.ty
+        } else {
+          val parent =
+            cls1.parent.getOrElse(top.nodes(Rt.Object.name).asInstanceOf[Class])
+          lub(parent.ty, ty2)
+        }
+      case _ =>
+        util.unsupported(s"lub(${ty1.show}, ${ty2.show})")
+    }
   }
 
   def apply(defns: Seq[Defn], dyns: Seq[String]): Top = {
@@ -147,10 +248,11 @@ object ClassHierarchy {
         enter(defn.name, new Field(defn.attrs, defn.name, defn.ty))
 
       case defn: Defn.Declare =>
-        enter(defn.name, new Method(defn.attrs, defn.name, defn.ty, Seq.empty))
+        enter(defn.name, new Method(defn.attrs, defn.name, defn.sig, Seq.empty))
 
       case defn: Defn.Define =>
-        enter(defn.name, new Method(defn.attrs, defn.name, defn.ty, defn.insts))
+        enter(defn.name,
+              new Method(defn.attrs, defn.name, defn.sig, defn.insts))
 
       case defn: Defn.Struct =>
         enter(defn.name, new Struct(defn.attrs, defn.name, defn.tys))

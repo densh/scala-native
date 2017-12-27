@@ -12,7 +12,7 @@ object ReflectiveProxy {
 
   private def genReflProxy(defn: Defn.Define): Defn.Define = {
     val Global.Member(owner, id) = defn.name
-    val defnType                 = defn.ty.asInstanceOf[Type.Function]
+    val defnType                 = defn.sig.asInstanceOf[Type.Function]
 
     val proxyArgs = genProxyArgs(defnType)
     val proxyTy   = genProxyTy(defnType, proxyArgs)
@@ -21,8 +21,8 @@ object ReflectiveProxy {
     val unboxInsts = genArgUnboxes(label)
     val method     = Inst.Let(Op.Method(label.params.head, defn.name))
     val call       = genCall(defnType, method, label.params, unboxInsts)
-    val box        = genRetValBox(call.name, defnType.ret, proxyTy.ret)
-    val retInst    = genRet(box.name, proxyTy.ret)
+    val box        = genRetValBox(call.name, defnType.retty, proxyTy.retty)
+    val retInst    = genRet(box.name, proxyTy.retty)
 
     Defn.Define(
       Attrs.fromSeq(Seq(Attr.Dyn)),
@@ -37,10 +37,10 @@ object ReflectiveProxy {
   }
 
   private def genProxyArgs(defnTy: Type.Function) =
-    defnTy.args.map(argty => Type.box.getOrElse(argty, argty))
+    defnTy.argtys.map(argty => Type.box.getOrElse(argty, argty))
 
-  private def genProxyTy(defnTy: Type.Function, args: Seq[Type]) =
-    Type.Function(args, defnTy.ret match {
+  private def genProxyTy(defnTy: Type.Function, argtys: Seq[Type]) =
+    Type.Function(argtys, defnTy.retty match {
       case Type.Unit => Type.Unit
       case _         => Type.Class(Global.Top("java.lang.Object"))
     })

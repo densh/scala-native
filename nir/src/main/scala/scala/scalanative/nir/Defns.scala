@@ -9,17 +9,22 @@ sealed abstract class Defn {
 }
 
 object Defn {
+  sealed abstract class Callable extends Defn {
+    def sig: Type
+  }
+
   // low-level
   final case class Var(attrs: Attrs, name: Global, ty: Type, rhs: Val)
       extends Defn
   final case class Const(attrs: Attrs, name: Global, ty: Type, rhs: Val)
       extends Defn
-  final case class Declare(attrs: Attrs, name: Global, ty: Type) extends Defn
+  final case class Declare(attrs: Attrs, name: Global, sig: Type)
+      extends Callable
   final case class Define(attrs: Attrs,
                           name: Global,
-                          ty: Type,
+                          sig: Type,
                           insts: Seq[Inst])
-      extends Defn
+      extends Callable
   final case class Struct(attrs: Attrs, name: Global, tys: Seq[Type])
       extends Defn
 

@@ -104,8 +104,8 @@ object Type {
 
   // low-level composite types
 
-  final case class Array(ty: Type, n: Int)              extends Type
-  final case class Function(args: Seq[Type], ret: Type) extends Type
+  final case class Array(ty: Type, n: Int)                  extends Type
+  final case class Function(argtys: Seq[Type], retty: Type) extends Type
 
   final case class Struct(name: Global, tys: Seq[Type]) extends Type with Named
 
