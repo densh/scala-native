@@ -14,10 +14,16 @@ import scalanative.nir._
 object CodeGen {
 
   /** Generate code for given assembly. */
-  def apply(config: tools.Config, assembly: Seq[Defn]): Unit =
+  def apply(config: tools.Config, rawassembly: Seq[Defn]): Unit =
     Scope { implicit in =>
-      val env     = assembly.map(defn => defn.name -> defn).toMap
+      val assembly = rawassembly.filter {
+        case Defn.Declare(_, Global.Top(name), _) =>
+          name != "__check_class_has_trait" && name != "__check_trait_has_trait"
+        case _ =>
+          true
+      }
       val workdir = VirtualDirectory.real(config.workdir)
+      val env     = assembly.map(defn => defn.name -> defn).toMap
 
       def debug(): Unit = {
         val batches = mutable.Map.empty[String, mutable.Buffer[Defn]]
@@ -49,12 +55,7 @@ object CodeGen {
       }
 
       def release(): Unit = {
-        val sorted = assembly.sortBy(_.name.show).filter {
-          case Defn.Declare(_, Global.Top(name), _) =>
-            name != "__check_class_has_trait" && name != "__check_trait_has_trait"
-          case _ =>
-            true
-        }
+        val sorted = assembly.sortBy(_.name.show)
         val impl   = new Impl(config.target, env, sorted, workdir)
         val buffer = impl.gen()
         buffer.flip

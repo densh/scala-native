@@ -572,14 +572,14 @@ object Expand {
   def apply(defns: Seq[Defn],
             dyns: Seq[String],
             entries: Seq[Global]): Seq[Defn] = {
-    val hoisted  = (new pass.ExternHoisting).onDefns(defns)
-    val top      = analysis.ClassHierarchy(hoisted, dyns)
-    val expander = new Expand()(top)
-    val methods  = expander.loop(entries).sortBy(_.name.show)
-
-    methods ++ (defns.filter {
-      case _: Defn.Declare | _: Defn.Define => false
-      case _                                => true
-    })
+    // val hoisted  = (new pass.ExternHoisting).onDefns(defns)
+    // val top      = analysis.ClassHierarchy(hoisted, dyns)
+    // val expander = new Expand()(top)
+    // val methods  = expander.loop(entries).sortBy(_.name.show)
+    // methods ++ (defns.filter {
+    //   case _: Defn.Declare | _: Defn.Define => false
+    //   case _                                => true
+    // })
+    defns
   }
 }

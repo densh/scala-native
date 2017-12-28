@@ -11,7 +11,7 @@ class BoxingLowering extends Pass {
 
   override def onInst(inst: Inst): Inst = inst match {
     case Inst.Let(name, box @ Op.Box(ty, from)) =>
-      val (module, id) = BoxingLowering.BoxToExpanded(ty)
+      val (module, id) = BoxingLowering.BoxTo(ty)
 
       val boxTy =
         Type.Function(Seq(Type.Exact(module), Type.unbox(ty)), ty)
@@ -26,7 +26,7 @@ class BoxingLowering extends Pass {
                        Next.None))
 
     case Inst.Let(name, unbox @ Op.Unbox(ty, from)) =>
-      val (module, id) = BoxingLowering.UnboxToExpanded(ty)
+      val (module, id) = BoxingLowering.UnboxTo(ty)
 
       val unboxTy =
         Type.Function(Seq(Type.Exact(module), ty), Type.unbox(ty))

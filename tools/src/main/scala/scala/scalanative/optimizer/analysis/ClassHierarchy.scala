@@ -100,6 +100,11 @@ object ClassHierarchy {
       insts.nonEmpty
     def isVirtual: Boolean =
       in.asInstanceOf[Class].isVirtual(name.id)
+    def impls: Seq[Val] =
+      in.asInstanceOf[Class]
+        .vtree
+        .subclass(name.id)
+        .filter(_.isInstanceOf[Val.Global])
   }
 
   final class Field(val attrs: Attrs, val name: Global, val ty: nir.Type)
