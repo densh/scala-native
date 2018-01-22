@@ -186,7 +186,7 @@ lazy val libSettings =
   (baseSettings ++ ScalaNativePlugin.projectSettings.tail) ++ Seq(
     scalaVersion := libScalaVersion,
     resolvers := Nil,
-    scalacOptions ++= Seq("-encoding", "utf8")
+    scalacOptions ++= Seq("-encoding", "utf8", "-Ydelambdafy:method")
   )
 
 lazy val gcSettings =
@@ -439,8 +439,8 @@ lazy val sandbox =
     .in(file("sandbox"))
     .settings(noPublishSettings)
     .settings(
-      // nativeOptimizerReporter := OptimizerReporter.toDirectory(
-      //   crossTarget.value),
+      nativeOptimizerReporter := OptimizerReporter.toDirectory(
+        crossTarget.value),
       scalaVersion := libScalaVersion
     )
     .enablePlugins(ScalaNativePlugin)

@@ -141,9 +141,9 @@ trait NirGenExpr { self: NirGenPhase =>
       genExpr(label.rhs)
     }
 
-    def genTailRecLabel(dd: DefDef, isStatic: Boolean, label: LabelDef): Val = {
+    def genTailRecLabel(paramSymOpts: Seq[Option[Symbol]], isStatic: Boolean, label: LabelDef): Val = {
       val local = curMethodEnv.resolveLabel(label)
-      val params = label.params.zip(genParamSyms(dd, isStatic)).map {
+      val params = label.params.zip(paramSymOpts).map {
         case (lparam, mparamopt) =>
           val local = Val.Local(fresh(), genType(lparam.tpe, box = false))
           curMethodEnv.enter(lparam.symbol, local)
@@ -567,8 +567,19 @@ trait NirGenExpr { self: NirGenPhase =>
         genExpr(expr)
     }
 
-    def genFunction(tree: Function): Val =
-      unsupported(tree)
+    def genFunction(tree: Function): Val = {
+      val Function(paramsp, bodyp) = tree
+
+      val params   = paramsp.map(_.symbol)
+      val captures = global.delambdafy.FreeVarTraverser.freeVarsOf(tree).toSeq
+      val args     = genSimpleArgs(captures.map(Ident(_)))
+      val ty       = genType(tree.tpe, box = false)
+      val wrapper  = curStatBuffer.genFunctionForwarder(tree.tpe, params, captures, bodyp)
+
+      println(Op.Closure(ty, wrapper, args).show)
+
+      buf.closure(ty, wrapper, args)
+    }
 
     def genApplyDynamic(app: ApplyDynamic): Val = {
       val ApplyDynamic(obj, args) = app

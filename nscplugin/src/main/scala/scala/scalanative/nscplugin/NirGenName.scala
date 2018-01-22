@@ -13,6 +13,12 @@ trait NirGenName { self: NirGenPhase =>
   def genAnonName(owner: Symbol, anon: Symbol) =
     genName(owner) member anon.fullName.toString tag "extern"
 
+  private var functionCount = 0
+  def genFunctionForwarderName(owner: Symbol) = {
+    functionCount += 1
+    genName(owner) member s"closure.$functionCount"
+  }
+
   def genName(sym: Symbol): nir.Global =
     if (sym.isType) {
       genTypeName(sym)

@@ -299,7 +299,10 @@ object Show {
         str("closure[")
         type_(ty)
         str("] ")
-        rep(fun +: captures, sep = ", ")(val_)
+        val_(fun)
+        str("(")
+        rep(captures, sep = ", ")(val_)
+        str(")")
       case Op.Box(ty, v) =>
         str("box[")
         type_(ty)

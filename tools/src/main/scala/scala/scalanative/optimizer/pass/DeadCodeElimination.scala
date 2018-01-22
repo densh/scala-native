@@ -12,6 +12,16 @@ import nir._
 class DeadCodeElimination(implicit top: Top) extends Pass {
   import DeadCodeElimination._
 
+  override def onDefn(defn: Defn): Defn = {
+    defn match {
+      case defn: Defn.Define =>
+        println(defn.show)
+      case _ =>
+        ()
+    }
+    super.onDefn(defn)
+  }
+
   override def onInsts(insts: Seq[Inst]): Seq[Inst] = {
     val cfg        = ControlFlow.Graph(insts)
     val usedef     = UseDef(cfg)

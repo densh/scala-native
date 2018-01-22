@@ -168,58 +168,66 @@ trait NirGenStat { self: NirGenPhase =>
     def genMethods(cd: ClassDef): Unit =
       cd.impl.body.foreach {
         case dd: DefDef =>
-          genMethod(dd)
+          scoped(
+            curMethodSym := dd.symbol
+          ) {
+            genMethod(curClassSym.get, dd)
+          }
         case _ =>
           ()
       }
 
-    def genMethod(dd: DefDef): Unit = {
-      val fresh = Fresh()
-      val env   = new MethodEnv(fresh)
+    def genMethod(owner: Symbol, dd: DefDef): Unit = dd.rhs match {
+      case EmptyTree =>
+        genAbstractMethod(dd)
+      case _ if dd.name == nme.CONSTRUCTOR && owner.isExternModule =>
+        genExternCtor(dd)
+      case _ if dd.name == nme.CONSTRUCTOR && owner.isStruct =>
+        genStructCtor(dd)
+      case rhs if owner.isExternModule =>
+        genExternMethod(dd)
+      case rhs =>
+        genConcreteMethod(dd)
+    }
 
-      scoped(
-        curMethodSym := dd.symbol,
-        curMethodEnv := env,
-        curMethodInfo := (new CollectMethodInfo).collect(dd.rhs),
-        curFresh := fresh,
-        curUnwind := Next.None
-      ) {
-        val sym      = dd.symbol
-        val owner    = curClassSym.get
-        val attrs    = genMethodAttrs(sym)
-        val name     = genMethodName(sym)
-        val isStatic = owner.isExternModule || owner.isImplClass
-        val sig      = genMethodSig(sym, isStatic)
-        val params   = genParams(dd, isStatic)
+    def genAbstractMethod(dd: DefDef): Unit = {
+      val sym   = dd.symbol
+      val attrs = genMethodAttrs(sym)
+      val name  = genMethodName(sym)
+      val sig   = genMethodSig(sym)
 
-        dd.rhs match {
-          case EmptyTree =>
-            buf += Defn.Declare(attrs, name, sig)
+      buf += Defn.Declare(attrs, name, sig)
+    }
 
-          case _ if dd.name == nme.CONSTRUCTOR && owner.isExternModule =>
-            validateExternCtor(dd.rhs)
-            ()
-
-          case _ if dd.name == nme.CONSTRUCTOR && owner.isStruct =>
-            ()
-
-          case rhs if owner.isExternModule =>
-            checkExplicitReturnTypeAnnotation(dd)
-            genExternMethod(attrs, name, sig, params, rhs)
-
-          case rhs =>
-            val body = genNormalMethodBody(dd, params, rhs, isStatic)
-            buf += Defn.Define(attrs, name, sig, body)
-        }
+    def genExternCtor(dd: DefDef): Unit = {
+      val Block(_ +: init, _) = dd.rhs
+      val externs = init.map {
+        case Assign(ref: RefTree, Apply(extern, Seq()))
+            if extern.symbol == ExternMethod =>
+          ref.symbol
+        case _ =>
+          unsupported(
+            "extern objects may only contain extern fields and methods")
+      }.toSet
+      for {
+        f <- curClassSym.info.decls if f.isField
+        if !externs.contains(f)
+      } {
+        unsupported("extern objects may only contain extern fields")
       }
     }
 
-    def genExternMethod(attrs: nir.Attrs,
-                        name: nir.Global,
-                        sig: nir.Type,
-                        params: Seq[nir.Val.Local],
-                        rhs: Tree): Unit = {
-      rhs match {
+    def genStructCtor(dd: DefDef): Unit = ()
+
+    def genExternMethod(dd: DefDef): Unit = {
+      checkExplicitReturnTypeAnnotation(dd)
+
+      val sym   = dd.symbol
+      val attrs = genMethodAttrs(sym)
+      val name  = genMethodName(sym)
+      val sig   = genMethodSig(sym)
+
+      dd.rhs match {
         case Apply(ref: RefTree, Seq()) if ref.symbol == ExternMethod =>
           val moduleName  = genTypeName(curClassSym)
           val externAttrs = Attrs(isExtern = true)
@@ -235,22 +243,92 @@ trait NirGenStat { self: NirGenPhase =>
       }
     }
 
-    def validateExternCtor(rhs: Tree): Unit = {
-      val Block(_ +: init, _) = rhs
-      val externs = init.map {
-        case Assign(ref: RefTree, Apply(extern, Seq()))
-            if extern.symbol == ExternMethod =>
-          ref.symbol
-        case _ =>
-          unsupported(
-            "extern objects may only contain extern fields and methods")
-      }.toSet
-      for {
-        f <- curClassSym.info.decls if f.isField
-        if !externs.contains(f)
-      } {
-        unsupported("extern objects may only contain extern fields")
+    def genConcreteMethod(dd: DefDef): Unit = {
+      val sym          = dd.symbol
+      val owner        = curClassSym.get
+      val attrs        = genMethodAttrs(sym)
+      val name         = genMethodName(sym)
+      val isStatic     = owner.isExternModule || owner.isImplClass
+      val sig          = genMethodSig(sym, isStatic)
+      val paramSymOpts = genParamSyms(dd, isStatic)
+
+      genConcreteMethod(attrs, name, sig, paramSymOpts, isStatic, dd.rhs)
+    }
+
+    def genConcreteMethod(attrs: Attrs,
+                          name: Global,
+                          sig: nir.Type,
+                          paramSymOpts: Seq[Option[Symbol]],
+                          isStatic: Boolean,
+                          rhs: Tree): Unit = {
+      val fresh = Fresh()
+      val env   = new MethodEnv(fresh)
+
+      scoped(
+        curMethodEnv := env,
+        curMethodInfo := (new CollectMethodInfo).collect(rhs),
+        curFresh := fresh,
+        curUnwind := Next.None
+      ) {
+        val params = genParams(paramSymOpts)
+        val body   = genConcreteMethodBody(paramSymOpts, params, isStatic, rhs)
+
+        buf += Defn.Define(attrs, name, sig, body)
       }
+    }
+
+    def genConcreteMethodBody(paramSymOpts: Seq[Option[Symbol]],
+                              params: Seq[Val.Local],
+                              isStatic: Boolean,
+                              bodyp: Tree): Seq[nir.Inst] = {
+      val fresh = curFresh.get
+      val buf   = new ExprBuffer()(fresh)
+
+      def genPrelude(): Unit = {
+        val vars = curMethodInfo.mutableVars.toSeq
+        buf.label(fresh(), params)
+        vars.foreach { sym =>
+          val ty    = genType(sym.info, box = false)
+          val alloc = buf.stackalloc(ty, Val.None)
+          curMethodEnv.enter(sym, alloc)
+        }
+      }
+
+      def genBody(): Val = bodyp match {
+        // Tailrec emits magical labeldefs that can hijack this reference is
+        // current method. This requires special treatment on our side.
+        case Block(List(ValDef(_, nme.THIS, _, _)),
+                   label @ LabelDef(name, Ident(nme.THIS) :: _, rhs)) =>
+          val local  = curMethodEnv.enterLabel(label)
+          val values = params.take(label.params.length)
+
+          buf.jump(local, values)
+          scoped(
+            curMethodThis := {
+              if (isStatic) None
+              else Some(Val.Local(params.head.name, params.head.ty))
+            }
+          ) {
+            buf.genTailRecLabel(paramSymOpts, isStatic, label)
+          }
+
+        case _ if curMethodSym.get == NObjectInitMethod =>
+          nir.Val.Unit
+
+        case _ =>
+          scoped(
+            curMethodThis := {
+              if (isStatic) None
+              else Some(Val.Local(params.head.name, params.head.ty))
+            }
+          ) {
+            buf.genExpr(bodyp)
+          }
+      }
+
+      genPrelude()
+      buf.ret(genBody())
+      buf.toSeq
     }
 
     def genMethodAttrs(sym: Symbol): Attrs = {
@@ -325,7 +403,10 @@ trait NirGenStat { self: NirGenPhase =>
     }
 
     def genParams(dd: DefDef, isStatic: Boolean): Seq[Val.Local] =
-      genParamSyms(dd, isStatic).map {
+      genParams(genParamSyms(dd, isStatic))
+
+    def genParams(paramSyms: Seq[Option[Symbol]]): Seq[Val.Local] =
+      paramSyms.map {
         case None =>
           val fresh = curFresh.get
           Val.Local(fresh(), genType(curClassSym.tpe, box = true))
@@ -337,60 +418,6 @@ trait NirGenStat { self: NirGenPhase =>
           curMethodEnv.enter(sym, param)
           param
       }
-
-    def genNormalMethodBody(dd: DefDef,
-                            params: Seq[Val.Local],
-                            bodyp: Tree,
-                            isStatic: Boolean): Seq[nir.Inst] = {
-      val fresh = curFresh.get
-      val buf   = new ExprBuffer()(fresh)
-
-      def genPrelude(): Unit = {
-        val vars = curMethodInfo.mutableVars.toSeq
-        buf.label(fresh(), params)
-        vars.foreach { sym =>
-          val ty    = genType(sym.info, box = false)
-          val alloc = buf.stackalloc(ty, Val.None)
-          curMethodEnv.enter(sym, alloc)
-        }
-      }
-
-      def genBody(): Val = bodyp match {
-        // Tailrec emits magical labeldefs that can hijack this reference is
-        // current method. This requires special treatment on our side.
-        case Block(List(ValDef(_, nme.THIS, _, _)),
-                   label @ LabelDef(name, Ident(nme.THIS) :: _, rhs)) =>
-          val local  = curMethodEnv.enterLabel(label)
-          val values = params.take(label.params.length)
-
-          buf.jump(local, values)
-          scoped(
-            curMethodThis := {
-              if (isStatic) None
-              else Some(Val.Local(params.head.name, params.head.ty))
-            }
-          ) {
-            buf.genTailRecLabel(dd, isStatic, label)
-          }
-
-        case _ if curMethodSym.get == NObjectInitMethod =>
-          nir.Val.Unit
-
-        case _ =>
-          scoped(
-            curMethodThis := {
-              if (isStatic) None
-              else Some(Val.Local(params.head.name, params.head.ty))
-            }
-          ) {
-            buf.genExpr(bodyp)
-          }
-      }
-
-      genPrelude()
-      buf.ret(genBody())
-      buf.toSeq
-    }
 
     def genFunctionPtrForwarder(sym: Symbol): Val = {
       val anondef = consumeLazyAnonDef(sym)
@@ -413,17 +440,42 @@ trait NirGenStat { self: NirGenPhase =>
           Val.Global(genMethodName(tosym), Type.Ptr)
 
         case _ =>
-          val attrs  = Attrs(isExtern = true)
-          val name   = genAnonName(curClassSym, anondef.symbol)
-          val sig    = genMethodSig(apply.symbol, forceStatic = true)
-          val params = genParams(apply, isStatic = true)
-          val body =
-            genNormalMethodBody(apply, params, apply.rhs, isStatic = true)
+          val attrs        = Attrs(isExtern = true)
+          val name         = genAnonName(curClassSym, anondef.symbol)
+          val sig          = genMethodSig(apply.symbol, forceStatic = true)
+          val paramSymOpts = genParamSyms(apply, isStatic = true)
 
-          buf += Defn.Define(attrs, name, sig, body)
+          genConcreteMethod(attrs,
+                            name,
+                            sig,
+                            paramSymOpts,
+                            isStatic = true,
+                            apply.rhs)
 
           Val.Global(name, Type.Ptr)
       }
+    }
+
+    def genFunctionForwarder(samTpe: Type,
+                             paramSyms: Seq[Symbol],
+                             captureSyms: Seq[Symbol],
+                             bodyp: Tree): Val = {
+      val name = genFunctionForwarderName(curClassSym)
+
+      val allParamSyms = captureSyms ++ paramSyms
+      val paramSymOpts = allParamSyms.map(Some(_))
+
+      val argtys = allParamSyms.map(sym => genType(sym.tpe, box = false))
+      val sig    = Type.Function(argtys, genType(bodyp.tpe, box = false))
+
+      genConcreteMethod(Attrs.None,
+                        name,
+                        sig,
+                        paramSymOpts,
+                        isStatic = true,
+                        bodyp)
+
+      Val.Global(name, Type.Ptr)
     }
   }
 
