@@ -24,6 +24,8 @@ import scalanative.sbtplugin.SBTCompat.{Process, _}
 import scalanative.testinterface.ScalaNativeFramework
 
 object ScalaNativePluginInternal {
+  val nativeCache =
+    settingKey[build.Cache]("Scala Native build cache.")
 
   val nativeWarnOldJVM =
     taskKey[Unit]("Warn if JVM 7 or older is used.")
@@ -52,6 +54,7 @@ object ScalaNativePluginInternal {
   lazy val scalaNativeBaseSettings: Seq[Setting[_]] = Seq(
     crossVersion := ScalaNativeCrossVersion.binary,
     platformDepsCrossVersion := ScalaNativeCrossVersion.binary,
+    nativeCache := build.Cache.empty,
     nativeClang := interceptBuildException(Discover.clang().toFile),
     nativeClang in NativeTest := (nativeClang in Test).value,
     nativeClangPP := interceptBuildException(Discover.clangpp().toFile),
@@ -129,6 +132,7 @@ object ScalaNativePluginInternal {
         .withMode(mode)
         .withLinkStubs(nativeLinkStubs.value)
         .withLTO(nativeLTO.value)
+        .withCache(nativeCache.value)
     },
     nativeLink := {
       val logger  = streams.value.log.toLogger

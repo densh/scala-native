@@ -49,7 +49,7 @@ object Build {
    *  @param outpath The path to the resulting native binary.
    *  @return `outpath`, the path to the resulting native binary.
    */
-  def build(config: Config, outpath: Path): Path = {
+  def build(config: Config, outpath: Path): Path = config.logger.time("Total") {
     val driver       = optimizer.Driver.default(config.mode)
     val linkerResult = ScalaNative.link(config, driver)
 

@@ -4,7 +4,6 @@ package linker
 import scala.collection.mutable
 import scalanative.nir._
 import scalanative.nir.serialization._
-import scalanative.io.VirtualDirectory
 import scalanative.util.Scope
 
 object Link {
@@ -26,9 +25,8 @@ object Link {
     val signatures  = mutable.Set.empty[String]
     val dyndefns    = mutable.Set.empty[Global]
 
-    val classpath = config.classPath.map { path =>
-      ClassPath(VirtualDirectory.real(path))
-    }
+    val cache     = config.cache.link
+    val classpath = config.classPath.map(cache.classpath)
 
     def load(global: Global) =
       classpath.collectFirst {

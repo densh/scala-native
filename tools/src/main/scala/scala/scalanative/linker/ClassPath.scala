@@ -2,9 +2,9 @@ package scala.scalanative
 package linker
 
 import scala.collection.mutable
-import nir.{Global, Dep, Attr, Defn}
-import nir.serialization.BinaryDeserializer
 import java.nio.file.{FileSystems, Path}
+import scalanative.nir.{Global, Dep, Attr, Defn}
+import scalanative.nir.serialization.BinaryDeserializer
 import scalanative.io.VirtualDirectory
 import scalanative.util.Scope
 
@@ -31,7 +31,7 @@ object ClassPath {
   private[scalanative] def apply(directory: VirtualDirectory): ClassPath =
     new Impl(directory)
 
-  private final class Impl(directory: VirtualDirectory) extends ClassPath {
+  private sealed class Impl(directory: VirtualDirectory) extends ClassPath {
     private val entries: Map[Global, BinaryDeserializer] = {
       directory.files
         .filter(_.toString.endsWith(".nir"))
@@ -44,13 +44,20 @@ object ClassPath {
         .toMap
     }
 
+    type Load = Option[(Seq[Dep], Seq[Attr.Link], Seq[String], Defn)]
+
+    private val cache = mutable.Map.empty[Global, Load]
+
     def contains(name: Global) =
       entries.contains(name.top)
 
-    def load(
-        name: Global): Option[(Seq[Dep], Seq[Attr.Link], Seq[String], Defn)] =
-      entries.get(name.top).flatMap { deserializer =>
-        deserializer.deserialize(name)
+    def load(name: Global): Load =
+      cache.get(name).getOrElse {
+        val res = entries.get(name.top).flatMap { deserializer =>
+          deserializer.deserialize(name)
+        }
+        cache(name) = res
+        res
       }
 
     def globals: Set[Global] = entries.values.flatMap(_.globals).toSet

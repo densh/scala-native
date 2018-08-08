@@ -26,7 +26,7 @@ object Scope {
    *  resources as soon as execution leaves the demercated block.
    */
   def apply[T](f: Scope => T): T = {
-    val scope = new Impl
+    val scope = new Stack {}
     try f(scope)
     finally scope.close()
   }
@@ -34,12 +34,13 @@ object Scope {
   /** Scope that never closes. Resources allocated in this scope are
    *  going to be acquired as long as application is running.
    */
-  val forever: Scope = new Impl {
+  val forever: Scope = new Stack {
     override def close(): Unit =
       throw new UnsupportedOperationException("Can't close forever Scope.")
   }
 
-  private sealed class Impl extends Scope {
+  /** Scope that stores all resources in as stack. */
+  trait Stack extends Scope {
     private[this] var resources: List[Resource] = Nil
 
     def acquire(res: Resource): Unit = {
