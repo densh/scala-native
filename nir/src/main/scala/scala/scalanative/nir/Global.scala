@@ -1,6 +1,37 @@
 package scala.scalanative
 package nir
 
+sealed abstract class Name {
+  final def mangle: String = ???
+}
+object Name {
+
+  // Definition names
+  final case class Method(owner: Name, types: Seq[Name])      extends Name
+  final case class Field(owner: Name, name: Name)             extends Name
+  final case class Constructor(owner: Name, types: Seq[Name]) extends Name
+  final case class Duplicate(of: Name, types: Seq[Name])      extends Name
+  final case class Rtti(owner: Name)                          extends Name
+  final case class Layout(owner: Name)                        extends Name
+  final case class Accessor(owner: Name)                      extends Name
+  final case class Dispatch(name: Name)                       extends Name
+  final case class Proxy(name: Name)                          extends Name
+
+  // Type names
+  final case class FuncPtr(types: Seq[Name])         extends Name
+  final case class Ptr(of: Name)                     extends Name
+  final case class Unsigned(of: Name)                extends Name
+  final case class Array(of: Name)                   extends Name
+  final case class FixedArray(of: Name, length: Int) extends Name
+  final case class Exact(of: Name)                   extends Name
+  final case class NonNull(of: Name)                 extends Name
+  final case class Tuple(arity: Int)                 extends Name
+  final case class Function(arity: Int)              extends Name
+
+  // Source names
+  final case class Source(value: String) extends Name
+}
+
 sealed abstract class Global {
   def id: String
   def top: Global.Top

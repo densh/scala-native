@@ -40,5 +40,8 @@ final class ShowBuilder {
     sb = new java.lang.StringBuilder
   }
 
+  def size(): Int =
+    sb.length()
+
   override def toString = sb.toString
 }
