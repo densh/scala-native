@@ -1,0 +1,137 @@
+Free non-terminals: e H I J K L Q S Y y Z
+
+<mangled-name> ::=
+    _S <defn-name>
+
+<defn-name> ::=
+    C <name>                       // class name
+    F <name> <name>                // field name
+    R <name> <type-name>+ E        // constructor name
+    M <name> <name> <type-name>+ E // method name
+    D <member-name> <type-name>+ E // duplicate name
+    P <member-name>                // proxy name
+    I <name>                       // internal name
+
+<type-name> ::=
+    R <type-name>+ E               // c function pointer type-name
+    R <type-name> _                // c pointer type-name
+    S <type-name>+ E               // c struct value
+    A <type-name> _ <number> E     // c array type-name
+    A <type-name> _                // array type-name
+    U <type-name>                  // unsigned type-name
+    X <type-name>                  // exact type-name
+    N <type-name>                  // nonnull type-name
+    T <number>                     // scala.TupleN
+    K <number>                     // scala.FunctionN
+    <name>                         // named type-name
+
+<name> ::=
+    V <prefix>+ <name> E           // dot separated name
+    W <prefix>+ <name> E           // dollar separated name
+    S <number> _                   // substitution name
+    O <builtin-op-name>            // built-in op name
+    <builtin-source-name>          // built-in source name
+    <length number> <identifier>   // unqualified name of given length
+
+<prefix> ::=
+    P <builtin-prefix-name>
+    <name>
+
+<builtin-source-name > ::=
+                    // type-name names:
+    u               //   scala.Unit
+    z               //   scala.Bool
+    c               //   scala.Char
+    b               //   scala.Byte
+    s               //   scala.Short
+    i               //   scala.Int
+    j               //   scala.Long
+    f               //   scala.Float
+    d               //   scala.Double
+    p               //   scala.Predef
+    n               //   scala.Null
+    t               //   scala.Nothing
+    o               //   java.lang.Object
+    r               //   java.lang.String
+
+                    // method and suffix names:
+    a               //   apply
+    q               //   equals
+    h               //   hashCode
+    g               //   toString
+    x               //   update
+    v               //   anon
+    w               //   anonfun
+    l               //   class
+
+<builtin-prefix-name> ::=
+    jj              // java.
+    ji              // java.io.
+    jl              // java.lang.
+    jm              // java.math.
+    jn              // java.nio.
+    jf              // java.nio.file.
+    jF              // java.nio.file.attribute.
+    jN              // java.nio.channel.
+    jC              // java.nio.charset.
+    ju              // java.util.
+    jz              // java.util.zip.
+    jZ              // java.util.jar.
+    jr              // java.util.regex.
+    jc              // java.util.concurrent.
+    ss              // scala.
+    sc              // scala.collection.
+    si              // scala.collection.immutable.
+    sm              // scala.collection.mutable.
+    sC              // scala.concurrent.
+    sM              // scala.math.
+    sr              // scala.runtime.
+    su              // scala.util.
+    nn              // scala.scalanative.
+    nr              // scala.scalanative.runtime.
+
+<builtin-op-name> ::=
+    aa              // &&
+    aN              // &
+    aP              // +:
+    ap              // :+
+    as              // :=
+    bg              // !
+    bG              // unary_!
+    cs              // ::
+    CS              // :::
+    eo              // ^
+    eO              // ^^
+    ee              // =
+    eq              // ==
+    eQ              // ===
+    ge              // >=
+    gt              // >
+    hs              // ##
+    le              // <=
+    ls              // <<
+    lt              // <
+    mi              // -
+    MI              // --=
+    mI              // -=
+    ml              // *
+    mm              // --
+    ne              // !=
+    nE              // !==
+    ng              // unary_-
+    nG              // unary_~
+    or              // |
+    oR              // ||
+    pl              // +
+    Pl              // ++:
+    PL              // ++=
+    pL              // +=
+    pm              // ->
+    pp              // ++
+    ps              // unary_+
+    rm              // %
+    rs              // >>
+    sQ              // <~
+    sq              // ~
+    SQ              // ~>
+    ss              // ~~

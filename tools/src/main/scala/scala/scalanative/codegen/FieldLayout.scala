@@ -15,7 +15,7 @@ class FieldLayout(meta: Metadata, cls: Class) {
     }
     base ++ cls.members.collect { case f: Field => f }
   }
-  val name = cls.name member "layout"
+  val name = Global.layout(cls.name)
   val struct: Type.StructValue = {
     val data = entries.map(_.ty)
     val body = Type.Ptr +: data

@@ -116,7 +116,7 @@ object Generate {
       val entryMainTy =
         Type.Function(Seq(Type.Module(entry.top), ObjectArray), Type.Void)
       val entryMainName =
-        Global.Member(entry, "main_arr.java.lang.String_unit")
+        Global.main(entry)
       val entryMain = Val.Global(entryMainName, Type.Ptr)
 
       val stackBottom = Val.Local(fresh(), Type.Ptr)
@@ -183,12 +183,12 @@ object Generate {
             Inst.None
           } else {
             val initSig = Type.Function(Seq(clsTy), Type.Void)
-            val init    = Val.Global(name member "init", Type.Ptr)
+            val init    = Val.Global(Global.init(name), Type.Ptr)
 
             Inst.Let(Op.Call(initSig, init, Seq(alloc)), Next.None)
           }
 
-          val loadName = name member "load"
+          val loadName = Global.accessor(name)
           val loadSig  = Type.Function(Seq(), clsTy)
           val loadDefn = Defn.Define(
             Attrs.None,
@@ -270,12 +270,12 @@ object Generate {
       Type.Function(Seq(Rt, Type.Int, Type.Ptr), ObjectArray)
     val RtInit =
       Val.Global(
-        Rt.name member "init_i32_ptr_scala.scalanative.runtime.ObjectArray",
+        Global.method(Rt.name, "init", Seq(Type.Int, Type.Ptr, ObjectArray)),
         Type.Ptr)
     val RtLoopSig =
       Type.Function(Seq(Rt), Type.Unit)
     val RtLoop =
-      Val.Global(Rt.name member "loop_unit", Type.Ptr)
+      Val.Global(Global.method(Rt.name, "loop", Seq(Type.Unit)), Type.Ptr)
 
     val MainName = Global.Top("main")
     val MainSig  = Type.Function(Seq(Type.Int, Type.Ptr), Type.Int)
@@ -286,7 +286,7 @@ object Generate {
     val PrintStackTraceSig =
       Type.Function(Seq(Throwable), Type.Unit)
     val PrintStackTraceName =
-      Global.Member(ThrowableName, "printStackTrace_unit")
+      Global.method(ThrowableName, "printStackTrace", Seq(Type.Unit))
     val PrintStackTrace =
       Val.Global(PrintStackTraceName, Type.Ptr)
 

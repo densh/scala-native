@@ -64,7 +64,7 @@ final class Class(val attrs: Attrs,
   val ty: Type =
     Type.Class(name)
   def isStaticModule(implicit top: Result): Boolean =
-    isModule && !top.infos.contains(name member "init")
+    isModule && !top.infos.contains(Global.init(name))
   def resolve(sig: String): Option[Global] =
     responds.get(sig)
   def targets(sig: String): mutable.Set[Global] = {

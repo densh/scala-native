@@ -15,12 +15,8 @@ private[scalanative] object ScalaNative {
   /** Compute all globals that must be reachable
    *  based on given configuration.
    */
-  def entries(config: Config): Seq[Global] = {
-    val mainClass = Global.Top(config.mainClass)
-    val entry =
-      Global.Member(mainClass, "main_arr.java.lang.String_unit")
-    entry +: CodeGen.depends
-  }
+  def entries(config: Config): Seq[Global] =
+    Global.main(Global.Top(config.mainClass)) +: CodeGen.depends
 
   /** Given the classpath and main entry point, link under closed-world
    *  assumption.

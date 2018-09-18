@@ -130,7 +130,7 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
       case Some(cls: Class) =>
         reachAllocation(cls)
         if (cls.isModule) {
-          val init = cls.name member "init"
+          val init = Global.init(cls.name)
           if (loaded(cls.name).contains(init)) {
             reachGlobal(init)
           }
@@ -532,7 +532,7 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
       reachDynamicMethodTargets(dynsig)
     case Op.Module(n) =>
       classInfo(n).foreach(reachAllocation)
-      val init = n member "init"
+      val init = Global.init(n)
       if (loaded(n).contains(init)) {
         reachGlobal(init)
       }
@@ -616,7 +616,7 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
     assert(loaded.contains(cls.name))
 
     def lookupSig(cls: Class, sig: String): Option[Global] = {
-      val tryMember = cls.name member sig
+      val tryMember = Global.method(cls.name, sig)
       if (loaded(cls.name).contains(tryMember)) {
         Some(tryMember)
       } else {

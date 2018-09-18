@@ -740,7 +740,7 @@ trait NirGenExpr { self: NirGenPhase =>
 
     lazy val jlClassName     = nir.Global.Top("java.lang.Class")
     lazy val jlClass         = nir.Type.Class(jlClassName)
-    lazy val jlClassCtorName = jlClassName member "init_ptr"
+    lazy val jlClassCtorName = nir.Global.init(jlClassName, Seq(nir.Type.Ptr))
     lazy val jlClassCtorSig =
       nir.Type.Function(Seq(jlClass, Type.Ptr), nir.Type.Unit)
     lazy val jlClassCtor = nir.Val.Global(jlClassCtorName, nir.Type.Ptr)

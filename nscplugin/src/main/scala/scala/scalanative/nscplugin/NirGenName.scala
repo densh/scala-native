@@ -10,8 +10,8 @@ trait NirGenName { self: NirGenPhase =>
   import nirAddons.nirDefinitions._
   import SimpleType.{fromSymbol, fromType}
 
-  def genAnonName(owner: Symbol, anon: Symbol) =
-    genName(owner) member anon.fullName.toString tag "extern"
+  def genAnonName(owner: Symbol, anon: Symbol): nir.Global =
+    nir.Global.method(genName(owner), anon.fullName.toString, Seq.empty)
 
   def genName(sym: Symbol): nir.Global =
     if (sym.isType) {
@@ -52,20 +52,8 @@ trait NirGenName { self: NirGenPhase =>
   def genFieldName(sym: Symbol): nir.Global = {
     val owner = genTypeName(sym.owner)
     val id    = nativeIdOf(sym)
-    val tag   = if (sym.owner.isExternModule) "extern" else "field"
-    owner member id tag tag
-  }
 
-  def genMethodSignature(sym: Symbol): String = {
-    val owner = genTypeName(sym.owner)
-    val id    = nativeIdOf(sym)
-    val tpe   = sym.tpe.widen
-    val mangledParams =
-      tpe.params.map(p => mangledType(p.info))
-
-    val mangledRetty = mangledType(tpe.resultType)
-    (owner member (id.replace("_", "__") +: (mangledParams :+ mangledRetty))
-      .mkString("_")).toString
+    nir.Global.field(owner, id)
   }
 
   def genMethodName(sym: Symbol): nir.Global = {
@@ -73,26 +61,18 @@ trait NirGenName { self: NirGenPhase =>
     val id    = nativeIdOf(sym)
     val tpe   = sym.tpe.widen
 
-    val mangledParams = tpe.params.toSeq.map(p => mangledType(p.info))
+    val paramTypes = tpe.params.map(_.info).map(genType(_, box = false))
+    val returnType = genType(tpe.resultType, box = false)
+    val types      = paramTypes :+ returnType
 
     if (sym == String_+) {
       genMethodName(StringConcatMethod)
-    } else if (sym.owner.isExternModule) {
-      owner member id tag "extern"
     } else if (sym.name == nme.CONSTRUCTOR) {
-      owner member ("init" +: mangledParams).mkString("_")
+      nir.Global.init(owner, paramTypes)
     } else {
-      val mangledRetty = mangledType(tpe.resultType)
-      val mangledId = id
-        .replace("_", "$underscore$")
-        .replace("\"", "$doublequote$")
-      owner member (mangledId +: (mangledParams :+ mangledRetty))
-        .mkString("_")
+      nir.Global.method(owner, id, types)
     }
   }
-
-  private def mangledType(tpe: Type): String =
-    genType(tpe, box = false).mangle
 
   private def nativeIdOf(sym: Symbol): String = {
     sym.getAnnotation(NameClass).flatMap(_.stringArg(0)).getOrElse {
@@ -111,6 +91,7 @@ trait NirGenName { self: NirGenPhase =>
           name.toString
         }
       } else {
+        println(sym.fullName)
         scalanative.util.unreachable
       }
     }
