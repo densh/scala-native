@@ -4,9 +4,7 @@ package serialization
 
 import java.nio.ByteBuffer
 import scala.collection.mutable
-
-import nir.serialization.{Tags => T}
-import Global.Member
+import scalanative.nir.serialization.{Tags => T}
 
 final class BinaryDeserializer(buffer: ByteBuffer) {
   import buffer._
@@ -172,15 +170,22 @@ final class BinaryDeserializer(buffer: ByteBuffer) {
     case T.NoneGlobal =>
       Global.None
     case T.TopGlobal =>
-      Global.stripImplClassTrailingDollar(Global.Top(getString))
+      Global.Top(getString)
     case T.MemberGlobal =>
-      Global.Member(getGlobal, getString)
+      Global.Member(Global.Top(getString), getSig)
   }
 
-  private def getLocal(): Local = {
-    val scope = getString // ignored
-    Local(getInt)
+  private def getSig(): Sig = getInt match {
+    case T.FieldSig     => Sig.Field(getString)
+    case T.CtorSig      => Sig.Ctor(getTypes)
+    case T.MethodSig    => Sig.Method(getString, getTypes)
+    case T.ProxySig     => Sig.Proxy(getString, getTypes)
+    case T.ExternSig    => Sig.Extern(getString)
+    case T.GeneratedSig => Sig.Generated(getString)
   }
+
+  private def getLocal(): Local =
+    Local(getInt)
 
   private def getNexts(): Seq[Next] = getSeq(getNext)
   private def getNext(): Next = getInt match {
@@ -206,8 +211,8 @@ final class BinaryDeserializer(buffer: ByteBuffer) {
     case T.ClassallocOp  => Op.Classalloc(getGlobal)
     case T.FieldloadOp   => Op.Fieldload(getType, getVal, getGlobal)
     case T.FieldstoreOp  => Op.Fieldstore(getType, getVal, getGlobal, getVal)
-    case T.MethodOp      => Op.Method(getVal, getString)
-    case T.DynmethodOp   => Op.Dynmethod(getVal, getString)
+    case T.MethodOp      => Op.Method(getVal, getSig)
+    case T.DynmethodOp   => Op.Dynmethod(getVal, getSig)
     case T.ModuleOp      => Op.Module(getGlobal)
     case T.AsOp          => Op.As(getType, getVal)
     case T.IsOp          => Op.Is(getType, getVal)

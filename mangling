@@ -1,0 +1,27 @@
+<mangled-name> ::=
+    _S <defn-name>
+
+<defn-name> ::=
+    C <name>                       // top-level scope name
+    M <name> <sig-name>            // nested member name
+
+<sig-name> ::=
+    F <name>                       // field name
+    R <type-name>+ E               // constructor name
+    D <name> <type-name>+ E        // method name
+    P <name> <type-name>+ E        // proxy name
+    U <name>                       // extern name
+    G <name>                       // generated name
+
+<type-name> ::=
+    R <type-name>+ E               // c function pointer type-name
+    R <type-name> _                // c pointer type-name
+    S <type-name>+ E               // c anonymous struct type-name
+    A <type-name> <number> E       // c array type-name
+    A <type-name> _                // array type-name
+    X <type-name>                  // exact type-name
+    N <type-name>                  // nonnull type-name
+    <name>                         // named type
+
+<name> ::=
+    <length number> <chars>        // raw name of given length

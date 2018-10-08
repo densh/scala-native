@@ -15,8 +15,8 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
   val links       = mutable.Set.empty[Attr.Link]
   val infos       = mutable.Map.empty[Global, Info]
 
-  val dyncandidates = mutable.Map.empty[String, mutable.Set[Global]]
-  val dynsigs       = mutable.Set.empty[String]
+  val dyncandidates = mutable.Map.empty[Sig, mutable.Set[Global]]
+  val dynsigs       = mutable.Set.empty[Sig]
   val dynimpls      = mutable.Set.empty[Global]
 
   entries.foreach(reachEntry)
@@ -104,7 +104,7 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
       case defn: Defn.Declare =>
         reachDeclare(defn)
       case defn: Defn.Define =>
-        val sig = defn.name.id
+        val Global.Member(_, sig) = defn.name
         if (Rt.arrayAlloc.contains(sig)) {
           classInfo(Rt.arrayAlloc(sig)).foreach(reachAllocation)
         }
@@ -130,7 +130,7 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
       case Some(cls: Class) =>
         reachAllocation(cls)
         if (cls.isModule) {
-          val init = cls.name member "init"
+          val init = cls.name.member(Sig.Ctor(Seq()))
           if (loaded(cls.name).contains(init)) {
             reachGlobal(init)
           }
@@ -195,18 +195,21 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
         }
         loaded(info.name).foreach {
           case (_, defn: Defn.Define) =>
-            def update(sig: String): Unit = {
+            val Global.Member(_, sig) = defn.name
+            def update(sig: Sig): Unit = {
               info.responds(sig) = resolve(info, sig).get
             }
-            defn.name.id match {
+            sig match {
               case Rt.JavaEqualsSig =>
                 update(Rt.ScalaEqualsSig)
                 update(Rt.JavaEqualsSig)
               case Rt.JavaHashCodeSig =>
                 update(Rt.ScalaHashCodeSig)
                 update(Rt.JavaHashCodeSig)
-              case sig =>
+              case sig @ (_: Sig.Method | _: Sig.Ctor) =>
                 update(sig)
+              case _ =>
+                ()
             }
           case _ =>
             ()
@@ -224,7 +227,7 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
       // on this class. This includes virtual calls
       // on the traits that this class implements and
       // calls on all transitive parents.
-      val calls = mutable.Set.empty[String]
+      val calls = mutable.Set.empty[Sig]
       calls ++= info.calls
       def loopParent(parentInfo: Class): Unit = {
         calls ++= parentInfo.calls
@@ -246,8 +249,8 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
       // signature becomes reachable. The others are
       // stashed as dynamic candidates.
       info.responds.foreach {
-        case (sig, impl) =>
-          val dynsig = Global.genSignature(sig)
+        case (sig: Sig.Method, impl) =>
+          val dynsig = sig.toProxy
           if (!dynsigs.contains(dynsig)) {
             val buf =
               dyncandidates.getOrElseUpdate(dynsig, mutable.Set.empty[Global])
@@ -256,6 +259,8 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
             dynimpls += impl
             reachGlobal(impl)
           }
+        case _ =>
+          ()
       }
     }
 
@@ -532,7 +537,7 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
       reachDynamicMethodTargets(dynsig)
     case Op.Module(n) =>
       classInfo(n).foreach(reachAllocation)
-      val init = n member "init"
+      val init = n.member(Sig.Ctor(Seq()))
       if (loaded(n).contains(init)) {
         reachGlobal(init)
       }
@@ -585,7 +590,7 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
       ()
   }
 
-  def reachMethodTargets(ty: Type, sig: String): Unit = ty match {
+  def reachMethodTargets(ty: Type, sig: Sig): Unit = ty match {
     case Type.Array(ty) =>
       reachMethodTargets(Type.Class(Type.toArrayClass(ty)), sig)
     case ty: Type.Named =>
@@ -599,7 +604,7 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
       ()
   }
 
-  def reachDynamicMethodTargets(dynsig: String) = {
+  def reachDynamicMethodTargets(dynsig: Sig) = {
     if (!dynsigs.contains(dynsig)) {
       dynsigs += dynsig
       if (dyncandidates.contains(dynsig)) {
@@ -612,11 +617,11 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
     }
   }
 
-  def resolve(cls: Class, sig: String): Option[Global] = {
+  def resolve(cls: Class, sig: Sig): Option[Global] = {
     assert(loaded.contains(cls.name))
 
-    def lookupSig(cls: Class, sig: String): Option[Global] = {
-      val tryMember = cls.name member sig
+    def lookupSig(cls: Class, sig: Sig): Option[Global] = {
+      val tryMember = cls.name.member(sig)
       if (loaded(cls.name).contains(tryMember)) {
         Some(tryMember)
       } else {

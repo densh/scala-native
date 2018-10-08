@@ -22,6 +22,9 @@ object Show {
   def apply(v: Global): String = {
     val b = newBuilder; b.global_(v); b.toString
   }
+  def apply(v: Sig): String = {
+    val b = newBuilder; b.sig_(v); b.toString
+  }
   def apply(v: Inst): String  = { val b = newBuilder; b.inst_(v); b.toString }
   def apply(v: Local): String = { val b = newBuilder; b.local_(v); b.toString }
   def apply(v: Next): String  = { val b = newBuilder; b.next_(v); b.toString }
@@ -247,17 +250,17 @@ object Show {
         global_(name)
         str(", ")
         val_(value)
-      case Op.Method(value, signature) =>
+      case Op.Method(value, sig) =>
         str("method ")
         val_(value)
         str(", \"")
-        str(escapeQuotes(signature))
+        str(escapeQuotes(sig.mangle))
         str("\"")
-      case Op.Dynmethod(value, signature) =>
+      case Op.Dynmethod(value, sig) =>
         str("dynmethod ")
         val_(value)
         str(", \"")
-        str(escapeQuotes(signature))
+        str(escapeQuotes(sig.mangle))
         str("\"")
       case Op.Module(name) =>
         str("module ")
@@ -608,11 +611,14 @@ object Show {
       case Global.Top(id) =>
         str("@")
         str(id)
-      case Global.Member(n, id) =>
+      case Global.Member(n, sig) =>
         global_(n)
         str("::")
-        str(id)
+        sig_(sig)
     }
+
+    def sig_(sig: Sig): Unit =
+      str(sig.mangle)
 
     def local_(local: Local): Unit = {
       str("%")

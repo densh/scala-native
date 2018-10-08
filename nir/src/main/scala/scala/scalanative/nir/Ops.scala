@@ -69,8 +69,12 @@ object Op {
   final case class Fieldload(ty: Type, obj: Val, name: Global) extends Op
   final case class Fieldstore(ty: Type, obj: Val, name: Global, value: Val)
       extends Op
-  final case class Method(obj: Val, signature: String)             extends Op
-  final case class Dynmethod(obj: Val, signature: String)          extends Op
+  final case class Method(obj: Val, sig: Sig) extends Op {
+    assert(sig.isInstanceOf[Sig.Method] || sig.isInstanceOf[Sig.Ctor], sig)
+  }
+  final case class Dynmethod(obj: Val, sig: Sig) extends Op {
+    assert(sig.isInstanceOf[Sig.Proxy])
+  }
   final case class Module(name: Global)                            extends Op
   final case class As(ty: Type, obj: Val)                          extends Op
   final case class Is(ty: Type, obj: Val)                          extends Op

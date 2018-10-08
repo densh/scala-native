@@ -7,7 +7,7 @@ import scalanative.nir._
 import scalanative.linker.{ScopeInfo, Class, Trait, Struct}
 
 class RuntimeTypeInformation(meta: Metadata, info: ScopeInfo) {
-  val name: Global      = info.name member "type"
+  val name: Global      = info.name.member(Sig.Generated("type"))
   val const: Val.Global = Val.Global(name, Type.Ptr)
   val struct: Type.StructValue = info match {
     case cls: Class =>
@@ -27,7 +27,7 @@ class RuntimeTypeInformation(meta: Metadata, info: ScopeInfo) {
   }
   val value: Val.StructValue = {
     val typeId  = Val.Int(meta.ids(info))
-    val typeStr = Val.String(info.name.id)
+    val typeStr = Val.String(info.name.asInstanceOf[Global.Top].id)
     val typeKind = Val.Byte(info match {
       case _: Class  => 0
       case _: Trait  => 1

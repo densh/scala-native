@@ -241,16 +241,44 @@ final class BinarySerializer(buffer: ByteBuffer) {
   private def putGlobalOpt(globalopt: Option[Global]): Unit =
     putOpt(globalopt)(putGlobal)
   private def putGlobal(global: Global): Unit = global match {
-    case Global.None    => putInt(T.NoneGlobal)
-    case Global.Top(id) => putInt(T.TopGlobal); putString(id)
-    case Global.Member(n, id) =>
-      putInt(T.MemberGlobal); putGlobal(n); putString(id)
+    case Global.None =>
+      putInt(T.NoneGlobal)
+    case Global.Top(id) =>
+      putInt(T.TopGlobal)
+      putString(id)
+    case Global.Member(Global.Top(owner), sig) =>
+      putInt(T.MemberGlobal)
+      putString(owner)
+      putSig(sig)
+    case _ =>
+      util.unreachable
   }
 
-  private def putLocal(local: Local): Unit = {
-    putString("") // scope
-    putInt(local.id)
+  private def putSig(sig: Sig): Unit = sig match {
+    case Sig.Field(id) =>
+      putInt(T.FieldSig)
+      putString(id)
+    case Sig.Ctor(types) =>
+      putInt(T.CtorSig)
+      putTypes(types)
+    case Sig.Method(id, types) =>
+      putInt(T.MethodSig)
+      putString(id)
+      putTypes(types)
+    case Sig.Proxy(id, types) =>
+      putInt(T.ProxySig)
+      putString(id)
+      putTypes(types)
+    case Sig.Extern(id) =>
+      putInt(T.ExternSig)
+      putString(id)
+    case Sig.Generated(id) =>
+      putInt(T.GeneratedSig)
+      putString(id)
   }
+
+  private def putLocal(local: Local): Unit =
+    putInt(local.id)
 
   private def putNexts(nexts: Seq[Next]) = putSeq(nexts)(putNext)
   private def putNext(next: Next) = next match {
@@ -345,15 +373,15 @@ final class BinarySerializer(buffer: ByteBuffer) {
       putGlobal(name)
       putVal(value)
 
-    case Op.Method(v, signature) =>
+    case Op.Method(v, sig) =>
       putInt(T.MethodOp)
       putVal(v)
-      putString(signature)
+      putSig(sig)
 
-    case Op.Dynmethod(obj, signature) =>
+    case Op.Dynmethod(obj, sig) =>
       putInt(T.DynmethodOp)
       putVal(obj)
-      putString(signature)
+      putSig(sig)
 
     case Op.Module(name) =>
       putInt(T.ModuleOp)

@@ -119,9 +119,20 @@ object Tags {
   final val TopGlobal    = 1 + NoneGlobal
   final val MemberGlobal = 1 + TopGlobal
 
+  // Sigs
+
+  final def Sig = Global + 32
+
+  final val FieldSig     = 1 + Sig
+  final val CtorSig      = 1 + FieldSig
+  final val MethodSig    = 1 + CtorSig
+  final val ProxySig     = 1 + MethodSig
+  final val ExternSig    = 1 + ProxySig
+  final val GeneratedSig = 1 + ExternSig
+
   // Nexts
 
-  final val Next = Global + 32
+  final val Next = Sig + 32
 
   final val NoneNext   = 1 + Next
   final val UnwindNext = 1 + NoneNext

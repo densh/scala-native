@@ -90,7 +90,7 @@ object CodeGen {
 
     val copies    = mutable.Map.empty[Local, Val]
     val deps      = mutable.Set.empty[Global]
-    val generated = mutable.Set.empty[Global]
+    val generated = mutable.Set.empty[String]
     val builder   = new ShowBuilder
     import builder._
 
@@ -108,7 +108,8 @@ object CodeGen {
     }
 
     def genDeps() = deps.foreach { n =>
-      if (!generated.contains(n)) {
+      val mn = mangled(n)
+      if (!generated.contains(mn)) {
         newline()
         genDefn {
           env(n) match {
@@ -120,11 +121,11 @@ object CodeGen {
               defn.copy(attrs.copy(isExtern = true), rhs = Val.None)
             case defn @ Defn.Declare(attrs, _, _) =>
               defn.copy(attrs.copy(isExtern = true))
-            case defn @ Defn.Define(attrs, _, _, _) =>
-              defn.copy(attrs.copy(isExtern = true), insts = Seq())
+            case defn @ Defn.Define(attrs, name, ty, _) =>
+              Defn.Declare(attrs, name, ty)
           }
         }
-        generated += n
+        generated += mn
       }
     }
 
@@ -146,11 +147,11 @@ object CodeGen {
 
     def genDefns(defns: Seq[Defn]): Unit = {
       def onDefn(defn: Defn): Unit = {
-        val n = defn.name
-        if (!generated.contains(n)) {
+        val mn = mangled(defn.name)
+        if (!generated.contains(mn)) {
           newline()
           genDefn(defn)
-          generated += n
+          generated += mn
         }
       }
 
@@ -415,7 +416,7 @@ object CodeGen {
       } else {
         val idx = constMap.size
         val name =
-          Global.Member(Global.Top("__const"), idx.toString)
+          Global.Member(Global.Top("__const"), Sig.Generated(idx.toString))
         constMap(v) = name
         constTy(name) = v.ty
         name
@@ -534,20 +535,18 @@ object CodeGen {
       genJustVal(value)
     }
 
-    def genJustGlobal(g: Global): Unit = g match {
+    def mangled(g: Global): String = g match {
       case Global.None =>
         unsupported(g)
-      case Global.Top(id) =>
-        str(id)
-      case Global.Member(n, id) =>
-        genJustGlobal(n)
-        str("::")
-        str(id)
+      case Global.Member(_, Sig.Extern(id)) =>
+        id
+      case _ =>
+        "_S" + g.mangle
     }
 
     def genGlobal(g: Global): Unit = {
       str("\"")
-      genJustGlobal(g)
+      str(mangled(g))
       str("\"")
     }
 
