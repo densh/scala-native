@@ -1,0 +1,31 @@
+package scala.scalanative
+package unsafe
+
+import scala.reflect.ClassTag
+import scalanative.runtime.intrinsic
+import scalanative.unsafe.Nat._
+
+/** Fixed-size array value. */
+final abstract class Arr[T, N <: Nat] {
+
+  /** Read an element from the array. */
+  @unsafe def apply(i: Int)(implicit ct: ClassTag[T]): T = intrinsic
+
+  /** Store an element to the array. */
+  @unsafe def update(i: Int, value: T)(implicit ct: ClassTag[T]): T = intrinsic
+}
+
+object Arr {
+
+  /** Empty array literal. */
+  def empty[T, N <: Nat]: Arr[T, N] = intrinsic
+
+% for N in range(0, 10):
+%   args = ", ".join("arg" + str(i) + ": T" for i in range(1, N+1))
+
+  /** Array literal of length ${N}. */
+  def apply[T](${args})(implicit ct: ClassTag[T]): Arr[T, _${N}] = intrinsic
+
+% end
+
+}

@@ -33,6 +33,9 @@ package object runtime {
   /** Used as a stub right hand of intrinsified methods. */
   def undefined: Nothing = throw new UndefinedBehaviorError
 
+  /** Used as a stub right hand of intrinsified methods. */
+  def intrinsic: Nothing = throw new UndefinedBehaviorError
+
   /** Returns info pointer for given type. */
   def typeof[T](implicit tag: Tag[T]): Ptr[Type] = undefined
 
