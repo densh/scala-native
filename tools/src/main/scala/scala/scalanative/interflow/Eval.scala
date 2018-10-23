@@ -125,24 +125,40 @@ trait Eval { self: Interflow =>
           case Val.Global(name, _) if intrinsics.contains(name) =>
             intrinsic(local, sig, name, eargs, unwind)
           case _ =>
-            val mmeth   = materialize(emeth)
-            val margs   = eargs.map(materialize(_))
-            val margtys = margs.map(_.ty)
+            val argtys = eargs.map {
+              case Val.Virtual(addr) =>
+                state.deref(addr).cls.ty
+              case value =>
+                value.ty
+            }
 
-            val (msig, mtarget) = mmeth match {
+            val (dsig, dtarget) = emeth match {
               case Val.Global(name, _) =>
-                visitDuplicate(name, margtys)
+                visitDuplicate(name, argtys)
                   .map { defn =>
                     (defn.ty, Val.Global(defn.name, Type.Ptr))
                   }
                   .getOrElse {
-                    (sig, mmeth)
+                    (sig, emeth)
                   }
               case _ =>
-                (sig, mmeth)
+                (sig, emeth)
             }
 
-            emit.call(msig, mtarget, margs, unwind)
+            def fallback = {
+              val mtarget = materialize(dtarget)
+              val margs   = eargs.map(materialize)
+              emit.call(dsig, mtarget, margs, unwind)
+            }
+
+            dtarget match {
+              case Val.Global(name, _) if shallInline(name, eargs, unwind) =>
+                inline(name, eargs, unwind, blockFresh).getOrElse {
+                  fallback
+                }
+              case _ =>
+                fallback
+            }
         }
       case Op.Load(ty, ptr) =>
         emit.load(ty, materialize(eval(ptr)), unwind)
