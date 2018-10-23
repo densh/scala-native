@@ -589,22 +589,22 @@ object Lower {
 
       Val.Const(Val.StructValue(rtti(StringCls).const +: fieldValues))
     }
-
-    // Update java.lang.String::hashCode whenever you change this method.
-    def stringHashCode(s: String): Int =
-      if (s.length == 0) {
-        0
-      } else {
-        val value = s.toCharArray
-        var hash  = 0
-        var i     = 0
-        while (i < value.length) {
-          hash = value(i) + ((hash << 5) - hash)
-          i += 1
-        }
-        hash
-      }
   }
+
+  // Update java.lang.String::hashCode whenever you change this method.
+  def stringHashCode(s: String): Int =
+    if (s.length == 0) {
+      0
+    } else {
+      val value = s.toCharArray
+      var hash  = 0
+      var i     = 0
+      while (i < value.length) {
+        hash = value(i) + ((hash << 5) - hash)
+        i += 1
+      }
+      hash
+    }
 
   val LARGE_OBJECT_MIN_SIZE = 8192
 
