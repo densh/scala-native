@@ -45,7 +45,7 @@ private[net] class PlainSocketImpl extends SocketImpl {
       val sin = stackalloc[in.sockaddr_in]
       !len = sizeof[in.sockaddr_in].toUInt
 
-      if (socket.getsockname(fd.fd, sin.cast[Ptr[socket.sockaddr]], len) == -1) {
+      if (socket.getsockname(fd.fd, sin.asInstanceOf[Ptr[socket.sockaddr]], len) == -1) {
         None
       } else {
         Some(sin.sin_port)
@@ -54,7 +54,7 @@ private[net] class PlainSocketImpl extends SocketImpl {
       val sin = stackalloc[in.sockaddr_in6]
       !len = sizeof[in.sockaddr_in6].toUInt
 
-      if (socket.getsockname(fd.fd, sin.cast[Ptr[socket.sockaddr]], len) == -1) {
+      if (socket.getsockname(fd.fd, sin.asInstanceOf[Ptr[socket.sockaddr]], len) == -1) {
         None
       } else {
         Some(sin.sin6_port)
@@ -67,7 +67,7 @@ private[net] class PlainSocketImpl extends SocketImpl {
   override def bind(addr: InetAddress, port: Int): Unit = {
     val hints = stackalloc[addrinfo]
     val ret   = stackalloc[Ptr[addrinfo]]
-    string.memset(hints.cast[Ptr[Byte]], 0, sizeof[addrinfo])
+    string.memset(hints.asInstanceOf[Ptr[Byte]], 0, sizeof[addrinfo])
     hints.ai_family = socket.AF_UNSPEC
     hints.ai_flags = AI_NUMERICHOST
     hints.ai_socktype = socket.SOCK_STREAM
@@ -130,24 +130,26 @@ private[net] class PlainSocketImpl extends SocketImpl {
     val len     = stackalloc[socket.socklen_t]
     !len = sizeof[in.sockaddr_in6].toUInt
 
-    val newFd = socket.accept(fd.fd, storage.cast[Ptr[socket.sockaddr]], len)
+    val newFd =
+      socket.accept(fd.fd, storage.asInstanceOf[Ptr[socket.sockaddr]], len)
     if (newFd == -1) {
       throw new SocketException("Accept failed")
     }
-    val family = storage.cast[Ptr[socket.sockaddr_storage]].ss_family.toInt
-    val ipstr  = stackalloc[CChar](in.INET6_ADDRSTRLEN)
+    val family =
+      storage.asInstanceOf[Ptr[socket.sockaddr_storage]].ss_family.toInt
+    val ipstr = stackalloc[CChar](in.INET6_ADDRSTRLEN)
 
     if (family == socket.AF_INET) {
-      val sa = storage.cast[Ptr[in.sockaddr_in]]
+      val sa = storage.asInstanceOf[Ptr[in.sockaddr_in]]
       inet.inet_ntop(socket.AF_INET,
-                     sa.sin_addr.cast[Ptr[Byte]],
+                     sa.sin_addr.asInstanceOf[Ptr[Byte]],
                      ipstr,
                      in.INET6_ADDRSTRLEN.toUInt)
       s.port = inet.ntohs(sa.sin_port).toInt
     } else {
-      val sa = storage.cast[Ptr[in.sockaddr_in6]]
+      val sa = storage.asInstanceOf[Ptr[in.sockaddr_in6]]
       inet.inet_ntop(socket.AF_INET6,
-                     sa.sin6_addr.cast[Ptr[Byte]],
+                     sa.sin6_addr.asInstanceOf[Ptr[Byte]],
                      ipstr,
                      in.INET6_ADDRSTRLEN.toUInt)
       s.port = inet.ntohs(sa.sin6_port).toInt
@@ -174,7 +176,7 @@ private[net] class PlainSocketImpl extends SocketImpl {
     val inetAddr = address.asInstanceOf[InetSocketAddress]
     val hints    = stackalloc[addrinfo]
     val ret      = stackalloc[Ptr[addrinfo]]
-    string.memset(hints.cast[Ptr[Byte]], 0, sizeof[addrinfo])
+    string.memset(hints.asInstanceOf[Ptr[Byte]], 0, sizeof[addrinfo])
     hints.ai_family = socket.AF_UNSPEC
     hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV
     hints.ai_socktype = socket.SOCK_STREAM
@@ -221,7 +223,7 @@ private[net] class PlainSocketImpl extends SocketImpl {
         throw new SocketTimeoutException("Connect timed out")
       } else {
         fcntl(fd.fd, F_SETFL, opts & ~O_NONBLOCK)
-        val so_error = stackalloc[CInt].cast[Ptr[Byte]]
+        val so_error = stackalloc[CInt].asInstanceOf[Ptr[Byte]]
         val len      = stackalloc[socket.socklen_t]
         !len = sizeof[CInt].toUInt
         socket.getsockopt(fd.fd,
@@ -229,7 +231,7 @@ private[net] class PlainSocketImpl extends SocketImpl {
                           socket.SO_ERROR,
                           so_error,
                           len)
-        if (!(so_error.cast[Ptr[CInt]]) != 0) {
+        if (!(so_error.asInstanceOf[Ptr[CInt]]) != 0) {
           throw new ConnectException(
             "Couldn't connect to address: " +
               inetAddr.getAddress.getHostAddress
@@ -296,7 +298,7 @@ private[net] class PlainSocketImpl extends SocketImpl {
     } else if (fd.fd == -1) {
       0
     } else {
-      val cArr = buffer.asInstanceOf[ByteArray].at(offset)
+      val cArr = Ptr.fromArray(buffer, offset)
       var sent = 0
       while (sent < count) {
         val ret = socket
@@ -315,7 +317,7 @@ private[net] class PlainSocketImpl extends SocketImpl {
     if (shutInput) -1
 
     val bytesNum = socket
-      .recv(fd.fd, buffer.asInstanceOf[ByteArray].at(offset), count, 0)
+      .recv(fd.fd, Ptr.fromArray(buffer, offset), count, 0)
       .toInt
     if (bytesNum <= 0) {
       if (errno.errno == EAGAIN || errno.errno == EWOULDBLOCK) {
@@ -332,7 +334,7 @@ private[net] class PlainSocketImpl extends SocketImpl {
       0
     } else {
       val bytesAvailable = stackalloc[CInt]
-      ioctl(fd.fd, FIONREAD, bytesAvailable.cast[Ptr[Byte]])
+      ioctl(fd.fd, FIONREAD, bytesAvailable.asInstanceOf[Ptr[Byte]])
       !bytesAvailable match {
         case -1 =>
           throw new IOException(
@@ -376,9 +378,9 @@ private[net] class PlainSocketImpl extends SocketImpl {
     val optValue = nativeValueFromOption(optID)
 
     val opt = if (optID == SocketOptions.SO_LINGER) {
-      stackalloc[socket.linger].cast[Ptr[Byte]]
+      stackalloc[socket.linger].asInstanceOf[Ptr[Byte]]
     } else {
-      stackalloc[CInt].cast[Ptr[Byte]]
+      stackalloc[CInt].asInstanceOf[Ptr[Byte]]
     }
 
     val len = stackalloc[socket.socklen_t]
@@ -397,9 +399,9 @@ private[net] class PlainSocketImpl extends SocketImpl {
     optID match {
       case SocketOptions.TCP_NODELAY | SocketOptions.SO_KEEPALIVE |
           SocketOptions.SO_REUSEADDR | SocketOptions.SO_OOBINLINE =>
-        Boolean.box(!(opt.cast[Ptr[CInt]]) != 0)
+        Boolean.box(!(opt.asInstanceOf[Ptr[CInt]]) != 0)
       case SocketOptions.SO_LINGER =>
-        val linger = opt.cast[Ptr[socket.linger]]
+        val linger = opt.asInstanceOf[Ptr[socket.linger]]
         if (linger.l_onoff != 0) {
           Integer.valueOf(linger.l_linger)
         } else {
@@ -408,7 +410,7 @@ private[net] class PlainSocketImpl extends SocketImpl {
       case SocketOptions.SO_TIMEOUT =>
         Integer.valueOf(this.timeout)
       case _ =>
-        Integer.valueOf(!(opt.cast[Ptr[CInt]]))
+        Integer.valueOf(!(opt.asInstanceOf[Ptr[CInt]]))
     }
   }
 
@@ -443,7 +445,7 @@ private[net] class PlainSocketImpl extends SocketImpl {
           SocketOptions.SO_REUSEADDR | SocketOptions.SO_OOBINLINE =>
         val ptr = stackalloc[CInt]
         !ptr = if (value.asInstanceOf[Boolean]) 1 else 0
-        ptr.cast[Ptr[Byte]]
+        ptr.asInstanceOf[Ptr[Byte]]
       case SocketOptions.SO_LINGER =>
         val ptr    = stackalloc[socket.linger]
         val linger = value.asInstanceOf[Int]
@@ -452,7 +454,7 @@ private[net] class PlainSocketImpl extends SocketImpl {
         else ptr.l_onoff = 1
 
         ptr.l_linger = linger
-        ptr.cast[Ptr[Byte]]
+        ptr.asInstanceOf[Ptr[Byte]]
       case SocketOptions.SO_TIMEOUT =>
         val ptr      = stackalloc[timeval]
         val mseconds = value.asInstanceOf[Int]
@@ -462,11 +464,11 @@ private[net] class PlainSocketImpl extends SocketImpl {
         ptr.tv_sec = mseconds / 1000
         ptr.tv_usec = (mseconds % 1000) * 1000
 
-        ptr.cast[Ptr[Byte]]
+        ptr.asInstanceOf[Ptr[Byte]]
       case _ =>
         val ptr = stackalloc[CInt]
         !ptr = value.asInstanceOf[Int]
-        ptr.cast[Ptr[Byte]]
+        ptr.asInstanceOf[Ptr[Byte]]
     }
 
     if (socket.setsockopt(fd.fd, level, optValue, opt, len) == -1) {

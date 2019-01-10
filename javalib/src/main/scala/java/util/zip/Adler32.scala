@@ -34,8 +34,6 @@ class Adler32 extends Checksum {
                          nbytes: Int,
                          adler1: Long): Long =
     zlib
-      .adler32(adler1.toULong,
-               buf.asInstanceOf[ByteArray].at(off),
-               nbytes.toUInt)
+      .adler32(adler1.toULong, Ptr.fromArray(buf, off), nbytes.toUInt)
       .toLong
 }

@@ -5,7 +5,7 @@ import java.lang._Class
 
 object Array {
   def newInstance(componentType: _Class[_], length: Int): AnyRef = {
-    val ty = componentType.ty
+    val ty = componentType.rawty
 
     if (ty == typeof[PrimitiveBoolean]) new scala.Array[Boolean](length)
     else if (ty == typeof[PrimitiveChar]) new scala.Array[Char](length)

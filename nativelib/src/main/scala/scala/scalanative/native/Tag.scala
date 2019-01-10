@@ -1,515 +1,7918 @@
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 1)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 1)
 package scala.scalanative
 package native
 
 import scala.reflect.ClassTag
-import scalanative.runtime.intrinsic
+import scalanative.runtime.{intrinsic, throwUndefined}
 
-final abstract class Tag[P]
+sealed abstract class Tag[P] {
+  def size: Int
+  def alignment: Int
+  def offset(idx: Int): Int = throwUndefined()
+}
 
 object Tag {
-  implicit val Unit: Tag[Unit]                    = intrinsic
-  implicit val Boolean: Tag[Boolean]              = intrinsic
-  implicit val Char: Tag[Char]                    = intrinsic
-  implicit val Byte: Tag[Byte]                    = intrinsic
-  implicit val UByte: Tag[UByte]                  = intrinsic
-  implicit val Short: Tag[Short]                  = intrinsic
-  implicit val UShort: Tag[UShort]                = intrinsic
-  implicit val Int: Tag[Int]                      = intrinsic
-  implicit val UInt: Tag[UInt]                    = intrinsic
-  implicit val Long: Tag[Long]                    = intrinsic
-  implicit val ULong: Tag[ULong]                  = intrinsic
-  implicit val Float: Tag[Float]                  = intrinsic
-  implicit val Double: Tag[Double]                = intrinsic
-  implicit def Ptr[T: Tag]: Tag[Ptr[T]]           = intrinsic
-  implicit def Ref[T <: AnyRef: ClassTag]: Tag[T] = intrinsic
+  implicit def materializePtrTag[T](implicit tag: Tag[T]): Tag[native.Ptr[T]] =
+    Tag.Ptr(tag)
+  implicit def materializeNatDigit[N <: Nat.Base: Tag, M <: Nat: Tag]
+    : Tag[native.Nat.Digit[N, M]] =
+    Tag.Digit(implicitly[Tag[N]], implicitly[Tag[M]])
+  implicit def materializeCArray[T: Tag, N <: Nat: Tag]
+    : Tag[native.CArray[T, N]] =
+    Tag.CArray(implicitly[Tag[T]], implicitly[Tag[N]])
+  implicit def materializeClassTag[T <: AnyRef: ClassTag]: Tag[T] =
+    Tag.Class(
+      implicitly[ClassTag[T]].runtimeClass.asInstanceOf[java.lang.Class[T]])
 
-  implicit def Nat0: Tag[Nat._0] = intrinsic
-  implicit def Nat1: Tag[Nat._1] = intrinsic
-  implicit def Nat2: Tag[Nat._2] = intrinsic
-  implicit def Nat3: Tag[Nat._3] = intrinsic
-  implicit def Nat4: Tag[Nat._4] = intrinsic
-  implicit def Nat5: Tag[Nat._5] = intrinsic
-  implicit def Nat6: Tag[Nat._6] = intrinsic
-  implicit def Nat7: Tag[Nat._7] = intrinsic
-  implicit def Nat8: Tag[Nat._8] = intrinsic
-  implicit def Nat9: Tag[Nat._9] = intrinsic
-  implicit def NatDigit[N <: Nat.Base: Tag, M <: Nat: Tag]
-    : Tag[Nat.Digit[N, M]] =
-    intrinsic
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CArray[T: Tag, N <: Nat: Tag]: Tag[CArray[T, N]] = intrinsic
+  implicit def materializeCStruct0: Tag[native.CStruct0] =
+    Tag.CStruct0()
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct0: Tag[CStruct0] = intrinsic
+  implicit def materializeCStruct1[T1: Tag]: Tag[native.CStruct1[T1]] =
+    Tag.CStruct1(implicitly[Tag[T1]])
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct1[T1: Tag]: Tag[CStruct1[T1]] = intrinsic
+  implicit def materializeCStruct2[T1: Tag, T2: Tag]
+    : Tag[native.CStruct2[T1, T2]] =
+    Tag.CStruct2(implicitly[Tag[T1]], implicitly[Tag[T2]])
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct2[T1: Tag, T2: Tag]: Tag[CStruct2[T1, T2]] = intrinsic
+  implicit def materializeCStruct3[T1: Tag, T2: Tag, T3: Tag]
+    : Tag[native.CStruct3[T1, T2, T3]] =
+    Tag.CStruct3(implicitly[Tag[T1]], implicitly[Tag[T2]], implicitly[Tag[T3]])
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct3[T1: Tag, T2: Tag, T3: Tag]: Tag[CStruct3[T1, T2, T3]] =
-    intrinsic
+  implicit def materializeCStruct4[T1: Tag, T2: Tag, T3: Tag, T4: Tag]
+    : Tag[native.CStruct4[T1, T2, T3, T4]] =
+    Tag.CStruct4(implicitly[Tag[T1]],
+                 implicitly[Tag[T2]],
+                 implicitly[Tag[T3]],
+                 implicitly[Tag[T4]])
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct4[T1: Tag, T2: Tag, T3: Tag, T4: Tag]
-    : Tag[CStruct4[T1, T2, T3, T4]] = intrinsic
+  implicit def materializeCStruct5[T1: Tag, T2: Tag, T3: Tag, T4: Tag, T5: Tag]
+    : Tag[native.CStruct5[T1, T2, T3, T4, T5]] =
+    Tag.CStruct5(implicitly[Tag[T1]],
+                 implicitly[Tag[T2]],
+                 implicitly[Tag[T3]],
+                 implicitly[Tag[T4]],
+                 implicitly[Tag[T5]])
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct5[T1: Tag, T2: Tag, T3: Tag, T4: Tag, T5: Tag]
-    : Tag[CStruct5[T1, T2, T3, T4, T5]] = intrinsic
+  implicit def materializeCStruct6[T1: Tag,
+                                   T2: Tag,
+                                   T3: Tag,
+                                   T4: Tag,
+                                   T5: Tag,
+                                   T6: Tag]
+    : Tag[native.CStruct6[T1, T2, T3, T4, T5, T6]] =
+    Tag.CStruct6(implicitly[Tag[T1]],
+                 implicitly[Tag[T2]],
+                 implicitly[Tag[T3]],
+                 implicitly[Tag[T4]],
+                 implicitly[Tag[T5]],
+                 implicitly[Tag[T6]])
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct6[T1: Tag, T2: Tag, T3: Tag, T4: Tag, T5: Tag, T6: Tag]
-    : Tag[CStruct6[T1, T2, T3, T4, T5, T6]] = intrinsic
+  implicit def materializeCStruct7[T1: Tag,
+                                   T2: Tag,
+                                   T3: Tag,
+                                   T4: Tag,
+                                   T5: Tag,
+                                   T6: Tag,
+                                   T7: Tag]
+    : Tag[native.CStruct7[T1, T2, T3, T4, T5, T6, T7]] =
+    Tag.CStruct7(implicitly[Tag[T1]],
+                 implicitly[Tag[T2]],
+                 implicitly[Tag[T3]],
+                 implicitly[Tag[T4]],
+                 implicitly[Tag[T5]],
+                 implicitly[Tag[T6]],
+                 implicitly[Tag[T7]])
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct7[T1: Tag,
-                        T2: Tag,
-                        T3: Tag,
-                        T4: Tag,
-                        T5: Tag,
-                        T6: Tag,
-                        T7: Tag]: Tag[CStruct7[T1, T2, T3, T4, T5, T6, T7]] =
-    intrinsic
+  implicit def materializeCStruct8[T1: Tag,
+                                   T2: Tag,
+                                   T3: Tag,
+                                   T4: Tag,
+                                   T5: Tag,
+                                   T6: Tag,
+                                   T7: Tag,
+                                   T8: Tag]
+    : Tag[native.CStruct8[T1, T2, T3, T4, T5, T6, T7, T8]] =
+    Tag.CStruct8(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct8[T1: Tag,
-                        T2: Tag,
-                        T3: Tag,
-                        T4: Tag,
-                        T5: Tag,
-                        T6: Tag,
-                        T7: Tag,
-                        T8: Tag]
-    : Tag[CStruct8[T1, T2, T3, T4, T5, T6, T7, T8]] = intrinsic
+  implicit def materializeCStruct9[T1: Tag,
+                                   T2: Tag,
+                                   T3: Tag,
+                                   T4: Tag,
+                                   T5: Tag,
+                                   T6: Tag,
+                                   T7: Tag,
+                                   T8: Tag,
+                                   T9: Tag]
+    : Tag[native.CStruct9[T1, T2, T3, T4, T5, T6, T7, T8, T9]] =
+    Tag.CStruct9(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct9[T1: Tag,
-                        T2: Tag,
-                        T3: Tag,
-                        T4: Tag,
-                        T5: Tag,
-                        T6: Tag,
-                        T7: Tag,
-                        T8: Tag,
-                        T9: Tag]
-    : Tag[CStruct9[T1, T2, T3, T4, T5, T6, T7, T8, T9]] = intrinsic
+  implicit def materializeCStruct10[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag]
+    : Tag[native.CStruct10[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10]] =
+    Tag.CStruct10(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct10[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag]
-    : Tag[CStruct10[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10]] = intrinsic
+  implicit def materializeCStruct11[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag,
+                                    T11: Tag]
+    : Tag[native.CStruct11[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11]] =
+    Tag.CStruct11(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]],
+      implicitly[Tag[T11]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct11[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag,
-                         T11: Tag]
-    : Tag[CStruct11[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11]] = intrinsic
+  implicit def materializeCStruct12[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag,
+                                    T11: Tag,
+                                    T12: Tag]
+    : Tag[native.CStruct12[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12]] =
+    Tag.CStruct12(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]],
+      implicitly[Tag[T11]],
+      implicitly[Tag[T12]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct12[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag,
-                         T11: Tag,
-                         T12: Tag]
-    : Tag[CStruct12[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12]] =
-    intrinsic
+  implicit def materializeCStruct13[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag,
+                                    T11: Tag,
+                                    T12: Tag,
+                                    T13: Tag]: Tag[
+    native.CStruct13[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13]] =
+    Tag.CStruct13(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]],
+      implicitly[Tag[T11]],
+      implicitly[Tag[T12]],
+      implicitly[Tag[T13]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct13[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag,
-                         T11: Tag,
-                         T12: Tag,
-                         T13: Tag]
-    : Tag[CStruct13[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13]] =
-    intrinsic
+  implicit def materializeCStruct14[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag,
+                                    T11: Tag,
+                                    T12: Tag,
+                                    T13: Tag,
+                                    T14: Tag]: Tag[
+    native.CStruct14[T1,
+                     T2,
+                     T3,
+                     T4,
+                     T5,
+                     T6,
+                     T7,
+                     T8,
+                     T9,
+                     T10,
+                     T11,
+                     T12,
+                     T13,
+                     T14]] =
+    Tag.CStruct14(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]],
+      implicitly[Tag[T11]],
+      implicitly[Tag[T12]],
+      implicitly[Tag[T13]],
+      implicitly[Tag[T14]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct14[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag,
-                         T11: Tag,
-                         T12: Tag,
-                         T13: Tag,
-                         T14: Tag]: Tag[
-    CStruct14[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14]] =
-    intrinsic
+  implicit def materializeCStruct15[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag,
+                                    T11: Tag,
+                                    T12: Tag,
+                                    T13: Tag,
+                                    T14: Tag,
+                                    T15: Tag]: Tag[
+    native.CStruct15[T1,
+                     T2,
+                     T3,
+                     T4,
+                     T5,
+                     T6,
+                     T7,
+                     T8,
+                     T9,
+                     T10,
+                     T11,
+                     T12,
+                     T13,
+                     T14,
+                     T15]] =
+    Tag.CStruct15(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]],
+      implicitly[Tag[T11]],
+      implicitly[Tag[T12]],
+      implicitly[Tag[T13]],
+      implicitly[Tag[T14]],
+      implicitly[Tag[T15]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct15[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag,
-                         T11: Tag,
-                         T12: Tag,
-                         T13: Tag,
-                         T14: Tag,
-                         T15: Tag]: Tag[
-    CStruct15[T1,
-              T2,
-              T3,
-              T4,
-              T5,
-              T6,
-              T7,
-              T8,
-              T9,
-              T10,
-              T11,
-              T12,
-              T13,
-              T14,
-              T15]] = intrinsic
+  implicit def materializeCStruct16[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag,
+                                    T11: Tag,
+                                    T12: Tag,
+                                    T13: Tag,
+                                    T14: Tag,
+                                    T15: Tag,
+                                    T16: Tag]: Tag[
+    native.CStruct16[T1,
+                     T2,
+                     T3,
+                     T4,
+                     T5,
+                     T6,
+                     T7,
+                     T8,
+                     T9,
+                     T10,
+                     T11,
+                     T12,
+                     T13,
+                     T14,
+                     T15,
+                     T16]] =
+    Tag.CStruct16(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]],
+      implicitly[Tag[T11]],
+      implicitly[Tag[T12]],
+      implicitly[Tag[T13]],
+      implicitly[Tag[T14]],
+      implicitly[Tag[T15]],
+      implicitly[Tag[T16]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct16[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag,
-                         T11: Tag,
-                         T12: Tag,
-                         T13: Tag,
-                         T14: Tag,
-                         T15: Tag,
-                         T16: Tag]: Tag[
-    CStruct16[T1,
-              T2,
-              T3,
-              T4,
-              T5,
-              T6,
-              T7,
-              T8,
-              T9,
-              T10,
-              T11,
-              T12,
-              T13,
-              T14,
-              T15,
-              T16]] = intrinsic
+  implicit def materializeCStruct17[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag,
+                                    T11: Tag,
+                                    T12: Tag,
+                                    T13: Tag,
+                                    T14: Tag,
+                                    T15: Tag,
+                                    T16: Tag,
+                                    T17: Tag]: Tag[
+    native.CStruct17[T1,
+                     T2,
+                     T3,
+                     T4,
+                     T5,
+                     T6,
+                     T7,
+                     T8,
+                     T9,
+                     T10,
+                     T11,
+                     T12,
+                     T13,
+                     T14,
+                     T15,
+                     T16,
+                     T17]] =
+    Tag.CStruct17(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]],
+      implicitly[Tag[T11]],
+      implicitly[Tag[T12]],
+      implicitly[Tag[T13]],
+      implicitly[Tag[T14]],
+      implicitly[Tag[T15]],
+      implicitly[Tag[T16]],
+      implicitly[Tag[T17]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct17[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag,
-                         T11: Tag,
-                         T12: Tag,
-                         T13: Tag,
-                         T14: Tag,
-                         T15: Tag,
-                         T16: Tag,
-                         T17: Tag]: Tag[
-    CStruct17[T1,
-              T2,
-              T3,
-              T4,
-              T5,
-              T6,
-              T7,
-              T8,
-              T9,
-              T10,
-              T11,
-              T12,
-              T13,
-              T14,
-              T15,
-              T16,
-              T17]] = intrinsic
+  implicit def materializeCStruct18[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag,
+                                    T11: Tag,
+                                    T12: Tag,
+                                    T13: Tag,
+                                    T14: Tag,
+                                    T15: Tag,
+                                    T16: Tag,
+                                    T17: Tag,
+                                    T18: Tag]: Tag[
+    native.CStruct18[T1,
+                     T2,
+                     T3,
+                     T4,
+                     T5,
+                     T6,
+                     T7,
+                     T8,
+                     T9,
+                     T10,
+                     T11,
+                     T12,
+                     T13,
+                     T14,
+                     T15,
+                     T16,
+                     T17,
+                     T18]] =
+    Tag.CStruct18(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]],
+      implicitly[Tag[T11]],
+      implicitly[Tag[T12]],
+      implicitly[Tag[T13]],
+      implicitly[Tag[T14]],
+      implicitly[Tag[T15]],
+      implicitly[Tag[T16]],
+      implicitly[Tag[T17]],
+      implicitly[Tag[T18]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct18[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag,
-                         T11: Tag,
-                         T12: Tag,
-                         T13: Tag,
-                         T14: Tag,
-                         T15: Tag,
-                         T16: Tag,
-                         T17: Tag,
-                         T18: Tag]: Tag[
-    CStruct18[T1,
-              T2,
-              T3,
-              T4,
-              T5,
-              T6,
-              T7,
-              T8,
-              T9,
-              T10,
-              T11,
-              T12,
-              T13,
-              T14,
-              T15,
-              T16,
-              T17,
-              T18]] = intrinsic
+  implicit def materializeCStruct19[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag,
+                                    T11: Tag,
+                                    T12: Tag,
+                                    T13: Tag,
+                                    T14: Tag,
+                                    T15: Tag,
+                                    T16: Tag,
+                                    T17: Tag,
+                                    T18: Tag,
+                                    T19: Tag]: Tag[
+    native.CStruct19[T1,
+                     T2,
+                     T3,
+                     T4,
+                     T5,
+                     T6,
+                     T7,
+                     T8,
+                     T9,
+                     T10,
+                     T11,
+                     T12,
+                     T13,
+                     T14,
+                     T15,
+                     T16,
+                     T17,
+                     T18,
+                     T19]] =
+    Tag.CStruct19(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]],
+      implicitly[Tag[T11]],
+      implicitly[Tag[T12]],
+      implicitly[Tag[T13]],
+      implicitly[Tag[T14]],
+      implicitly[Tag[T15]],
+      implicitly[Tag[T16]],
+      implicitly[Tag[T17]],
+      implicitly[Tag[T18]],
+      implicitly[Tag[T19]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct19[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag,
-                         T11: Tag,
-                         T12: Tag,
-                         T13: Tag,
-                         T14: Tag,
-                         T15: Tag,
-                         T16: Tag,
-                         T17: Tag,
-                         T18: Tag,
-                         T19: Tag]: Tag[
-    CStruct19[T1,
-              T2,
-              T3,
-              T4,
-              T5,
-              T6,
-              T7,
-              T8,
-              T9,
-              T10,
-              T11,
-              T12,
-              T13,
-              T14,
-              T15,
-              T16,
-              T17,
-              T18,
-              T19]] = intrinsic
+  implicit def materializeCStruct20[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag,
+                                    T11: Tag,
+                                    T12: Tag,
+                                    T13: Tag,
+                                    T14: Tag,
+                                    T15: Tag,
+                                    T16: Tag,
+                                    T17: Tag,
+                                    T18: Tag,
+                                    T19: Tag,
+                                    T20: Tag]: Tag[
+    native.CStruct20[T1,
+                     T2,
+                     T3,
+                     T4,
+                     T5,
+                     T6,
+                     T7,
+                     T8,
+                     T9,
+                     T10,
+                     T11,
+                     T12,
+                     T13,
+                     T14,
+                     T15,
+                     T16,
+                     T17,
+                     T18,
+                     T19,
+                     T20]] =
+    Tag.CStruct20(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]],
+      implicitly[Tag[T11]],
+      implicitly[Tag[T12]],
+      implicitly[Tag[T13]],
+      implicitly[Tag[T14]],
+      implicitly[Tag[T15]],
+      implicitly[Tag[T16]],
+      implicitly[Tag[T17]],
+      implicitly[Tag[T18]],
+      implicitly[Tag[T19]],
+      implicitly[Tag[T20]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct20[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag,
-                         T11: Tag,
-                         T12: Tag,
-                         T13: Tag,
-                         T14: Tag,
-                         T15: Tag,
-                         T16: Tag,
-                         T17: Tag,
-                         T18: Tag,
-                         T19: Tag,
-                         T20: Tag]: Tag[
-    CStruct20[T1,
-              T2,
-              T3,
-              T4,
-              T5,
-              T6,
-              T7,
-              T8,
-              T9,
-              T10,
-              T11,
-              T12,
-              T13,
-              T14,
-              T15,
-              T16,
-              T17,
-              T18,
-              T19,
-              T20]] = intrinsic
+  implicit def materializeCStruct21[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag,
+                                    T11: Tag,
+                                    T12: Tag,
+                                    T13: Tag,
+                                    T14: Tag,
+                                    T15: Tag,
+                                    T16: Tag,
+                                    T17: Tag,
+                                    T18: Tag,
+                                    T19: Tag,
+                                    T20: Tag,
+                                    T21: Tag]: Tag[
+    native.CStruct21[T1,
+                     T2,
+                     T3,
+                     T4,
+                     T5,
+                     T6,
+                     T7,
+                     T8,
+                     T9,
+                     T10,
+                     T11,
+                     T12,
+                     T13,
+                     T14,
+                     T15,
+                     T16,
+                     T17,
+                     T18,
+                     T19,
+                     T20,
+                     T21]] =
+    Tag.CStruct21(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]],
+      implicitly[Tag[T11]],
+      implicitly[Tag[T12]],
+      implicitly[Tag[T13]],
+      implicitly[Tag[T14]],
+      implicitly[Tag[T15]],
+      implicitly[Tag[T16]],
+      implicitly[Tag[T17]],
+      implicitly[Tag[T18]],
+      implicitly[Tag[T19]],
+      implicitly[Tag[T20]],
+      implicitly[Tag[T21]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 28)
 
-  implicit def CStruct21[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag,
-                         T11: Tag,
-                         T12: Tag,
-                         T13: Tag,
-                         T14: Tag,
-                         T15: Tag,
-                         T16: Tag,
-                         T17: Tag,
-                         T18: Tag,
-                         T19: Tag,
-                         T20: Tag,
-                         T21: Tag]: Tag[
-    CStruct21[T1,
-              T2,
-              T3,
-              T4,
-              T5,
-              T6,
-              T7,
-              T8,
-              T9,
-              T10,
-              T11,
-              T12,
-              T13,
-              T14,
-              T15,
-              T16,
-              T17,
-              T18,
-              T19,
-              T20,
-              T21]] = intrinsic
+  implicit def materializeCStruct22[T1: Tag,
+                                    T2: Tag,
+                                    T3: Tag,
+                                    T4: Tag,
+                                    T5: Tag,
+                                    T6: Tag,
+                                    T7: Tag,
+                                    T8: Tag,
+                                    T9: Tag,
+                                    T10: Tag,
+                                    T11: Tag,
+                                    T12: Tag,
+                                    T13: Tag,
+                                    T14: Tag,
+                                    T15: Tag,
+                                    T16: Tag,
+                                    T17: Tag,
+                                    T18: Tag,
+                                    T19: Tag,
+                                    T20: Tag,
+                                    T21: Tag,
+                                    T22: Tag]: Tag[
+    native.CStruct22[T1,
+                     T2,
+                     T3,
+                     T4,
+                     T5,
+                     T6,
+                     T7,
+                     T8,
+                     T9,
+                     T10,
+                     T11,
+                     T12,
+                     T13,
+                     T14,
+                     T15,
+                     T16,
+                     T17,
+                     T18,
+                     T19,
+                     T20,
+                     T21,
+                     T22]] =
+    Tag.CStruct22(
+      implicitly[Tag[T1]],
+      implicitly[Tag[T2]],
+      implicitly[Tag[T3]],
+      implicitly[Tag[T4]],
+      implicitly[Tag[T5]],
+      implicitly[Tag[T6]],
+      implicitly[Tag[T7]],
+      implicitly[Tag[T8]],
+      implicitly[Tag[T9]],
+      implicitly[Tag[T10]],
+      implicitly[Tag[T11]],
+      implicitly[Tag[T12]],
+      implicitly[Tag[T13]],
+      implicitly[Tag[T14]],
+      implicitly[Tag[T15]],
+      implicitly[Tag[T16]],
+      implicitly[Tag[T17]],
+      implicitly[Tag[T18]],
+      implicitly[Tag[T19]],
+      implicitly[Tag[T20]],
+      implicitly[Tag[T21]],
+      implicitly[Tag[T22]]
+    )
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 45)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 33)
 
-  implicit def CStruct22[T1: Tag,
-                         T2: Tag,
-                         T3: Tag,
-                         T4: Tag,
-                         T5: Tag,
-                         T6: Tag,
-                         T7: Tag,
-                         T8: Tag,
-                         T9: Tag,
-                         T10: Tag,
-                         T11: Tag,
-                         T12: Tag,
-                         T13: Tag,
-                         T14: Tag,
-                         T15: Tag,
-                         T16: Tag,
-                         T17: Tag,
-                         T18: Tag,
-                         T19: Tag,
-                         T20: Tag,
-                         T21: Tag,
-                         T22: Tag]: Tag[
-    CStruct22[T1,
-              T2,
-              T3,
-              T4,
-              T5,
-              T6,
-              T7,
-              T8,
-              T9,
-              T10,
-              T11,
-              T12,
-              T13,
-              T14,
-              T15,
-              T16,
-              T17,
-              T18,
-              T19,
-              T20,
-              T21,
-              T22]] = intrinsic
+  private[scalanative] sealed trait CStruct
 
-// ###sourceLocation(file: "/Users/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 49)
+  final case class Ptr[T](of: Tag[T]) extends Tag[native.Ptr[T]] {
+    @inline final def size: Int      = 8
+    @inline final def alignment: Int = 8
+  }
+
+  final case class Class[T <: AnyRef](of: java.lang.Class[T]) extends Tag[T] {
+    @inline final def size: Int      = 8
+    @inline final def alignment: Int = 8
+  }
+
+  final case class Digit[N <: Nat.Base, M <: Nat](n: Tag[N], m: Tag[M])
+      extends Tag[native.Nat.Digit[N, M]] {
+    @inline final def size: Int      = throwUndefined()
+    @inline final def alignment: Int = throwUndefined()
+  }
+
+  final case class CArray[T, N <: Nat](of: Tag[T], n: Tag[N])
+      extends Tag[native.CArray[T, N]] {
+    final def size: Int = {
+      def natToInt(tag: Tag[_]): Int = tag match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 59)
+        case Nat0 => 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 59)
+        case Nat1 => 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 59)
+        case Nat2 => 2
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 59)
+        case Nat3 => 3
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 59)
+        case Nat4 => 4
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 59)
+        case Nat5 => 5
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 59)
+        case Nat6 => 6
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 59)
+        case Nat7 => 7
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 59)
+        case Nat8 => 8
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 59)
+        case Nat9 => 9
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 61)
+        case Digit(n, m) => natToInt(n) + natToInt(m) * 10
+        case _           => throwUndefined()
+      }
+      of.size * natToInt(n)
+    }
+    @inline final def alignment: Int           = of.alignment
+    @inline override def offset(idx: Int): Int = of.size * idx
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object Unit extends Tag[scala.Unit] {
+    @inline final def size: Int      = 8
+    @inline final def alignment: Int = 8
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object Boolean extends Tag[scala.Boolean] {
+    @inline final def size: Int      = 1
+    @inline final def alignment: Int = 1
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object Char extends Tag[scala.Char] {
+    @inline final def size: Int      = 2
+    @inline final def alignment: Int = 2
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object Byte extends Tag[scala.Byte] {
+    @inline final def size: Int      = 1
+    @inline final def alignment: Int = 1
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object UByte extends Tag[native.UByte] {
+    @inline final def size: Int      = 1
+    @inline final def alignment: Int = 1
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object Short extends Tag[scala.Short] {
+    @inline final def size: Int      = 2
+    @inline final def alignment: Int = 2
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object UShort extends Tag[native.UShort] {
+    @inline final def size: Int      = 2
+    @inline final def alignment: Int = 2
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object Int extends Tag[scala.Int] {
+    @inline final def size: Int      = 4
+    @inline final def alignment: Int = 4
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object UInt extends Tag[native.UInt] {
+    @inline final def size: Int      = 4
+    @inline final def alignment: Int = 4
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object Long extends Tag[scala.Long] {
+    @inline final def size: Int      = 8
+    @inline final def alignment: Int = 8
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object ULong extends Tag[native.ULong] {
+    @inline final def size: Int      = 8
+    @inline final def alignment: Int = 8
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object Float extends Tag[scala.Float] {
+    @inline final def size: Int      = 4
+    @inline final def alignment: Int = 4
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 83)
+
+  implicit object Double extends Tag[scala.Double] {
+    @inline final def size: Int      = 8
+    @inline final def alignment: Int = 8
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 91)
+
+  implicit object Nat0 extends Tag[native.Nat._0] {
+    @noinline final def size: Int      = throwUndefined()
+    @noinline final def alignment: Int = throwUndefined()
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 91)
+
+  implicit object Nat1 extends Tag[native.Nat._1] {
+    @noinline final def size: Int      = throwUndefined()
+    @noinline final def alignment: Int = throwUndefined()
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 91)
+
+  implicit object Nat2 extends Tag[native.Nat._2] {
+    @noinline final def size: Int      = throwUndefined()
+    @noinline final def alignment: Int = throwUndefined()
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 91)
+
+  implicit object Nat3 extends Tag[native.Nat._3] {
+    @noinline final def size: Int      = throwUndefined()
+    @noinline final def alignment: Int = throwUndefined()
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 91)
+
+  implicit object Nat4 extends Tag[native.Nat._4] {
+    @noinline final def size: Int      = throwUndefined()
+    @noinline final def alignment: Int = throwUndefined()
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 91)
+
+  implicit object Nat5 extends Tag[native.Nat._5] {
+    @noinline final def size: Int      = throwUndefined()
+    @noinline final def alignment: Int = throwUndefined()
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 91)
+
+  implicit object Nat6 extends Tag[native.Nat._6] {
+    @noinline final def size: Int      = throwUndefined()
+    @noinline final def alignment: Int = throwUndefined()
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 91)
+
+  implicit object Nat7 extends Tag[native.Nat._7] {
+    @noinline final def size: Int      = throwUndefined()
+    @noinline final def alignment: Int = throwUndefined()
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 91)
+
+  implicit object Nat8 extends Tag[native.Nat._8] {
+    @noinline final def size: Int      = throwUndefined()
+    @noinline final def alignment: Int = throwUndefined()
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 91)
+
+  implicit object Nat9 extends Tag[native.Nat._9] {
+    @noinline final def size: Int      = throwUndefined()
+    @noinline final def alignment: Int = throwUndefined()
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 98)
+
+  @inline private[scalanative] def align(offset: Int, alignment: Int) = {
+    val alignmentMask = alignment - 1
+    val padding =
+      if ((offset & alignmentMask) == 0) 0
+      else alignment - (offset & alignmentMask)
+    offset + padding
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct0() extends Tag[native.CStruct0] with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct1[T1](_1: Tag[T1])
+      extends Tag[native.CStruct1[T1]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct2[T1, T2](_1: Tag[T1], _2: Tag[T2])
+      extends Tag[native.CStruct2[T1, T2]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct3[T1, T2, T3](_1: Tag[T1], _2: Tag[T2], _3: Tag[T3])
+      extends Tag[native.CStruct3[T1, T2, T3]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct4[T1, T2, T3, T4](_1: Tag[T1],
+                                            _2: Tag[T2],
+                                            _3: Tag[T3],
+                                            _4: Tag[T4])
+      extends Tag[native.CStruct4[T1, T2, T3, T4]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct5[T1, T2, T3, T4, T5](_1: Tag[T1],
+                                                _2: Tag[T2],
+                                                _3: Tag[T3],
+                                                _4: Tag[T4],
+                                                _5: Tag[T5])
+      extends Tag[native.CStruct5[T1, T2, T3, T4, T5]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct6[T1, T2, T3, T4, T5, T6](_1: Tag[T1],
+                                                    _2: Tag[T2],
+                                                    _3: Tag[T3],
+                                                    _4: Tag[T4],
+                                                    _5: Tag[T5],
+                                                    _6: Tag[T6])
+      extends Tag[native.CStruct6[T1, T2, T3, T4, T5, T6]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct7[T1, T2, T3, T4, T5, T6, T7](_1: Tag[T1],
+                                                        _2: Tag[T2],
+                                                        _3: Tag[T3],
+                                                        _4: Tag[T4],
+                                                        _5: Tag[T5],
+                                                        _6: Tag[T6],
+                                                        _7: Tag[T7])
+      extends Tag[native.CStruct7[T1, T2, T3, T4, T5, T6, T7]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct8[T1, T2, T3, T4, T5, T6, T7, T8](_1: Tag[T1],
+                                                            _2: Tag[T2],
+                                                            _3: Tag[T3],
+                                                            _4: Tag[T4],
+                                                            _5: Tag[T5],
+                                                            _6: Tag[T6],
+                                                            _7: Tag[T7],
+                                                            _8: Tag[T8])
+      extends Tag[native.CStruct8[T1, T2, T3, T4, T5, T6, T7, T8]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct9[T1, T2, T3, T4, T5, T6, T7, T8, T9](_1: Tag[T1],
+                                                                _2: Tag[T2],
+                                                                _3: Tag[T3],
+                                                                _4: Tag[T4],
+                                                                _5: Tag[T5],
+                                                                _6: Tag[T6],
+                                                                _7: Tag[T7],
+                                                                _8: Tag[T8],
+                                                                _9: Tag[T9])
+      extends Tag[native.CStruct9[T1, T2, T3, T4, T5, T6, T7, T8, T9]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct10[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10](
+      _1: Tag[T1],
+      _2: Tag[T2],
+      _3: Tag[T3],
+      _4: Tag[T4],
+      _5: Tag[T5],
+      _6: Tag[T6],
+      _7: Tag[T7],
+      _8: Tag[T8],
+      _9: Tag[T9],
+      _10: Tag[T10])
+      extends Tag[native.CStruct10[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct11[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11](
+      _1: Tag[T1],
+      _2: Tag[T2],
+      _3: Tag[T3],
+      _4: Tag[T4],
+      _5: Tag[T5],
+      _6: Tag[T6],
+      _7: Tag[T7],
+      _8: Tag[T8],
+      _9: Tag[T9],
+      _10: Tag[T10],
+      _11: Tag[T11])
+      extends Tag[
+        native.CStruct11[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _11.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 11 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _11.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct12[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12](
+      _1: Tag[T1],
+      _2: Tag[T2],
+      _3: Tag[T3],
+      _4: Tag[T4],
+      _5: Tag[T5],
+      _6: Tag[T6],
+      _7: Tag[T7],
+      _8: Tag[T8],
+      _9: Tag[T9],
+      _10: Tag[T10],
+      _11: Tag[T11],
+      _12: Tag[T12])
+      extends Tag[
+        native.CStruct12[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _11.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _12.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 11 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _11.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 12 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _12.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct13[T1,
+                             T2,
+                             T3,
+                             T4,
+                             T5,
+                             T6,
+                             T7,
+                             T8,
+                             T9,
+                             T10,
+                             T11,
+                             T12,
+                             T13](_1: Tag[T1],
+                                  _2: Tag[T2],
+                                  _3: Tag[T3],
+                                  _4: Tag[T4],
+                                  _5: Tag[T5],
+                                  _6: Tag[T6],
+                                  _7: Tag[T7],
+                                  _8: Tag[T8],
+                                  _9: Tag[T9],
+                                  _10: Tag[T10],
+                                  _11: Tag[T11],
+                                  _12: Tag[T12],
+                                  _13: Tag[T13])
+      extends Tag[
+        native.CStruct13[T1,
+                         T2,
+                         T3,
+                         T4,
+                         T5,
+                         T6,
+                         T7,
+                         T8,
+                         T9,
+                         T10,
+                         T11,
+                         T12,
+                         T13]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _11.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _12.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _13.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 11 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _11.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 12 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _12.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 13 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _13.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct14[T1,
+                             T2,
+                             T3,
+                             T4,
+                             T5,
+                             T6,
+                             T7,
+                             T8,
+                             T9,
+                             T10,
+                             T11,
+                             T12,
+                             T13,
+                             T14](_1: Tag[T1],
+                                  _2: Tag[T2],
+                                  _3: Tag[T3],
+                                  _4: Tag[T4],
+                                  _5: Tag[T5],
+                                  _6: Tag[T6],
+                                  _7: Tag[T7],
+                                  _8: Tag[T8],
+                                  _9: Tag[T9],
+                                  _10: Tag[T10],
+                                  _11: Tag[T11],
+                                  _12: Tag[T12],
+                                  _13: Tag[T13],
+                                  _14: Tag[T14])
+      extends Tag[
+        native.CStruct14[T1,
+                         T2,
+                         T3,
+                         T4,
+                         T5,
+                         T6,
+                         T7,
+                         T8,
+                         T9,
+                         T10,
+                         T11,
+                         T12,
+                         T13,
+                         T14]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _11.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _12.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _13.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _14.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 11 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _11.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 12 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _12.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 13 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _13.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 14 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _14.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct15[T1,
+                             T2,
+                             T3,
+                             T4,
+                             T5,
+                             T6,
+                             T7,
+                             T8,
+                             T9,
+                             T10,
+                             T11,
+                             T12,
+                             T13,
+                             T14,
+                             T15](_1: Tag[T1],
+                                  _2: Tag[T2],
+                                  _3: Tag[T3],
+                                  _4: Tag[T4],
+                                  _5: Tag[T5],
+                                  _6: Tag[T6],
+                                  _7: Tag[T7],
+                                  _8: Tag[T8],
+                                  _9: Tag[T9],
+                                  _10: Tag[T10],
+                                  _11: Tag[T11],
+                                  _12: Tag[T12],
+                                  _13: Tag[T13],
+                                  _14: Tag[T14],
+                                  _15: Tag[T15])
+      extends Tag[
+        native.CStruct15[T1,
+                         T2,
+                         T3,
+                         T4,
+                         T5,
+                         T6,
+                         T7,
+                         T8,
+                         T9,
+                         T10,
+                         T11,
+                         T12,
+                         T13,
+                         T14,
+                         T15]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _11.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _12.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _13.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _14.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _15.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 11 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _11.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 12 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _12.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 13 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _13.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 14 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _14.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 15 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _15.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct16[T1,
+                             T2,
+                             T3,
+                             T4,
+                             T5,
+                             T6,
+                             T7,
+                             T8,
+                             T9,
+                             T10,
+                             T11,
+                             T12,
+                             T13,
+                             T14,
+                             T15,
+                             T16](_1: Tag[T1],
+                                  _2: Tag[T2],
+                                  _3: Tag[T3],
+                                  _4: Tag[T4],
+                                  _5: Tag[T5],
+                                  _6: Tag[T6],
+                                  _7: Tag[T7],
+                                  _8: Tag[T8],
+                                  _9: Tag[T9],
+                                  _10: Tag[T10],
+                                  _11: Tag[T11],
+                                  _12: Tag[T12],
+                                  _13: Tag[T13],
+                                  _14: Tag[T14],
+                                  _15: Tag[T15],
+                                  _16: Tag[T16])
+      extends Tag[
+        native.CStruct16[T1,
+                         T2,
+                         T3,
+                         T4,
+                         T5,
+                         T6,
+                         T7,
+                         T8,
+                         T9,
+                         T10,
+                         T11,
+                         T12,
+                         T13,
+                         T14,
+                         T15,
+                         T16]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _11.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _12.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _13.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _14.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _15.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _16.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 11 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _11.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 12 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _12.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 13 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _13.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 14 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _14.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 15 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _15.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 16 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _16.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct17[T1,
+                             T2,
+                             T3,
+                             T4,
+                             T5,
+                             T6,
+                             T7,
+                             T8,
+                             T9,
+                             T10,
+                             T11,
+                             T12,
+                             T13,
+                             T14,
+                             T15,
+                             T16,
+                             T17](_1: Tag[T1],
+                                  _2: Tag[T2],
+                                  _3: Tag[T3],
+                                  _4: Tag[T4],
+                                  _5: Tag[T5],
+                                  _6: Tag[T6],
+                                  _7: Tag[T7],
+                                  _8: Tag[T8],
+                                  _9: Tag[T9],
+                                  _10: Tag[T10],
+                                  _11: Tag[T11],
+                                  _12: Tag[T12],
+                                  _13: Tag[T13],
+                                  _14: Tag[T14],
+                                  _15: Tag[T15],
+                                  _16: Tag[T16],
+                                  _17: Tag[T17])
+      extends Tag[
+        native.CStruct17[T1,
+                         T2,
+                         T3,
+                         T4,
+                         T5,
+                         T6,
+                         T7,
+                         T8,
+                         T9,
+                         T10,
+                         T11,
+                         T12,
+                         T13,
+                         T14,
+                         T15,
+                         T16,
+                         T17]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _11.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _12.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _13.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _14.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _15.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _16.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _17.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 11 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _11.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 12 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _12.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 13 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _13.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 14 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _14.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 15 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _15.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 16 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _16.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 17 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _17.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct18[T1,
+                             T2,
+                             T3,
+                             T4,
+                             T5,
+                             T6,
+                             T7,
+                             T8,
+                             T9,
+                             T10,
+                             T11,
+                             T12,
+                             T13,
+                             T14,
+                             T15,
+                             T16,
+                             T17,
+                             T18](_1: Tag[T1],
+                                  _2: Tag[T2],
+                                  _3: Tag[T3],
+                                  _4: Tag[T4],
+                                  _5: Tag[T5],
+                                  _6: Tag[T6],
+                                  _7: Tag[T7],
+                                  _8: Tag[T8],
+                                  _9: Tag[T9],
+                                  _10: Tag[T10],
+                                  _11: Tag[T11],
+                                  _12: Tag[T12],
+                                  _13: Tag[T13],
+                                  _14: Tag[T14],
+                                  _15: Tag[T15],
+                                  _16: Tag[T16],
+                                  _17: Tag[T17],
+                                  _18: Tag[T18])
+      extends Tag[
+        native.CStruct18[T1,
+                         T2,
+                         T3,
+                         T4,
+                         T5,
+                         T6,
+                         T7,
+                         T8,
+                         T9,
+                         T10,
+                         T11,
+                         T12,
+                         T13,
+                         T14,
+                         T15,
+                         T16,
+                         T17,
+                         T18]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _11.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _12.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _13.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _14.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _15.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _16.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _17.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _18.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 11 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _11.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 12 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _12.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 13 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _13.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 14 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _14.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 15 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _15.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 16 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _16.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 17 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _17.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 18 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _18.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct19[T1,
+                             T2,
+                             T3,
+                             T4,
+                             T5,
+                             T6,
+                             T7,
+                             T8,
+                             T9,
+                             T10,
+                             T11,
+                             T12,
+                             T13,
+                             T14,
+                             T15,
+                             T16,
+                             T17,
+                             T18,
+                             T19](_1: Tag[T1],
+                                  _2: Tag[T2],
+                                  _3: Tag[T3],
+                                  _4: Tag[T4],
+                                  _5: Tag[T5],
+                                  _6: Tag[T6],
+                                  _7: Tag[T7],
+                                  _8: Tag[T8],
+                                  _9: Tag[T9],
+                                  _10: Tag[T10],
+                                  _11: Tag[T11],
+                                  _12: Tag[T12],
+                                  _13: Tag[T13],
+                                  _14: Tag[T14],
+                                  _15: Tag[T15],
+                                  _16: Tag[T16],
+                                  _17: Tag[T17],
+                                  _18: Tag[T18],
+                                  _19: Tag[T19])
+      extends Tag[
+        native.CStruct19[T1,
+                         T2,
+                         T3,
+                         T4,
+                         T5,
+                         T6,
+                         T7,
+                         T8,
+                         T9,
+                         T10,
+                         T11,
+                         T12,
+                         T13,
+                         T14,
+                         T15,
+                         T16,
+                         T17,
+                         T18,
+                         T19]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _19.alignment) + _19.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _11.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _12.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _13.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _14.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _15.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _16.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _17.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _18.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _19.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 11 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _11.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 12 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _12.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 13 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _13.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 14 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _14.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 15 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _15.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 16 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _16.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 17 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _17.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 18 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _18.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 19 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _19.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct20[T1,
+                             T2,
+                             T3,
+                             T4,
+                             T5,
+                             T6,
+                             T7,
+                             T8,
+                             T9,
+                             T10,
+                             T11,
+                             T12,
+                             T13,
+                             T14,
+                             T15,
+                             T16,
+                             T17,
+                             T18,
+                             T19,
+                             T20](_1: Tag[T1],
+                                  _2: Tag[T2],
+                                  _3: Tag[T3],
+                                  _4: Tag[T4],
+                                  _5: Tag[T5],
+                                  _6: Tag[T6],
+                                  _7: Tag[T7],
+                                  _8: Tag[T8],
+                                  _9: Tag[T9],
+                                  _10: Tag[T10],
+                                  _11: Tag[T11],
+                                  _12: Tag[T12],
+                                  _13: Tag[T13],
+                                  _14: Tag[T14],
+                                  _15: Tag[T15],
+                                  _16: Tag[T16],
+                                  _17: Tag[T17],
+                                  _18: Tag[T18],
+                                  _19: Tag[T19],
+                                  _20: Tag[T20])
+      extends Tag[
+        native.CStruct20[T1,
+                         T2,
+                         T3,
+                         T4,
+                         T5,
+                         T6,
+                         T7,
+                         T8,
+                         T9,
+                         T10,
+                         T11,
+                         T12,
+                         T13,
+                         T14,
+                         T15,
+                         T16,
+                         T17,
+                         T18,
+                         T19,
+                         T20]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _19.alignment) + _19.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _20.alignment) + _20.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _11.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _12.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _13.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _14.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _15.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _16.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _17.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _18.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _19.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _20.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 11 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _11.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 12 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _12.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 13 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _13.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 14 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _14.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 15 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _15.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 16 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _16.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 17 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _17.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 18 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _18.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 19 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _19.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 20 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _19.alignment) + _19.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _20.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct21[T1,
+                             T2,
+                             T3,
+                             T4,
+                             T5,
+                             T6,
+                             T7,
+                             T8,
+                             T9,
+                             T10,
+                             T11,
+                             T12,
+                             T13,
+                             T14,
+                             T15,
+                             T16,
+                             T17,
+                             T18,
+                             T19,
+                             T20,
+                             T21](_1: Tag[T1],
+                                  _2: Tag[T2],
+                                  _3: Tag[T3],
+                                  _4: Tag[T4],
+                                  _5: Tag[T5],
+                                  _6: Tag[T6],
+                                  _7: Tag[T7],
+                                  _8: Tag[T8],
+                                  _9: Tag[T9],
+                                  _10: Tag[T10],
+                                  _11: Tag[T11],
+                                  _12: Tag[T12],
+                                  _13: Tag[T13],
+                                  _14: Tag[T14],
+                                  _15: Tag[T15],
+                                  _16: Tag[T16],
+                                  _17: Tag[T17],
+                                  _18: Tag[T18],
+                                  _19: Tag[T19],
+                                  _20: Tag[T20],
+                                  _21: Tag[T21])
+      extends Tag[
+        native.CStruct21[T1,
+                         T2,
+                         T3,
+                         T4,
+                         T5,
+                         T6,
+                         T7,
+                         T8,
+                         T9,
+                         T10,
+                         T11,
+                         T12,
+                         T13,
+                         T14,
+                         T15,
+                         T16,
+                         T17,
+                         T18,
+                         T19,
+                         T20,
+                         T21]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _19.alignment) + _19.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _20.alignment) + _20.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _21.alignment) + _21.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _11.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _12.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _13.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _14.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _15.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _16.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _17.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _18.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _19.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _20.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _21.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 11 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _11.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 12 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _12.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 13 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _13.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 14 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _14.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 15 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _15.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 16 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _16.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 17 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _17.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 18 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _18.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 19 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _19.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 20 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _19.alignment) + _19.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _20.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 21 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _19.alignment) + _19.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _20.alignment) + _20.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _21.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 112)
+
+  final case class CStruct22[T1,
+                             T2,
+                             T3,
+                             T4,
+                             T5,
+                             T6,
+                             T7,
+                             T8,
+                             T9,
+                             T10,
+                             T11,
+                             T12,
+                             T13,
+                             T14,
+                             T15,
+                             T16,
+                             T17,
+                             T18,
+                             T19,
+                             T20,
+                             T21,
+                             T22](_1: Tag[T1],
+                                  _2: Tag[T2],
+                                  _3: Tag[T3],
+                                  _4: Tag[T4],
+                                  _5: Tag[T5],
+                                  _6: Tag[T6],
+                                  _7: Tag[T7],
+                                  _8: Tag[T8],
+                                  _9: Tag[T9],
+                                  _10: Tag[T10],
+                                  _11: Tag[T11],
+                                  _12: Tag[T12],
+                                  _13: Tag[T13],
+                                  _14: Tag[T14],
+                                  _15: Tag[T15],
+                                  _16: Tag[T16],
+                                  _17: Tag[T17],
+                                  _18: Tag[T18],
+                                  _19: Tag[T19],
+                                  _20: Tag[T20],
+                                  _21: Tag[T21],
+                                  _22: Tag[T22])
+      extends Tag[
+        native.CStruct22[T1,
+                         T2,
+                         T3,
+                         T4,
+                         T5,
+                         T6,
+                         T7,
+                         T8,
+                         T9,
+                         T10,
+                         T11,
+                         T12,
+                         T13,
+                         T14,
+                         T15,
+                         T16,
+                         T17,
+                         T18,
+                         T19,
+                         T20,
+                         T21,
+                         T22]]
+      with CStruct {
+    final def size: Int = {
+      var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _19.alignment) + _19.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _20.alignment) + _20.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _21.alignment) + _21.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 117)
+      res = align(res, _22.alignment) + _22.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 119)
+      align(res, alignment)
+    }
+    final def alignment: Int = {
+      var res = 1
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _1.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _2.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _3.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _4.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _5.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _6.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _7.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _8.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _9.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _10.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _11.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _12.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _13.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _14.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _15.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _16.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _17.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _18.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _19.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _20.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _21.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 124)
+      res = res max _22.alignment
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 126)
+      res
+    }
+    override def offset(idx: Int): Int = idx match {
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 1 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _1.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 2 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _2.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 3 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _3.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 4 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _4.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 5 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _5.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 6 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _6.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 7 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _7.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 8 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _8.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 9 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _9.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 10 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _10.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 11 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _11.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 12 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _12.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 13 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _13.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 14 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _14.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 15 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _15.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 16 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _16.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 17 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _17.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 18 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _18.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 19 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _19.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 20 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _19.alignment) + _19.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _20.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 21 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _19.alignment) + _19.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _20.alignment) + _20.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _21.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 130)
+      case 22 =>
+        var res = 0
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _1.alignment) + _1.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _2.alignment) + _2.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _3.alignment) + _3.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _4.alignment) + _4.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _5.alignment) + _5.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _6.alignment) + _6.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _7.alignment) + _7.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _8.alignment) + _8.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _9.alignment) + _9.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _10.alignment) + _10.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _11.alignment) + _11.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _12.alignment) + _12.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _13.alignment) + _13.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _14.alignment) + _14.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _15.alignment) + _15.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _16.alignment) + _16.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _17.alignment) + _17.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _18.alignment) + _18.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _19.alignment) + _19.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _20.alignment) + _20.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 133)
+        res = align(res, _21.alignment) + _21.size
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 135)
+        align(res, _22.alignment)
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 137)
+      case _ =>
+        throwUndefined()
+    }
+  }
+
+// ###sourceLocation(file: "/home/denys/.src/native/nativelib/src/main/scala/scala/scalanative/native/Tag.scala.gyb", line: 143)
+
 }

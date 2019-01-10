@@ -53,9 +53,9 @@ class Deflater(private var compressLevel: Int, noHeader: Boolean) {
     val sin  = (!(stream._3)).toInt
     val sout = (!(stream._6)).toInt
     if (buf.length == 0) {
-      !(stream._4) = Deflater.empty.asInstanceOf[ByteArray].at(off)
+      !(stream._4) = Ptr.fromArray(Deflater.empty, off)
     } else {
-      !(stream._4) = buf.asInstanceOf[ByteArray].at(off)
+      !(stream._4) = Ptr.fromArray(buf, off)
     }
     val err = zlib.deflate(stream, flushParm)
 
@@ -79,7 +79,7 @@ class Deflater(private var compressLevel: Int, noHeader: Boolean) {
     if (stream != null) {
       zlib.deflateEnd(stream)
       inputBuffer = null
-      stdlib.free(stream.cast[Ptr[Byte]])
+      stdlib.free(stream.asInstanceOf[Ptr[Byte]])
       stream = null
     }
   }
@@ -134,7 +134,7 @@ class Deflater(private var compressLevel: Int, noHeader: Boolean) {
     if (stream == null) {
       throw new IllegalStateException()
     } else if (off <= buf.length && nbytes >= 0 && off >= 0 && buf.length - off >= nbytes) {
-      val bytes = buf.asInstanceOf[ByteArray].at(off)
+      val bytes = Ptr.fromArray(buf, off)
       val err   = zlib.deflateSetDictionary(stream, bytes, nbytes.toUInt)
       if (err != zlib.Z_OK) {
         throw new IllegalArgumentException(err.toString)
@@ -161,9 +161,9 @@ class Deflater(private var compressLevel: Int, noHeader: Boolean) {
       }
       inputBuffer = buf
       if (buf.length == 0) {
-        !(stream._1) = Deflater.empty.asInstanceOf[ByteArray].at(off)
+        !(stream._1) = Ptr.fromArray(Deflater.empty, off)
       } else {
-        !(stream._1) = buf.asInstanceOf[ByteArray].at(off)
+        !(stream._1) = Ptr.fromArray(buf, off)
       }
       !(stream._2) = nbytes.toUInt
     } else {
@@ -220,8 +220,9 @@ object Deflater {
   private def createStream(level: Int,
                            strategy: Int,
                            noHeader: Boolean): zlib.z_streamp = {
-    val stream = stdlib.malloc(sizeof[zlib.z_stream]).cast[zlib.z_streamp]
-    string.memset(stream.cast[Ptr[Byte]], 0, sizeof[zlib.z_stream])
+    val stream =
+      stdlib.malloc(sizeof[zlib.z_stream]).asInstanceOf[zlib.z_streamp]
+    string.memset(stream.asInstanceOf[Ptr[Byte]], 0, sizeof[zlib.z_stream])
     val wbits =
       if (noHeader) 15 / -1
       else 15
@@ -234,7 +235,7 @@ object Deflater {
       strategy
     )
     if (err != zlib.Z_OK) {
-      stdlib.free(stream.cast[Ptr[Byte]])
+      stdlib.free(stream.asInstanceOf[Ptr[Byte]])
       throw new ZipException(err.toString)
     }
     stream

@@ -84,10 +84,13 @@ object Type {
     Type.Ref(Global.Top("java.lang.Integer"))   -> Type.Int,
     Type.Ref(Global.Top("java.lang.Long"))      -> Type.Long,
     Type.Ref(Global.Top("java.lang.Float"))     -> Type.Float,
-    Type.Ref(Global.Top("java.lang.Double"))    -> Type.Double
+    Type.Ref(Global.Top("java.lang.Double"))    -> Type.Double,
+    Rt.BoxedPtr                                 -> Type.Ptr
   )
 
   val box = unbox.map { case (k, v) => (v, k) }
+
+  val boxClasses = unbox.keys.map { case ty: Type.Ref => ty.name }.toSet
 
   val typeToArray = Map[Type, Global](
     Type.Bool   -> Global.Top("scala.scalanative.runtime.BooleanArray"),

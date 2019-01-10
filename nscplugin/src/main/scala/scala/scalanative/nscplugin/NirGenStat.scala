@@ -196,19 +196,20 @@ trait NirGenStat { self: NirGenPhase =>
 
     def genExternMethod(attrs: nir.Attrs,
                         name: nir.Global,
-                        sig: nir.Type,
+                        origSig: nir.Type,
                         params: Seq[nir.Val.Local],
                         rhs: Tree): Unit = {
       rhs match {
+        case _ if curMethodSym.hasFlag(ACCESSOR) =>
+          ()
+
         case Apply(ref: RefTree, Seq()) if ref.symbol == ExternMethod =>
           val moduleName  = genTypeName(curClassSym)
           val externAttrs = Attrs(isExtern = true)
-          val externDefn  = Defn.Declare(externAttrs, name, sig)
+          val externSig   = unboxedPtrSig(origSig)
+          val externDefn  = Defn.Declare(externAttrs, name, externSig)
 
           buf += externDefn
-
-        case _ if curMethodSym.hasFlag(ACCESSOR) =>
-          ()
 
         case rhs =>
           unsupported("methods in extern objects must have extern body")

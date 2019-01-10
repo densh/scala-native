@@ -27,7 +27,8 @@ class ComRunner(bin: File,
     override def run(): Unit = {
       val port = serverSocket.getLocalPort
       logger.info(s"Starting process '$bin' on port '$port'.")
-      Process(bin.toString +: port.toString +: args, None, envVars.toSeq: _*) ! Logger
+      val cmd = "lldb" +: "-o" +: "run" +: "-k" +: "bt" +: "-b" +: bin.toString +: port.toString +: args
+      Process(cmd, None, envVars.toSeq: _*) ! Logger
         .toProcessLogger(logger)
     }
   }

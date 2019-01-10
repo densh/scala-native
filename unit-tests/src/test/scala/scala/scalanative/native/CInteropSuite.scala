@@ -34,34 +34,34 @@ object CInteropSuite extends tests.Suite {
 
   def randFunc = CFunctionPtr.fromFunction0(stdlib.rand _)
 
-  test("CFunctionPtr cast and call with given signature") {
-    val wrongRand = randFunc.cast[CFunctionPtr1[Int, Int]] // wrong signature
-    wrongRand(42) // no argument declared
-  }
+  // test("CFunctionPtr cast and call with given signature") {
+  //   val wrongRand = randFunc.cast[CFunctionPtr1[Int, Int]] // wrong signature
+  //   wrongRand(42) // no argument declared
+  // }
 
-  test("extern variable read and assign") {
-    import scala.scalanative.posix.getopt
+  // test("extern variable read and assign") {
+  //   import scala.scalanative.posix.getopt
 
-    val args = Seq("skipped", "skipped", "skipped", "-b", "-f", "farg")
+  //   val args = Seq("skipped", "skipped", "skipped", "-b", "-f", "farg")
 
-    Zone { implicit z =>
-      val argv = stackalloc[CString](args.length)
+  //   Zone { implicit z =>
+  //     val argv = stackalloc[CString](args.length)
 
-      for ((arg, i) <- args.zipWithIndex) {
-        argv(i) = toCString(arg)
-        ()
-      }
+  //     for ((arg, i) <- args.zipWithIndex) {
+  //       argv(i) = toCString(arg)
+  //       ()
+  //     }
 
-      // Skip first 3 arguments
-      getopt.optind = 3
+  //     // Skip first 3 arguments
+  //     getopt.optind = 3
 
-      val bOpt = getopt.getopt(args.length, argv, c"bf:")
-      assert(bOpt == 'b')
+  //     val bOpt = getopt.getopt(args.length, argv, c"bf:")
+  //     assert(bOpt == 'b')
 
-      val fOpt = getopt.getopt(args.length, argv, c"bf:")
-      assert(fOpt == 'f')
-      val fArg = fromCString(getopt.optarg)
-      assert(fArg == "farg")
-    }
-  }
+  //     val fOpt = getopt.getopt(args.length, argv, c"bf:")
+  //     assert(fOpt == 'f')
+  //     val fArg = fromCString(getopt.optarg)
+  //     assert(fArg == "farg")
+  //   }
+  // }
 }

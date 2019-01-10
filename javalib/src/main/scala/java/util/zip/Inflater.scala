@@ -22,7 +22,7 @@ class Inflater(noHeader: Boolean) {
       zlib.inflateEnd(stream)
       inRead = 0
       inLength = 0
-      stdlib.free(stream.cast[Ptr[Byte]])
+      stdlib.free(stream.asInstanceOf[Ptr[Byte]])
       stream = null
     }
   }
@@ -124,7 +124,7 @@ class Inflater(noHeader: Boolean) {
     if (stream == null) {
       throw new IllegalStateException()
     } else {
-      val bytes = buf.asInstanceOf[ByteArray].at(off)
+      val bytes = Ptr.fromArray(buf, off)
       val err   = zlib.inflateSetDictionary(stream, bytes, nbytes.toUInt)
       if (err != zlib.Z_OK) {
         throw new IllegalArgumentException(err.toString)
@@ -142,9 +142,9 @@ class Inflater(noHeader: Boolean) {
       inRead = 0
       inLength = nbytes
       if (buf.length == 0) {
-        !(stream._1) = Inflater.empty.asInstanceOf[ByteArray].at(off)
+        !(stream._1) = Ptr.fromArray(Inflater.empty, off)
       } else {
-        !(stream._1) = buf.asInstanceOf[ByteArray].at(off)
+        !(stream._1) = Ptr.fromArray(buf, off)
       }
       !(stream._2) = nbytes.toUInt
     } else {
@@ -156,9 +156,9 @@ class Inflater(noHeader: Boolean) {
     val sin  = !(stream._3)
     val sout = !(stream._6)
     if (buf.length == 0) {
-      !(stream._4) = Inflater.empty.asInstanceOf[ByteArray].at(off)
+      !(stream._4) = Ptr.fromArray(Inflater.empty, off)
     } else {
-      !(stream._4) = buf.asInstanceOf[ByteArray].at(off)
+      !(stream._4) = Ptr.fromArray(buf, off)
     }
     val err = zlib.inflate(stream, zlib.Z_SYNC_FLUSH)
 
@@ -194,14 +194,15 @@ private object Inflater {
   val empty = new Array[Byte](1)
 
   def createStream(noHeader: Boolean): zlib.z_streamp = {
-    val stream = stdlib.malloc(sizeof[zlib.z_stream]).cast[zlib.z_streamp]
-    string.memset(stream.cast[Ptr[Byte]], 0, sizeof[zlib.z_stream])
+    val stream =
+      stdlib.malloc(sizeof[zlib.z_stream]).asInstanceOf[zlib.z_streamp]
+    string.memset(stream.asInstanceOf[Ptr[Byte]], 0, sizeof[zlib.z_stream])
     val wbits: Int =
       if (noHeader) 15 / -1
       else 15
     val err = zlib.inflateInit2(stream, wbits)
     if (err != zlib.Z_OK) {
-      stdlib.free(stream.cast[Ptr[Byte]])
+      stdlib.free(stream.asInstanceOf[Ptr[Byte]])
       throw new ZipException(err.toString)
     }
     stream

@@ -162,12 +162,13 @@ object StringSuite extends tests.Suite {
     assert(leadingPlusTrailing.splitVec(splitSep, 3) == Vector("", noSep, ""))
     assert(leadingPlusTrailing.splitVec(splitSep, 4) == Vector("", noSep, ""))
   }
-  test("split") {
-    splitTest("a")
-    splitTest(".", splitExpr = Some("\\."))
-    splitTest("ab", splitExpr = Some("ab"))
-    splitTest("ab", splitExpr = Some("(ab)"))
-  }
+
+  //test("split") {
+  //  splitTest("a")
+  //  splitTest(".", splitExpr = Some("\\."))
+  //  splitTest("ab", splitExpr = Some("ab"))
+  //  splitTest("ab", splitExpr = Some("(ab)"))
+  //}
 
   test("getBytes") {
     val b = new Array[scala.Byte](4)

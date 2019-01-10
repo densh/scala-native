@@ -2,7 +2,8 @@ package scala.scalanative
 
 import java.nio.charset.Charset
 import scala.language.experimental.macros
-import scalanative.runtime.{libc, intrinsic}
+import scala.reflect.ClassTag
+import scalanative.runtime.{libc, intrinsic, throwUndefined, Intrinsics}
 
 package object native {
 
@@ -82,7 +83,8 @@ package object native {
   type CString = Ptr[CChar]
 
   /** The C 'sizeof' operator. */
-  def sizeof[T](implicit tag: Tag[T]): CSize = intrinsic
+  @inline def sizeof[T](implicit tag: Tag[T]): CSize =
+    tag.size
 
   /** Heap allocate and zero-initialize a value
    *  using current implicit allocator.
@@ -100,13 +102,15 @@ package object native {
    *
    *  Note: unlike alloc, the memory is not zero-initialized.
    */
-  def stackalloc[T](implicit tag: Tag[T]): Ptr[T] = intrinsic
+  def stackalloc[T](implicit tag: Tag[T]): Ptr[T] =
+    macro MacroImpl.stackalloc1[T]
 
   /** Stack allocate n values of given type.
    *
    *  Note: unlike alloc, the memory is not zero-initialized.
    */
-  def stackalloc[T](n: CSize)(implicit tag: Tag[T]): Ptr[T] = intrinsic
+  def stackalloc[T](n: CSize)(implicit tag: Tag[T]): Ptr[T] =
+    macro MacroImpl.stackallocN[T]
 
   /** Used as right hand side of external method and field declarations. */
   def extern: Nothing = intrinsic
@@ -114,12 +118,6 @@ package object native {
   /** C-style string literal. */
   implicit class CQuote(val ctx: StringContext) {
     def c(): CString = intrinsic
-  }
-
-  /** C-style unchecked cast. */
-  implicit class CCast[From](val from: From) {
-    def cast[To](implicit fromtag: Tag[From], totag: Tag[To]): To =
-      intrinsic
   }
 
   /** Scala Native extensions to the standard Byte. */
@@ -156,18 +154,21 @@ package object native {
 
   /** Convert a CString to a String using given charset. */
   def fromCString(cstr: CString,
-                  charset: Charset = Charset.defaultCharset()): String = {
-    val len   = libc.strlen(cstr).toInt
-    val bytes = new Array[Byte](len)
+                  charset: Charset = Charset.defaultCharset()): String =
+    if (cstr.isNull) {
+      null
+    } else {
+      val len   = libc.strlen(cstr).toInt
+      val bytes = new Array[Byte](len)
 
-    var c = 0
-    while (c < len) {
-      bytes(c) = !(cstr + c)
-      c += 1
+      var c = 0
+      while (c < len) {
+        bytes(c) = !(cstr + c)
+        c += 1
+      }
+
+      new String(bytes, charset)
     }
-
-    new String(bytes, charset)
-  }
 
   /** Convert a java.lang.String to a CString using default charset and
    *  given allocator.
@@ -197,26 +198,53 @@ package object native {
 
     def alloc1[T: c.WeakTypeTag](c: Context)(tag: c.Tree, z: c.Tree): c.Tree = {
       import c.universe._
-      val T         = weakTypeOf[T]
-      val size, ptr = TermName(c.freshName())
+      val T                 = weakTypeOf[T]
+      val size, ptr, rawptr = TermName(c.freshName())
       q"""{
-        val $size = _root_.scala.scalanative.native.sizeof[$T]($tag)
-        val $ptr = $z.alloc($size)
-        _root_.scala.scalanative.runtime.libc.memset($ptr, 0, $size)
-        $ptr.cast[Ptr[$T]]
+        val $size   = _root_.scala.scalanative.native.sizeof[$T]($tag)
+        val $ptr    = $z.alloc($size)
+        val $rawptr = _root_.scala.scalanative.native.Ptr.toRaw($ptr)
+        _root_.scala.scalanative.runtime.libc.memset($rawptr, 0, $size)
+        $ptr.asInstanceOf[_root_.scala.scalanative.native.Ptr[$T]]
       }"""
     }
 
     def allocN[T: c.WeakTypeTag](c: Context)(n: c.Tree)(tag: c.Tree,
                                                         z: c.Tree): c.Tree = {
       import c.universe._
-      val T         = weakTypeOf[T]
-      val size, ptr = TermName(c.freshName())
+      val T                 = weakTypeOf[T]
+      val size, ptr, rawptr = TermName(c.freshName())
       q"""{
-        val $size = _root_.scala.scalanative.native.sizeof[$T]($tag) * $n
-        val $ptr = $z.alloc($size)
-        _root_.scala.scalanative.runtime.libc.memset($ptr, 0, $size)
-        $ptr.cast[Ptr[$T]]
+        val $size   = _root_.scala.scalanative.native.sizeof[$T]($tag) * $n
+        val $ptr    = $z.alloc($size)
+        val $rawptr = _root_.scala.scalanative.native.Ptr.toRaw($ptr)
+        _root_.scala.scalanative.runtime.libc.memset($rawptr, 0, $size)
+        $ptr.asInstanceOf[_root_.scala.scalanative.native.Ptr[$T]]
+      }"""
+    }
+
+    def stackalloc1[T: c.WeakTypeTag](c: Context)(tag: c.Tree): c.Tree = {
+      import c.universe._
+      val T                 = weakTypeOf[T]
+      val size, rawptr, ptr = TermName(c.freshName())
+      q"""{
+        val $size   = _root_.scala.scalanative.native.sizeof[$T]($tag)
+        val $rawptr = _root_.scala.scalanative.runtime.Intrinsics.stackalloc($size)
+        _root_.scala.scalanative.runtime.libc.memset($rawptr, 0, $size)
+        _root_.scala.scalanative.native.Ptr.fromRaw[$T]($rawptr)
+      }"""
+    }
+
+    def stackallocN[T: c.WeakTypeTag](c: Context)(n: c.Tree)(
+        tag: c.Tree): c.Tree = {
+      import c.universe._
+      val T                 = weakTypeOf[T]
+      val size, rawptr, ptr = TermName(c.freshName())
+      q"""{
+        val $size   = _root_.scala.scalanative.native.sizeof[$T]($tag) * $n
+        val $rawptr = _root_.scala.scalanative.runtime.Intrinsics.stackalloc($size)
+        _root_.scala.scalanative.runtime.libc.memset($rawptr, 0, $size)
+        _root_.scala.scalanative.native.Ptr.fromRaw[$T]($rawptr)
       }"""
     }
   }

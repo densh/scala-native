@@ -6,9 +6,7 @@ import scala.scalanative.native._
 import scala.scalanative.posix.unistd
 import scala.scalanative.posix.sys.utsname._
 import scala.scalanative.posix.sys.uname._
-import scala.scalanative.runtime.time
-import scala.scalanative.runtime.Platform
-import scala.scalanative.runtime.GC
+import scala.scalanative.runtime.{time, Platform, GC, Intrinsics}
 
 final class System private ()
 
@@ -26,7 +24,7 @@ object System {
   }
 
   def identityHashCode(x: Object): scala.Int =
-    x.cast[Word].hashCode
+    Intrinsics.castRawPtrToLong(Intrinsics.castObjectToRawPtr(x)).hashCode
 
   private def loadProperties() = {
     val sysProps = new Properties()
@@ -82,11 +80,11 @@ object System {
   var err: PrintStream =
     new PrintStream(new FileOutputStream(FileDescriptor.err))
 
-  private val systemProperties = loadProperties()
-  Platform.setOSProps(
-    CFunctionPtr.fromFunction2((key: CString, value: CString) => {
-      systemProperties.setProperty(fromCString(key), fromCString(value));
-    }))
+  private lazy val systemProperties = loadProperties()
+  // Platform.setOSProps(
+  //   CFunctionPtr.fromFunction2((key: CString, value: CString) => {
+  //     systemProperties.setProperty(fromCString(key), fromCString(value));
+  //   }))
 
   def lineSeparator(): String = {
     if (Platform.isWindows) "\r\n"
@@ -125,23 +123,20 @@ object System {
   def gc(): Unit = GC.collect()
 
   private lazy val envVars: Map[String, String] = {
-    // workaround since `while(ptr(0) != null)` causes segfault
-    def isDefined(ptr: Ptr[CString]): Boolean = {
-      val s: CString = ptr(0)
-      s != null
-    }
+    def end(ptr: Ptr[CString]) =
+      (!ptr).isNull
 
     // Count to preallocate the map
     var size    = 0
     var sizePtr = unistd.environ
-    while (isDefined(sizePtr)) {
+    while (!end(sizePtr)) {
       size += 1
       sizePtr += 1
     }
 
     val map               = new HashMap[String, String](size)
     var ptr: Ptr[CString] = unistd.environ
-    while (isDefined(ptr)) {
+    while (!end(ptr)) {
       val variable = fromCString(ptr(0))
       val name     = variable.takeWhile(_ != '=')
       val value =

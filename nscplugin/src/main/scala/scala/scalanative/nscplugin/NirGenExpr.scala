@@ -726,14 +726,12 @@ trait NirGenExpr { self: NirGenPhase =>
         genPtrOp(app, code)
       } else if (nirPrimitives.isFunPtrOp(code)) {
         genFunPtrOp(app, code)
+      } else if (nirPrimitives.isCastOp(code)) {
+        genCastOp(app, code)
       } else if (isCoercion(code)) {
         genCoercion(app, receiver, code)
       } else if (code == SYNCHRONIZED) {
         genSynchronized(app)
-      } else if (code == CCAST) {
-        genCastOp(app)
-      } else if (code == SIZEOF || code == TYPEOF) {
-        genOfOp(app, code)
       } else if (code == STACKALLOC) {
         genStackalloc(app)
       } else if (code == CQUOTE) {
@@ -753,23 +751,23 @@ trait NirGenExpr { self: NirGenPhase =>
     lazy val jlClass         = nir.Type.Ref(jlClassName)
     lazy val jlClassCtorName = jlClassName.member(nir.Sig.Ctor(Seq(nir.Type.Ptr)))
     lazy val jlClassCtorSig =
-      nir.Type.Function(Seq(jlClass, Type.Ptr), nir.Type.Unit)
+      nir.Type.Function(Seq(jlClass, nir.Type.Ptr), nir.Type.Unit)
     lazy val jlClassCtor = nir.Val.Global(jlClassCtorName, nir.Type.Ptr)
 
     def genBoxClass(typeVal: Val): Val = {
-      val alloc = buf.classalloc(jlClassName, unwind)
+      val alloc  = buf.classalloc(jlClassName, unwind)
       buf.call(jlClassCtorSig, jlClassCtor, Seq(alloc, typeVal), unwind)
       alloc
     }
 
     def numOfType(num: Int, ty: nir.Type): Val = ty match {
-      case Type.Byte                => Val.Byte(num.toByte)
-      case Type.Short  | Type.Char => Val.Short(num.toShort)
-      case Type.Int                  => Val.Int(num)
-      case Type.Long                => Val.Long(num.toLong)
-      case Type.Float                           => Val.Float(num.toFloat)
-      case Type.Double                          => Val.Double(num.toDouble)
-      case _                                    => unsupported(s"num = $num, ty = ${ty.show}")
+      case Type.Byte              => Val.Byte(num.toByte)
+      case Type.Short | Type.Char => Val.Short(num.toShort)
+      case Type.Int               => Val.Int(num)
+      case Type.Long              => Val.Long(num.toLong)
+      case Type.Float             => Val.Float(num.toFloat)
+      case Type.Double            => Val.Double(num.toDouble)
+      case _                      => unsupported(s"num = $num, ty = ${ty.show}")
     }
 
     def genSimpleOp(app: Apply, args: List[Tree], code: Int): Val = {
@@ -1126,77 +1124,69 @@ trait NirGenExpr { self: NirGenPhase =>
         }
     }
 
-    def genPtrOp(app: Apply, code: Int): Val = {
-      val Apply(sel @ Select(ptrp, _), argsp) = app
+    def genPtrOp(app: Apply, code: Int): Val = code match {
+      case _ if nirPrimitives.isPtrLoadOp(code) =>
+        genPtrLoadOp(app, code)
+      case _ if nirPrimitives.isPtrStoreOp(code) =>
+        genPtrStoreOp(app, code)
+      case ELEM_RAW_PTR =>
+        genPtrElemOp(app, code)
+      case _ =>
+        abort(
+          s"Unknown pointer operation #$code : " + app +
+            " at: " + app.pos)
+    }
+
+    def genPtrLoadOp(app: Apply, code: Int): Val = {
+      val Apply(_, Seq(ptrp)) = app
 
       val ptr = genExpr(ptrp)
 
-      (code, argsp) match {
-        case (PTR_LOAD, Seq(tagp)) =>
-          val st    = unwrapTag(tagp)
-          val ty    = genType(st, box = false)
-          val value = buf.load(ty, ptr, unwind)
-          boxValue(st, value)
-
-        case (PTR_STORE, Seq(valuep, tagp)) =>
-          val st      = unwrapTag(tagp)
-          val ty      = genType(st, box = false)
-          val value   = genExpr(valuep)
-          val unboxed = unboxValue(st, partial = false, value)
-          buf.store(ty, ptr, unboxed, unwind)
-
-        case (PTR_ADD, Seq(offsetp, tagp)) =>
-          val st     = unwrapTag(tagp)
-          val ty     = genType(st, box = false)
-          val offset = genExpr(offsetp)
-          buf.elem(ty, ptr, Seq(offset), unwind)
-
-        case (PTR_SUB, Seq(argp, tagp)) =>
-          val st  = unwrapTag(tagp)
-          val ty  = genType(st, box = false)
-          val sym = argp.tpe.typeSymbol
-          sym match {
-            case IntClass =>
-              val offset = genExpr(argp)
-              val neg    = negateInt(offset)
-              buf.elem(ty, ptr, Seq(neg), unwind)
-
-            case PtrClass =>
-              // Pointers in Scala Native are untyped and modeled as `i8*`.
-              // Pointer substraction therefore explicitly divide the byte
-              // offset by the size of pointer type.
-              val ptrInt     = buf.conv(nir.Conv.Ptrtoint, nir.Type.Long, ptr, unwind)
-              val ptrArg     = genExpr(argp)
-              val ptrArgInt  = buf.conv(nir.Conv.Ptrtoint, nir.Type.Long, ptrArg, unwind)
-              val byteOffset = buf.bin(Bin.Isub, nir.Type.Long, ptrInt, ptrArgInt, unwind)
-              val sizeOf     = buf.sizeof(ty, unwind)
-              buf.bin(Bin.Sdiv, nir.Type.Long, byteOffset, sizeOf, unwind)
-          }
-
-        case (PTR_APPLY, Seq(offsetp, tagp)) =>
-          val st     = unwrapTag(tagp)
-          val ty     = genType(st, box = false)
-          val offset = genExpr(offsetp)
-          val elem   = buf.elem(ty, ptr, Seq(offset), unwind)
-          val value  = buf.load(ty, elem, unwind)
-          boxValue(st, value)
-
-        case (PTR_UPDATE, Seq(offsetp, valuep, tagp)) =>
-          val st      = unwrapTag(tagp)
-          val ty      = genType(st, box = false)
-          val offset  = genExpr(offsetp)
-          val value   = genExpr(valuep)
-          val unboxed = unboxValue(st, partial = false, value)
-          val elem    = buf.elem(ty, ptr, Seq(offset), unwind)
-          buf.store(ty, elem, unboxed, unwind)
-
-        case (PTR_FIELD, Seq(tagp, _)) =>
-          val st    = unwrapTag(tagp)
-          val ty    = genType(st, box = false)
-          val index = PtrFieldMethod.indexOf(sel.symbol)
-          val path  = Seq(nir.Val.Int(0), nir.Val.Int(index))
-          buf.elem(ty, ptr, path, unwind)
+      val ty = code match {
+        case LOAD_BOOL    => nir.Type.Bool
+        case LOAD_CHAR    => nir.Type.Char
+        case LOAD_BYTE    => nir.Type.Byte
+        case LOAD_SHORT   => nir.Type.Short
+        case LOAD_INT     => nir.Type.Int
+        case LOAD_LONG    => nir.Type.Long
+        case LOAD_FLOAT   => nir.Type.Float
+        case LOAD_DOUBLE  => nir.Type.Double
+        case LOAD_RAW_PTR => nir.Type.Ptr
+        case LOAD_OBJECT  => Rt.Object
       }
+
+      buf.load(ty, ptr, unwind)
+    }
+
+    def genPtrStoreOp(app: Apply, code: Int): Val = {
+      val Apply(_, Seq(ptrp, valuep)) = app
+
+      val ptr   = genExpr(ptrp)
+      val value = genExpr(valuep)
+
+      val ty = code match {
+        case STORE_BOOL    => nir.Type.Bool
+        case STORE_CHAR    => nir.Type.Char
+        case STORE_BYTE    => nir.Type.Byte
+        case STORE_SHORT   => nir.Type.Short
+        case STORE_INT     => nir.Type.Int
+        case STORE_LONG    => nir.Type.Long
+        case STORE_FLOAT   => nir.Type.Float
+        case STORE_DOUBLE  => nir.Type.Double
+        case STORE_RAW_PTR => nir.Type.Ptr
+        case STORE_OBJECT  => Rt.Object
+      }
+
+      buf.store(ty, ptr, value, unwind)
+    }
+
+    def genPtrElemOp(app: Apply, code: Int): Val = {
+      val Apply(_, Seq(ptrp, offsetp)) = app
+
+      val ptr    = genExpr(ptrp)
+      val offset = genExpr(offsetp)
+
+      buf.elem(Type.Byte, ptr, Seq(offset), unwind)
     }
 
     def genFunPtrOp(app: Apply, code: Int): Val = code match {
@@ -1207,17 +1197,14 @@ trait NirGenExpr { self: NirGenPhase =>
 
         val (argsp, tagsp) = allargsp.splitAt(arity)
 
-        val fun    = genExpr(funp)
-        val tagsts = tagsp.map(unwrapTag)
-        val tagtys = tagsts.map(genType(_, box = false))
-        val sig    = Type.Function(tagtys.init, tagtys.last)
-
+        val fun  = genExpr(funp)
         val args = mutable.UnrolledBuffer.empty[nir.Val]
 
-        tagsts.init.zip(argsp).foreach {
-          case (st, argp) =>
-            args += unboxValue(st, partial = false, genExpr(argp))
+        argsp.foreach { argp =>
+          args += genExpr(argp)
         }
+
+        val sig = Type.Function(args.map(_.ty), genType(app.tpe, box = false))
 
         buf.call(sig, fun, args, unwind)
 
@@ -1249,46 +1236,25 @@ trait NirGenExpr { self: NirGenPhase =>
           unsupported(s"cast from $fromty to $toty")
       }
 
-    def genCastOp(app: Apply): Val = {
-      val Apply(Select(Apply(_, List(valuep)), _), List(fromtagp, totagp)) = app
+    def genCastOp(app: Apply, code: Int): Val = {
+      val Apply(_, Seq(argp)) = app
 
-      val fromst = unwrapTag(fromtagp)
-      val tost   = unwrapTag(totagp)
-      val fromty = genType(fromst, box = false)
-      val toty   = genType(tost, box = false)
-      val value  = genExpr(valuep)
-      val from   = unboxValue(fromst, partial = false, value)
-      val conv   = genCastOp(fromty, toty, from)
+      val fromty = genType(argp.tpe, box = false)
+      val toty   = genType(app.tpe, box = false)
+      val value  = genExpr(argp)
 
-      boxValue(tost, conv)
+      genCastOp(fromty, toty, value)
     }
 
     def genCastOp(fromty: nir.Type, toty: nir.Type, value: Val): Val =
       castConv(fromty, toty).fold(value)(buf.conv(_, toty, value, unwind))
 
-    def genOfOp(app: Apply, code: Int): Val = {
-      val Apply(_, Seq(tagp)) = app
-
-      val st = unwrapTag(tagp)
-
-      code match {
-        case SIZEOF => buf.sizeof(genType(st, box = false), unwind)
-        case TYPEOF => genTypeValue(st)
-        case _      => util.unreachable
-      }
-    }
-
     def genStackalloc(app: Apply): Val = {
-      val (sizeopt, tagp) = app match {
-        case Apply(_, Seq(tagp)) =>
-          (None, tagp)
-        case Apply(_, Seq(sizep, tagp)) =>
-          (Some(sizep), tagp)
-      }
-      val ty   = genType(unwrapTag(tagp), box = false)
-      val size = sizeopt.fold[Val](Val.Int(1))(genExpr(_))
+      val Apply(_, Seq(sizep)) = app
 
-      buf.stackalloc(ty, size, unwind)
+      val size = genExpr(sizep)
+
+      buf.stackalloc(Type.Byte, size, unwind)
     }
 
     def genCQuoteOp(app: Apply): Val = {
@@ -1319,7 +1285,9 @@ trait NirGenExpr { self: NirGenPhase =>
                               _))))))),
             _),
             _) =>
-          Val.Const(Val.Chars(str.replace("\\n", "\n").replace("\\r", "\r")))
+          val chars = Val.Chars(str.replace("\\n", "\n").replace("\\r", "\r"))
+          val const = Val.Const(chars)
+          buf.box(nir.Rt.BoxedPtr, const, unwind)
 
         case _ =>
           unsupported(app)
@@ -1602,12 +1570,19 @@ trait NirGenExpr { self: NirGenPhase =>
     }
 
     def genApplyMethod(sym: Symbol,
-                      statically: Boolean,
-                      self: Val,
-                      argsp: Seq[Tree]): Val = {
+                       statically: Boolean,
+                       self: Val,
+                       argsp: Seq[Tree]): Val = {
       val owner = sym.owner
       val name  = genMethodName(sym)
-      val sig   = genMethodSig(sym)
+      val sig   = {
+        val origSig = genMethodSig(sym)
+        if (owner.isExternModule) {
+          unboxedPtrSig(origSig).asInstanceOf[nir.Type.Function]
+        } else {
+          origSig
+        }
+      }
       val argsPt =
         if (owner.isExternModule || isImplClass(owner))
           sig.args
@@ -1626,8 +1601,21 @@ trait NirGenExpr { self: NirGenPhase =>
           args
         else
           self +: args
+      val res = buf.call(sig, method, values, unwind)
 
-      buf.call(sig, method, values, unwind)
+      if (!owner.isExternModule) {
+        res
+      } else {
+        val Type.Function(_, retty) = genMethodSig(sym)
+
+        (res.ty, retty) match {
+          case (nir.Type.Ptr, refty: nir.Type.Ref)
+              if refty.name == nir.Rt.BoxedPtr.name =>
+            buf.box(nir.Rt.BoxedPtr, res, unwind)
+          case _ =>
+            res
+        }
+      }
     }
 
     def genSimpleArgs(argsp: Seq[Tree]): Seq[Val] =
@@ -1693,7 +1681,14 @@ trait NirGenExpr { self: NirGenPhase =>
             if (wasRepeated) {
               res ++= genExpandRepeatedArg(argp).get
             } else {
-              res += genExpr(argp)
+              val argv = genExpr(argp)
+
+              genType(paramSym.tpe, box = false) match {
+                case refty: nir.Type.Ref if refty.name == nir.Rt.BoxedPtr.name =>
+                  res += buf.unbox(nir.Rt.BoxedPtr, argv, unwind)
+                case _ =>
+                  res += argv
+              }
             }
         }
 
@@ -1708,9 +1703,14 @@ trait NirGenExpr { self: NirGenPhase =>
             WrapArray(MaybeAsInstanceOf(ArrayValue(tpt, elems)))) =>
           val values = mutable.UnrolledBuffer.empty[Val]
           elems.foreach {
-            case CVararg(st, argp) =>
+            case CVararg(argp) =>
               val arg = genExpr(argp)
-              values += unboxValue(st, partial = false, arg)
+              arg.ty match {
+                case refty: Type.Ref if Type.boxClasses.contains(refty.name) =>
+                  values += buf.unbox(refty, arg, unwind)
+                case _ =>
+                  values += arg
+              }
           }
           Some(values)
 

@@ -8,12 +8,16 @@ private[lang] object StackTrace {
   private val cache =
     collection.mutable.HashMap.empty[CUnsignedLong, StackTraceElement]
 
-  private def makeStackTraceElement(
-      cursor: Ptr[scala.Byte]): StackTraceElement = {
-    val name   = stackalloc[CChar](1024)
-    val offset = stackalloc[scala.Byte](8)
+  private def makeStackTraceElement(cursor: Ptr[scala.Byte])(
+      implicit z: Zone): StackTraceElement = {
+    val name   = alloc[CChar](1024)
+    val offset = alloc[scala.Byte](8)
 
     unwind.get_proc_name(cursor, name, 1024, offset)
+
+    // println("name == null: " + (name == null))
+    // println("name.rawptr == null: " + (Ptr.toRaw(name) == null))
+    // println("name is null: " + name.isNull)
 
     // Make sure the name is definitely 0-terminated.
     // Unmangler is going to use strlen on this name and it's
@@ -27,25 +31,38 @@ private[lang] object StackTrace {
    *  Finding a name of the symbol for current function is expensive,
    *  so we cache stack trace elements based on current instruction pointer.
    */
-  private def cachedStackTraceElement(cursor: Ptr[scala.Byte],
-                                      ip: CUnsignedLong): StackTraceElement =
+  private def cachedStackTraceElement(
+      cursor: Ptr[scala.Byte],
+      ip: CUnsignedLong)(implicit z: Zone): StackTraceElement =
     cache.getOrElseUpdate(ip, makeStackTraceElement(cursor))
 
-  private[lang] def currentStackTrace(): Array[StackTraceElement] = {
-    val cursor  = stackalloc[scala.Byte](2048)
-    val context = stackalloc[scala.Byte](2048)
-    val offset  = stackalloc[scala.Byte](8)
-    val ip      = stackalloc[CUnsignedLongLong]
-    var buffer  = mutable.ArrayBuffer.empty[StackTraceElement]
+  private[lang] def currentStackTrace(): Array[StackTraceElement] = Zone {
+    implicit z =>
+      val cursor = alloc[scala.Byte](2048)
+      // println("cursor: " + cursor)
+      val context = alloc[scala.Byte](2048)
+      // println("context: " + context)
+      val offset = alloc[scala.Byte](8)
+      // println("offset: " + offset)
+      val ip = alloc[CUnsignedLongLong]
+      // println("ip: " + ip)
+      var buffer = mutable.ArrayBuffer.empty[StackTraceElement]
 
-    unwind.get_context(context)
-    unwind.init_local(cursor, context)
-    while (unwind.step(cursor) > 0) {
-      unwind.get_reg(cursor, unwind.UNW_REG_IP, ip)
-      buffer += cachedStackTraceElement(cursor, !ip)
-    }
+      unwind.get_context(context)
+      unwind.init_local(cursor, context)
+      while (unwind.step(cursor) > 0) {
+        // println("unwind step")
+        // println("- cursor: " + cursor)
+        // println("- cursor == null: " + (cursor == null))
+        // println("- cursor is null: " + cursor.isNull)
+        // println("- ip: " + ip)
+        // println("- ip == null: " + (ip == null))
+        // println("- ip is null: " + ip.isNull)
+        unwind.get_reg(cursor, unwind.UNW_REG_IP, ip)
+        buffer += cachedStackTraceElement(cursor, !ip)
+      }
 
-    buffer.toArray
+      buffer.toArray
   }
 }
 

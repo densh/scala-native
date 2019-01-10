@@ -1,8 +1,8 @@
 package java.lang
 
 import scalanative.native._
-import scalanative.libc.string.memcmp
 import scalanative.runtime.CharArray
+import scalanative.runtime.libc.memcmp
 import java.io.Serializable
 import java.util._
 import java.util.regex._
@@ -223,9 +223,13 @@ final class _String()
             false
           } else {
             val data1 =
-              value.asInstanceOf[CharArray].at(offset).cast[Ptr[scala.Byte]]
+              value
+                .asInstanceOf[CharArray]
+                .at(offset)
             val data2 =
-              s.value.asInstanceOf[CharArray].at(s.offset).cast[Ptr[scala.Byte]]
+              s.value
+                .asInstanceOf[CharArray]
+                .at(s.offset)
             memcmp(data1, data2, count * 2) == 0
           }
         }
@@ -325,7 +329,7 @@ final class _String()
       if (count == 0) {
         0
       } else {
-        val data = value.asInstanceOf[CharArray].at(offset)
+        val data = Ptr.fromArray(value, offset)
         var hash = 0
         var i    = 0
         while (i < count) {

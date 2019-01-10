@@ -1,21 +1,24 @@
 package scala.scalanative
 package native
 
-import scalanative.runtime.undefined
+import scalanative.runtime.intrinsic
 
 % for N in range(1, 23):
 
-final abstract class CField${N}[P, F]
+final class CField${N}[P, F](val offset: Word)
 
 object CField${N} {
 
-  implicit def array[T, N <: Nat]: CField${N}[CArray[T, N], T] = undefined
+  implicit def array[T, N <: Nat](implicit tag: Tag[CArray[T, N]]): CField${N}[CArray[T, N], T] =
+    new CField${N}(implicitly[Tag[CArray[T, N]]].offset(${N}))
 
 % for K in range(N, 23):
 %   FK = "F" + str(N)
 %   Fs = ", ".join(["F" + str(i) for i in range(1, K + 1)])
+%   Tag = "Tag[CStruct{}[{}]]".format(K, Fs)
 
-  implicit def struct${K}[${Fs}]: CField${N}[CStruct${K}[${Fs}], ${FK}] = undefined
+  implicit def struct${K}[${Fs}](implicit tag: ${Tag}): CField${N}[CStruct${K}[${Fs}], ${FK}] =
+    new CField${N}(implicitly[${Tag}].offset(${N}))
 
 % end
 

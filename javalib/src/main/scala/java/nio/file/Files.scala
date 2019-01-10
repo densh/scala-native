@@ -437,19 +437,19 @@ object Files {
       throw new OutOfMemoryError("Required array size too large")
     }
     val len   = pathSize.toInt
-    val bytes = scala.scalanative.runtime.ByteArray.alloc(len)
+    val bytes = new Array[Byte](len)
     val fd    = fcntl.open(toCString(path.toString), fcntl.O_RDONLY)
     try {
       var offset = 0
       var read   = 0
       while ({
-        read = unistd.read(fd, bytes.at(offset), len - offset);
+        read = unistd.read(fd, Ptr.fromArray(bytes, offset), len - offset);
         read != -1 && (offset + read) < len
       }) {
         offset += read
       }
       if (read == -1) throw UnixException(path.toString, errno.errno)
-      bytes.asInstanceOf[Array[Byte]]
+      bytes
     } finally {
       fcntl.close(fd)
     }

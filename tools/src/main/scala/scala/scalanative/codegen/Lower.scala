@@ -865,10 +865,11 @@ object Lower {
     "java.lang.Integer",
     "java.lang.Long",
     "java.lang.Float",
-    "java.lang.Double"
+    "java.lang.Double",
+    "scala.scalanative.native.Ptr"
   ).map { name =>
     val boxty  = Type.Ref(Global.Top(name))
-    val module = BoxesRunTime
+    val module = if (name.startsWith("java.")) BoxesRunTime else RuntimeBoxes
     val id     = "boxTo" + name.split("\\.").last
     val tys    = Seq(nir.Type.unbox(boxty), boxty)
     val meth   = module.member(Sig.Method(id, tys))
@@ -884,10 +885,11 @@ object Lower {
     "java.lang.Integer",
     "java.lang.Long",
     "java.lang.Float",
-    "java.lang.Double"
+    "java.lang.Double",
+    "scala.scalanative.native.Ptr"
   ).map { name =>
     val boxty  = Type.Ref(Global.Top(name))
-    val module = BoxesRunTime
+    val module = if (name.startsWith("java.")) BoxesRunTime else RuntimeBoxes
     val id = {
       val last = name.split("\\.").last
       val suffix =
@@ -942,7 +944,7 @@ object Lower {
     case (ty, arrname) =>
       val Global.Top(id) = arrname
       ty -> Type.Function(
-        Seq(Type.Ref(Global.Top(id + "$")), Type.Int, Type.Ptr),
+        Seq(Type.Ref(Global.Top(id + "$")), Type.Int, Rt.BoxedPtr),
         Type.Ref(arrname))
   }.toMap
   val arrayApplyGeneric = Type.typeToArray.map {

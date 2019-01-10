@@ -70,7 +70,7 @@ trait NirGenType { self: NirGenPhase =>
 
     case NullClass    => nir.Type.Null
     case NothingClass => nir.Type.Nothing
-    case PtrClass     => nir.Type.Ptr
+    case RawPtrClass  => nir.Type.Ptr
 
     case sym if CStructClass.contains(sym) =>
       nir.Type.StructValue(st.targs.map(genType(_, box = false)))
@@ -215,4 +215,14 @@ trait NirGenType { self: NirGenPhase =>
         genType(p.tpe, box = false)
     }
   }
+
+  def unboxedPtrSig(ty: nir.Type): nir.Type = ty match {
+    case nir.Type.Function(tys, ty) =>
+      nir.Type.Function(tys.map(unboxedPtrSig), unboxedPtrSig(ty))
+    case refty: nir.Type.Ref if refty.name == nir.Rt.BoxedPtr.name =>
+      nir.Type.Ptr
+    case _ =>
+      ty
+  }
+
 }

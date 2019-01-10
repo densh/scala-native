@@ -17,22 +17,14 @@ trait NirDefinitions { self: NirGlobalAddons =>
     lazy val UIntClass   = getRequiredClass("scala.scalanative.native.UInt")
     lazy val ULongClass  = getRequiredClass("scala.scalanative.native.ULong")
 
-    lazy val PtrClass        = getRequiredClass("scala.scalanative.native.Ptr")
-    lazy val PtrLoadMethod   = getDecl(PtrClass, TermName("unary_$bang"))
-    lazy val PtrStoreMethod  = getDecl(PtrClass, TermName("unary_$bang_$eq"))
-    lazy val PtrAddMethod    = getDecl(PtrClass, TermName("$plus"))
-    lazy val PtrSubMethods   = getDecl(PtrClass, TermName("$minus")).alternatives
-    lazy val PtrApplyMethod  = getDecl(PtrClass, TermName("apply"))
-    lazy val PtrUpdateMethod = getDecl(PtrClass, TermName("update"))
-    lazy val PtrFieldMethod = (1 to 22).map { i =>
-      getDecl(PtrClass, TermName("_" + i))
-    }
-
     lazy val NameClass   = getRequiredClass("scala.scalanative.native.name")
     lazy val LinkClass   = getRequiredClass("scala.scalanative.native.link")
     lazy val ExternClass = getRequiredClass("scala.scalanative.native.extern")
     lazy val PinClass    = getRequiredClass("scala.scalanative.native.pin")
     lazy val StubClass   = getRequiredClass("scala.scalanative.native.stub")
+
+    lazy val BoxedPtrClass = getRequiredClass("scala.scalanative.native.Ptr")
+    lazy val RawPtrClass   = getRequiredClass("scala.scalanative.runtime.RawPtr")
 
     lazy val InlineHintClass = getRequiredClass(
       "scala.scalanative.native.inlinehint")
@@ -41,9 +33,6 @@ trait NirDefinitions { self: NirGlobalAddons =>
       "scala.scalanative.native.package")
     lazy val CastMethod   = getMember(NativeModule, TermName("cast"))
     lazy val ExternMethod = getMember(NativeModule, TermName("extern"))
-    lazy val SizeofMethod = getMember(NativeModule, TermName("sizeof"))
-    lazy val StackallocMethods =
-      getMember(NativeModule, TermName("stackalloc")).alternatives
 
     lazy val CVarargModule = getRequiredModule(
       "scala.scalanative.native.CVararg")
@@ -52,10 +41,6 @@ trait NirDefinitions { self: NirGlobalAddons =>
     lazy val CQuoteClass = getRequiredClass(
       "scala.scalanative.native.package$CQuote")
     lazy val CQuoteMethod = getDecl(CQuoteClass, TermName("c"))
-
-    lazy val CCastClass = getRequiredClass(
-      "scala.scalanative.native.package$CCast")
-    lazy val CCastMethod = getDecl(CCastClass, TermName("cast"))
 
     lazy val CFunctionPtrClass = (0 to 22).map { n =>
       getRequiredClass("scala.scalanative.native.CFunctionPtr" + n)
@@ -78,31 +63,6 @@ trait NirDefinitions { self: NirGlobalAddons =>
     }
     lazy val NatDigitClass =
       getRequiredClass("scala.scalanative.native.Nat$Digit")
-
-    lazy val TagModule        = getRequiredModule("scala.scalanative.native.Tag")
-    lazy val UnitTagMethod    = getDecl(TagModule, TermName("Unit"))
-    lazy val BooleanTagMethod = getDecl(TagModule, TermName("Boolean"))
-    lazy val CharTagMethod    = getDecl(TagModule, TermName("Char"))
-    lazy val ByteTagMethod    = getDecl(TagModule, TermName("Byte"))
-    lazy val UByteTagMethod   = getDecl(TagModule, TermName("UByte"))
-    lazy val ShortTagMethod   = getDecl(TagModule, TermName("Short"))
-    lazy val UShortTagMethod  = getDecl(TagModule, TermName("UShort"))
-    lazy val IntTagMethod     = getDecl(TagModule, TermName("Int"))
-    lazy val UIntTagMethod    = getDecl(TagModule, TermName("UInt"))
-    lazy val LongTagMethod    = getDecl(TagModule, TermName("Long"))
-    lazy val ULongTagMethod   = getDecl(TagModule, TermName("ULong"))
-    lazy val FloatTagMethod   = getDecl(TagModule, TermName("Float"))
-    lazy val DoubleTagMethod  = getDecl(TagModule, TermName("Double"))
-    lazy val PtrTagMethod     = getDecl(TagModule, TermName("Ptr"))
-    lazy val RefTagMethod     = getDecl(TagModule, TermName("Ref"))
-    lazy val NatBaseTagMethod = (0 to 9).map { n =>
-      getDecl(TagModule, TermName("Nat" + n))
-    }
-    lazy val NatDigitTagMethod = getDecl(TagModule, TermName("NatDigit"))
-    lazy val CArrayTagMethod   = getDecl(TagModule, TermName("CArray"))
-    lazy val CStructTagMethod = (0 to 22).map { n =>
-      getDecl(TagModule, TermName("CStruct" + n))
-    }
 
     // scala names
 
@@ -129,7 +89,6 @@ trait NirDefinitions { self: NirGlobalAddons =>
 
     lazy val RuntimeModule = getRequiredModule(
       "scala.scalanative.runtime.package")
-    lazy val TypeofMethod = getMember(RuntimeModule, TermName("typeof"))
     lazy val GetMonitorMethod =
       getMember(RuntimeModule, TermName("getMonitor"))
 
@@ -149,14 +108,77 @@ trait NirDefinitions { self: NirGlobalAddons =>
       getMember(IntrinsicsModule, TermName("shortToULong"))
     lazy val IntToULongMethod =
       getMember(IntrinsicsModule, TermName("intToULong"))
+    lazy val LoadBoolMethod =
+      getMember(IntrinsicsModule, TermName("loadBoolean"))
+    lazy val LoadCharMethod = getMember(IntrinsicsModule, TermName("loadChar"))
+    lazy val LoadByteMethod = getMember(IntrinsicsModule, TermName("loadByte"))
+    lazy val LoadShortMethod =
+      getMember(IntrinsicsModule, TermName("loadShort"))
+    lazy val LoadIntMethod  = getMember(IntrinsicsModule, TermName("loadInt"))
+    lazy val LoadLongMethod = getMember(IntrinsicsModule, TermName("loadLong"))
+    lazy val LoadFloatMethod =
+      getMember(IntrinsicsModule, TermName("loadFloat"))
+    lazy val LoadDoubleMethod =
+      getMember(IntrinsicsModule, TermName("loadDouble"))
+    lazy val LoadRawPtrMethod =
+      getMember(IntrinsicsModule, TermName("loadRawPtr"))
+    lazy val LoadObjectMethod =
+      getMember(IntrinsicsModule, TermName("loadObject"))
+    lazy val StoreBoolMethod =
+      getMember(IntrinsicsModule, TermName("storeBoolean"))
+    lazy val StoreCharMethod =
+      getMember(IntrinsicsModule, TermName("storeChar"))
+    lazy val StoreByteMethod =
+      getMember(IntrinsicsModule, TermName("storeByte"))
+    lazy val StoreShortMethod =
+      getMember(IntrinsicsModule, TermName("storeShort"))
+    lazy val StoreIntMethod = getMember(IntrinsicsModule, TermName("storeInt"))
+    lazy val StoreLongMethod =
+      getMember(IntrinsicsModule, TermName("storeLong"))
+    lazy val StoreFloatMethod =
+      getMember(IntrinsicsModule, TermName("storeFloat"))
+    lazy val StoreDoubleMethod =
+      getMember(IntrinsicsModule, TermName("storeDouble"))
+    lazy val StoreRawPtrMethod =
+      getMember(IntrinsicsModule, TermName("storeRawPtr"))
+    lazy val StoreObjectMethod =
+      getMember(IntrinsicsModule, TermName("storeObject"))
+    lazy val ElemRawPtrMethod =
+      getMember(IntrinsicsModule, TermName("elemRawPtr"))
+    lazy val CastRawPtrToObjectMethod =
+      getMember(IntrinsicsModule, TermName("castRawPtrToObject"))
+    lazy val CastObjectToRawPtrMethod =
+      getMember(IntrinsicsModule, TermName("castObjectToRawPtr"))
+    lazy val CastIntToFloatMethod =
+      getMember(IntrinsicsModule, TermName("castIntToFloat"))
+    lazy val CastFloatToIntMethod =
+      getMember(IntrinsicsModule, TermName("castFloatToInt"))
+    lazy val CastLongToDoubleMethod =
+      getMember(IntrinsicsModule, TermName("castLongToDouble"))
+    lazy val CastDoubleToLongMethod =
+      getMember(IntrinsicsModule, TermName("castDoubleToLong"))
+    lazy val CastRawPtrToIntMethod =
+      getMember(IntrinsicsModule, TermName("castRawPtrToInt"))
+    lazy val CastRawPtrToLongMethod =
+      getMember(IntrinsicsModule, TermName("castRawPtrToLong"))
+    lazy val CastIntToRawPtrMethod =
+      getMember(IntrinsicsModule, TermName("castIntToRawPtr"))
+    lazy val CastLongToRawPtrMethod =
+      getMember(IntrinsicsModule, TermName("castLongToRawPtr"))
+    lazy val StackallocMethod =
+      getMember(IntrinsicsModule, TermName("stackalloc"))
 
     lazy val RuntimePrimitive: Map[Char, Symbol] = Map(
       'B' -> getRequiredClass("scala.scalanative.runtime.PrimitiveBoolean"),
       'C' -> getRequiredClass("scala.scalanative.runtime.PrimitiveChar"),
       'Z' -> getRequiredClass("scala.scalanative.runtime.PrimitiveByte"),
+      'z' -> getRequiredClass("scala.scalanative.runtime.PrimitiveUByte"),
       'S' -> getRequiredClass("scala.scalanative.runtime.PrimitiveShort"),
+      's' -> getRequiredClass("scala.scalanative.runtime.PrimitiveUShort"),
       'I' -> getRequiredClass("scala.scalanative.runtime.PrimitiveInt"),
+      'i' -> getRequiredClass("scala.scalanative.runtime.PrimitiveUInt"),
       'L' -> getRequiredClass("scala.scalanative.runtime.PrimitiveLong"),
+      'l' -> getRequiredClass("scala.scalanative.runtime.PrimitiveULong"),
       'F' -> getRequiredClass("scala.scalanative.runtime.PrimitiveFloat"),
       'D' -> getRequiredClass("scala.scalanative.runtime.PrimitiveDouble"),
       'U' -> getRequiredClass("scala.scalanative.runtime.PrimitiveUnit")

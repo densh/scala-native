@@ -17,7 +17,10 @@ object rtti {
 }
 import rtti._
 
-final class _Class[A](val ty: Ptr[Type]) {
+final class _Class[A](val rawty: RawPtr) {
+  private def ty: Ptr[Type] =
+    Ptr.fromRaw[Type](rawty)
+
   def cast(obj: Object): A =
     obj.asInstanceOf[A]
 
@@ -74,7 +77,7 @@ final class _Class[A](val ty: Ptr[Type]) {
       case CLASS_KIND =>
         right.kind match {
           case CLASS_KIND =>
-            val rightCls  = right.cast[Ptr[ClassType]]
+            val rightCls  = right.asInstanceOf[Ptr[ClassType]]
             val rightFrom = rightCls.idRangeFrom
             val rightTo   = rightCls.idRangeTo
             val leftId    = left.id
@@ -121,13 +124,13 @@ final class _Class[A](val ty: Ptr[Type]) {
   override def equals(other: Any): scala.Boolean =
     other match {
       case other: _Class[_] =>
-        ty == other.ty
+        rawty == other.rawty
       case _ =>
         false
     }
 
   override def hashCode: Int =
-    ty.cast[scala.Long].##
+    Intrinsics.castRawPtrToLong(rawty).##
 
   override def toString = {
     val name = getName

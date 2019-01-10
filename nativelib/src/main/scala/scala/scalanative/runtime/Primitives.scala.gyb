@@ -5,7 +5,8 @@ import native._
 
 %{
     primitives = ['Boolean', 'Char', 'Byte', 'Short',
-                  'Int', 'Long', 'Float', 'Double', 'Unit']
+                  'Int', 'Long', 'Float', 'Double', 'Unit',
+                  'UByte', 'UShort', 'UInt', 'ULong']
 }%
 
 % for T in primitives:

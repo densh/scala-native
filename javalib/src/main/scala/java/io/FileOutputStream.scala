@@ -44,7 +44,7 @@ class FileOutputStream(fd: FileDescriptor, file: Option[File] = None)
 
     // we use the runtime knowledge of the array layout to avoid
     // intermediate buffer, and read straight from the array memory
-    val buf        = buffer.asInstanceOf[runtime.ByteArray].at(offset)
+    val buf        = Ptr.fromArray(buffer, offset)
     val writeCount = unistd.write(fd.fd, buf, count)
 
     if (writeCount < 0) {

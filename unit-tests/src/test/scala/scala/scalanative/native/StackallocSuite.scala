@@ -47,7 +47,7 @@ object StackallocSuite extends tests.Suite {
     assert(!ptr._3 == 3)
     assert(!ptr._4 == 4)
 
-    val intptr = ptr.cast[Ptr[Int]]
+    val intptr = ptr.asInstanceOf[Ptr[Int]]
 
     assert(intptr(0) == 1)
     assert(intptr(1) == 2)
@@ -87,7 +87,7 @@ object CList {
       self
     }
     def value = !self._1
-    def next  = (!self._2).cast[Ptr[Node]]
+    def next  = (!self._2).asInstanceOf[Ptr[Node]]
     def sum: Int = {
       var res  = 0
       var head = self
