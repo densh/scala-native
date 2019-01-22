@@ -1,13 +1,16 @@
 package scala.scalanative
 
-import native.{CFunctionPtr1, CFunctionPtr0}
+import native.{FuncPtr1, FuncPtr0}
 import native.{CInt, CFloat, CDouble}
 
 object IssuesSuite extends tests.Suite {
 
-  def foo(arg: Int): Unit                        = ()
-  def crash(arg: CFunctionPtr1[Int, Unit]): Unit = ()
-  def lifted208Test(): Unit                      = crash(foo _)
+  def foo(arg: Int): Unit                   = ()
+  def crash(arg: FuncPtr1[Int, Unit]): Unit = ()
+  def lifted208Test(): Unit =
+    crash(new FuncPtr1[Int, Unit] {
+      def apply(value: Int): Unit = ()
+    })
 
   test("#208") {
     // If we put the test directly, behind the scenes, this will
@@ -112,11 +115,17 @@ object IssuesSuite extends tests.Suite {
     assert(h equals world)
   }
 
-  val fptrBoxed: CFunctionPtr0[Integer]  = () => new Integer(1)
-  val fptr: CFunctionPtr0[CInt]          = () => 1
-  val fptrFloat: CFunctionPtr0[CFloat]   = () => 1.0.toFloat
-  val fptrDouble: CFunctionPtr0[CDouble] = () => 1.0
-  def intIdent(x: Int): Int              = x
+  val fptrBoxed: FuncPtr0[Integer] = new FuncPtr0[Integer] {
+    def apply() = new Integer(1)
+  }
+  val fptr: FuncPtr0[CInt] = new FuncPtr0[CInt] { def apply() = 1 }
+  val fptrFloat: FuncPtr0[CFloat] = new FuncPtr0[CFloat] {
+    def apply() = 1.0.toFloat
+  }
+  val fptrDouble: FuncPtr0[CDouble] = new FuncPtr0[CDouble] {
+    def apply() = 1.0
+  }
+  def intIdent(x: Int): Int = x
   test("#382") {
     /// that gave NPE
 

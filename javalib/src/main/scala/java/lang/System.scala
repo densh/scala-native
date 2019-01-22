@@ -83,10 +83,10 @@ object System {
     new PrintStream(new FileOutputStream(FileDescriptor.err))
 
   private val systemProperties = loadProperties()
-  Platform.setOSProps(
-    CFunctionPtr.fromFunction2((key: CString, value: CString) => {
-      systemProperties.setProperty(fromCString(key), fromCString(value));
-    }))
+  Platform.setOSProps(new FuncPtr2[CString, CString, Unit] {
+    def apply(key: CString, value: CString): Unit =
+      systemProperties.setProperty(fromCString(key), fromCString(value))
+  })
 
   def lineSeparator(): String = {
     if (Platform.isWindows) "\r\n"

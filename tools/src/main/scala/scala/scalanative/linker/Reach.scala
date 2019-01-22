@@ -213,7 +213,7 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
               case Rt.JavaHashCodeSig =>
                 update(Rt.ScalaHashCodeSig)
                 update(Rt.JavaHashCodeSig)
-              case sig @ (_: Sig.Method | _: Sig.Ctor) =>
+              case sig @ (_: Sig.Method | _: Sig.Ctor | _: Sig.Generated) =>
                 update(sig)
               case _ =>
                 ()
@@ -251,10 +251,12 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
         info.responds.get(sig).foreach(reachGlobal)
       }
 
-      // Handle all dynamic methods on this class.
-      // Any method that implements a known dynamic
-      // signature becomes reachable. The others are
-      // stashed as dynamic candidates.
+      // 1. Handle all dynamic methods on this class.
+      //    Any method that implements a known dynamic
+      //    signature becomes reachable. The others are
+      //    stashed as dynamic candidates.
+      // 2. FuncPtr extern forwarder becomes reachable if
+      //    class itself is reachable.
       info.responds.foreach {
         case (sig: Sig.Method, impl) =>
           val dynsig = sig.toProxy
@@ -266,6 +268,8 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
             dynimpls += impl
             reachGlobal(impl)
           }
+        case (sig: Sig.Generated, impl) if sig.id == "$extern$forwarder" =>
+          reachGlobal(impl)
         case _ =>
           ()
       }

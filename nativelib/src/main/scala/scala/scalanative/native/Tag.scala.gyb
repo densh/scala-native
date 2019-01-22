@@ -2,12 +2,15 @@ package scala.scalanative
 package native
 
 import scala.reflect.ClassTag
-import scalanative.runtime.{intrinsic, throwUndefined}
+import scalanative.runtime._
+import scalanative.runtime.Intrinsics._
 
-sealed abstract class Tag[P] {
+sealed abstract class Tag[T] {
   def size: Int
   def alignment: Int
   def offset(idx: Int): Int = throwUndefined()
+  def load(ptr: native.Ptr[T]): T = throwUndefined()
+  def store(ptr: native.Ptr[T], value: T): Unit = throwUndefined()
 }
 
 object Tag {
@@ -15,12 +18,20 @@ object Tag {
       extends Tag[native.Ptr[T]] {
     @inline final def size: Int = 8
     @inline final def alignment: Int = 8
+    @inline final override def load(ptr: native.Ptr[native.Ptr[T]]): native.Ptr[T] =
+      fromRawPtr[T](loadRawPtr(toRawPtr(ptr)))
+    @inline final override def store(ptr: native.Ptr[native.Ptr[T]], value: native.Ptr[T]): Unit =
+      storeRawPtr(toRawPtr(ptr), toRawPtr(value))
   }
 
   final case class Class[T <: AnyRef](of: java.lang.Class[T])
       extends Tag[T] {
     @inline final def size: Int = 8
     @inline final def alignment: Int = 8
+    @inline final override def load(ptr: native.Ptr[T]): T =
+      loadObject(toRawPtr(ptr)).asInstanceOf[T]
+    @inline final override def store(ptr: native.Ptr[T], value: T): Unit =
+      storeObject(toRawPtr(ptr), value.asInstanceOf[Object])
   }
 
   % prims = [('Unit', 'scala.Unit', 8),
@@ -41,6 +52,24 @@ object Tag {
   object ${name} extends Tag[${T}] {
     @inline final def size: Int = ${size}
     @inline final def alignment: Int = ${size}
+    @inline final override def load(ptr: native.Ptr[${T}]): ${T} =
+      % if name == 'Unit':
+      loadObject(toRawPtr(ptr)).asInstanceOf[Unit]
+      % elif name.startswith('U'):
+      %   signed = name[1:]
+      load${signed}(toRawPtr(ptr)).to${name}
+      % else:
+      load${name}(toRawPtr(ptr))
+      % end
+    @inline final override def store(ptr: native.Ptr[${T}], value: ${T}): Unit =
+      % if name == 'Unit':
+      storeObject(toRawPtr(ptr), value.asInstanceOf[Object])
+      % elif name.startswith('U'):
+      %   signed = name[1:]
+      store${signed}(toRawPtr(ptr), value.to${signed})
+      % else:
+      store${name}(toRawPtr(ptr), value)
+      % end
   }
 
   % end
@@ -54,14 +83,25 @@ object Tag {
 
   % end
 
+  % for N in range(1, 23):
+
+  sealed trait Field${N}[T, F] extends Tag[T]
+
+  % end
+
   final case class Digit[N <: native.Nat.Base, M <: native.Nat](n: Tag[N], m: Tag[M])
-      extends Tag[native.Nat.Digit[N, M]] {
+      extends Tag[native.Nat.Digit[N, M]]
+  {
     @inline final def size: Int = throwUndefined()
     @inline final def alignment: Int = throwUndefined()
   }
 
   final case class CArray[T, N <: native.Nat](of: Tag[T], n: Tag[N])
-      extends Tag[native.CArray[T, N]] {
+      extends Tag[native.CArray[T, N]]
+  % for N in range(1, 23):
+      with Field${N}[native.CArray[T, N], T]
+  % end
+  {
     final def size: Int = {
       var mul = 1
       def natToInt(tag: Tag[_]): Int = tag match {
@@ -97,7 +137,13 @@ object Tag {
   %   TagTs   = ["Tag[{}]".format(T) for T in Ts]
   %   args    = ", ".join("_{}: {}".format(i + 1, T) for (i, T) in enumerate(TagTs))
 
-  final case class CStruct${N}${JustTs}(${args}) extends Tag[native.CStruct${N}${JustTs}] with CStruct {
+  final case class CStruct${N}${JustTs}(${args})
+    extends Tag[native.CStruct${N}${JustTs}]
+    with CStruct
+  % for M in range(1, N + 1):
+    with Field${M}[native.CStruct${N}${JustTs}, ${Ts[M - 1]}]
+  % end
+  {
     final def size: Int = {
       var res = 0
       % for i in range(1, N + 1):
@@ -142,14 +188,14 @@ object Tag {
   %end
   implicit def materializeNatDigitTag[N <: native.Nat.Base: Tag, M <: native.Nat: Tag]: Tag[native.Nat.Digit[N, M]] =
     Tag.Digit(implicitly[Tag[N]], implicitly[Tag[M]])
-  implicit def materializeCArrayTag[T: Tag, N <: native.Nat: Tag]: Tag[native.CArray[T, N]] =
+  implicit def materializeCArrayTag[T: Tag, N <: native.Nat: Tag]: Tag.CArray[T, N] =
     Tag.CArray(implicitly[Tag[T]], implicitly[Tag[N]])
   % for N in range(0, 23):
   %   Ts      = ["T" + str(i) for i in range(1, N + 1)]
   %   BoundTs = "" if N == 0 else "[" + ", ".join(map(lambda T: T + ": Tag", Ts)) + "]"
   %   JustTs  = "" if N == 0 else "[" + ", ".join(Ts) + "]"
   %   tags    = ", ".join("implicitly[Tag[{}]]".format(T) for T in Ts)
-  implicit def materializeCStruct${N}Tag${BoundTs}: Tag[native.CStruct${N}${JustTs}] =
+  implicit def materializeCStruct${N}Tag${BoundTs}: Tag.CStruct${N}${JustTs} =
     Tag.CStruct${N}(${tags})
   % end
 }

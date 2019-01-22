@@ -88,7 +88,9 @@ object FileHelpers {
         case null => "/tmp"
         case d    => d
       }
-    } else fromCString(dir)
+    } else {
+      fromCString(dir)
+    }
   }
 
   private def genTempFile(prefix: String,

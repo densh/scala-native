@@ -77,15 +77,18 @@ object Type {
   final case class Function(args: Seq[Type], ret: Type) extends SpecialKind
 
   val unbox = Map[Type, Type](
-    Type.Ref(Global.Top("java.lang.Boolean"))   -> Type.Bool,
-    Type.Ref(Global.Top("java.lang.Character")) -> Type.Char,
-    Type.Ref(Global.Top("java.lang.Byte"))      -> Type.Byte,
-    Type.Ref(Global.Top("java.lang.Short"))     -> Type.Short,
-    Type.Ref(Global.Top("java.lang.Integer"))   -> Type.Int,
-    Type.Ref(Global.Top("java.lang.Long"))      -> Type.Long,
-    Type.Ref(Global.Top("java.lang.Float"))     -> Type.Float,
-    Type.Ref(Global.Top("java.lang.Double"))    -> Type.Double
+    Type.Ref(Global.Top("java.lang.Boolean"))            -> Type.Bool,
+    Type.Ref(Global.Top("java.lang.Character"))          -> Type.Char,
+    Type.Ref(Global.Top("java.lang.Byte"))               -> Type.Byte,
+    Type.Ref(Global.Top("java.lang.Short"))              -> Type.Short,
+    Type.Ref(Global.Top("java.lang.Integer"))            -> Type.Int,
+    Type.Ref(Global.Top("java.lang.Long"))               -> Type.Long,
+    Type.Ref(Global.Top("java.lang.Float"))              -> Type.Float,
+    Type.Ref(Global.Top("java.lang.Double"))             -> Type.Double,
+    Type.Ref(Global.Top("scala.scalanative.native.Ptr")) -> Type.Ptr
   )
+
+  val boxClasses = unbox.keys.map { case ty: Type.Ref => ty.name }.toSeq
 
   val box = unbox.map { case (k, v) => (v, k) }
 

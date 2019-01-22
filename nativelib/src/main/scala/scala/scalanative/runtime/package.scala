@@ -66,11 +66,11 @@ package object runtime {
     args
   }
 
-  def fromRawPtr[T](rawptr: RawPtr): Ptr[T] =
-    rawptr.cast[Ptr[T]]
+  @inline def fromRawPtr[T](rawptr: RawPtr): Ptr[T] =
+    if (rawptr == null) null else new Ptr[T](rawptr)
 
-  def toRawPtr[T](ptr: Ptr[T]): RawPtr =
-    ptr.cast[RawPtr]
+  @inline def toRawPtr[T](ptr: Ptr[T]): RawPtr =
+    if (ptr == null) null else ptr.rawptr
 
   /** Run the runtime's event loop. The method is called from the
    *  generated C-style after the application's main method terminates.

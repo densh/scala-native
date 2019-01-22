@@ -16,18 +16,7 @@ trait NirDefinitions { self: NirGlobalAddons =>
     lazy val UShortClass = getRequiredClass("scala.scalanative.native.UShort")
     lazy val UIntClass   = getRequiredClass("scala.scalanative.native.UInt")
     lazy val ULongClass  = getRequiredClass("scala.scalanative.native.ULong")
-
-    lazy val PtrClass        = getRequiredClass("scala.scalanative.native.Ptr")
-    lazy val PtrLoadMethod   = getDecl(PtrClass, TermName("unary_$bang"))
-    lazy val PtrStoreMethod  = getDecl(PtrClass, TermName("unary_$bang_$eq"))
-    lazy val PtrAddMethod    = getDecl(PtrClass, TermName("$plus"))
-    lazy val PtrSubMethods   = getDecl(PtrClass, TermName("$minus")).alternatives
-    lazy val PtrApplyMethod  = getDecl(PtrClass, TermName("apply"))
-    lazy val PtrUpdateMethod = getDecl(PtrClass, TermName("update"))
-    lazy val PtrFieldMethod = (1 to 22).map { i =>
-      getDecl(PtrClass, TermName("_" + i))
-    }
-
+    lazy val PtrClass    = getRequiredClass("scala.scalanative.native.Ptr")
     lazy val RawPtrClass = getRequiredClass("scala.scalanative.runtime.RawPtr")
 
     lazy val NameClass   = getRequiredClass("scala.scalanative.native.name")
@@ -58,15 +47,8 @@ trait NirDefinitions { self: NirGlobalAddons =>
       "scala.scalanative.native.package$CCast")
     lazy val CCastMethod = getDecl(CCastClass, TermName("cast"))
 
-    lazy val CFunctionPtrClass = (0 to 22).map { n =>
-      getRequiredClass("scala.scalanative.native.CFunctionPtr" + n)
-    }
-    lazy val CFunctionPtrApply =
-      CFunctionPtrClass.map(getDecl(_, TermName("apply")))
-    lazy val CFunctionPtrModule = getRequiredModule(
-      "scala.scalanative.native.CFunctionPtr")
-    lazy val CFunctionPtrFrom = (0 to 22).map { n =>
-      getDecl(CFunctionPtrModule, TermName("fromFunction" + n))
+    lazy val FuncPtrClass = (0 to 22).map { n =>
+      getRequiredClass("scala.scalanative.native.FuncPtr" + n)
     }
 
     lazy val CStructClass = (0 to 22).map { n =>

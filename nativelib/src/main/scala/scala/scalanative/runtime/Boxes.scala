@@ -8,6 +8,7 @@ object Boxes {
   @inline def boxToUShort(v: UShort): Any = v
   @inline def boxToUInt(v: UInt): Any     = v
   @inline def boxToULong(v: ULong): Any   = v
+  @inline def boxToPtr(v: RawPtr): Ptr[_] = fromRawPtr(v)
 
   @inline def unboxToUByte(o: java.lang.Object): UByte =
     if (o == null) 0.toUByte
@@ -21,4 +22,7 @@ object Boxes {
   @inline def unboxToULong(o: java.lang.Object): ULong =
     if (o == null) 0.toULong
     else o.asInstanceOf[ULong]
+  @inline def unboxToPtr(o: java.lang.Object): RawPtr =
+    if (o == null) null
+    else toRawPtr(o.asInstanceOf[Ptr[_]])
 }

@@ -1,36 +1,57 @@
 package scala.scalanative
 package native
 
-import runtime._
+import scala.runtime.BoxesRunTime._
+import scala.reflect.ClassTag
+import scalanative.runtime._
+import scalanative.runtime.Intrinsics._
+import scalanative.runtime.Boxes._
 
-/** The C `const T *` pointer. */
-final abstract class Ptr[T] {
+final class Ptr[T](private[scalanative] val rawptr: RawPtr) {
+  override def hashCode: Int =
+    java.lang.Long.hashCode(castRawPtrToLong(rawptr))
 
-  /** Dereference a pointer. */
-  def unary_!(implicit tag: Tag[T]): T = intrinsic
+  override def equals(other: Any): Boolean =
+    (this eq other.asInstanceOf[AnyRef]) || (other match {
+      case other: Ptr[_] =>
+        other.rawptr == rawptr
+      case _ =>
+        false
+    })
 
-  /** Store a value to the address pointed at by a pointer. */
-  def `unary_!_=`(value: T)(implicit tag: Tag[T]): Unit = intrinsic
+  override def toString: String =
+    "Ptr@" + java.lang.Long.toHexString(castRawPtrToLong(rawptr))
 
-  /** Compute a derived pointer by adding given offset. */
-  def +(offset: Word)(implicit tag: Tag[T]): Ptr[T] = intrinsic
+  def unary_!(implicit tag: Tag[T]): T =
+    tag.load(this)
 
-  /** Compute a derived pointer by subtracting given offset. */
-  def -(offset: Word)(implicit tag: Tag[T]): Ptr[T] = intrinsic
+  def `unary_!_=`(value: T)(implicit tag: Tag[T]): Unit =
+    tag.store(this, value)
 
-  /** Compute the offset between two pointers. */
-  def -(ptr: Ptr[T])(implicit tag: Tag[T]): CPtrDiff = intrinsic
+  @inline def +(offset: Word)(implicit tag: Tag[T]): Ptr[T] =
+    new Ptr(elemRawPtr(rawptr, offset * sizeof[T]))
 
-  /** Read a value at given offset. Equivalent to !(offset + word). */
-  def apply(offset: Word)(implicit tag: Tag[T]): T = intrinsic
+  @inline def -(offset: Word)(implicit tag: Tag[T]): Ptr[T] =
+    new Ptr(elemRawPtr(rawptr, -offset * sizeof[T]))
 
-  /** Store a value to given offset. Equivalent to !(offset + word) = value. */
-  def update(offset: Word, value: T)(implicit tag: Tag[T]): T = intrinsic
+  @inline def -(other: Ptr[T])(implicit tag: Tag[T]): CPtrDiff = {
+    val left  = castRawPtrToLong(rawptr)
+    val right = castRawPtrToLong(other.rawptr)
+    (left - right) / sizeof[T]
+  }
+
+  @inline def apply(offset: Word)(implicit tag: Tag[T]): T =
+    (this + offset).unary_!
+
+  @inline def update(offset: Word, value: T)(implicit tag: Tag[T]): Unit =
+    (this + offset).`unary_!_=`(value)
 
 % for N in range(1, 23):
 
   /** Get a derived pointer to the ${N}-th field of the struct. */
-  def _${N}[F](implicit T: Tag[T], F: CField${N}[T, F]): Ptr[F] = intrinsic
+  def _${N}[F](implicit tag: Tag.Field${N}[T, F]): Ptr[F] =
+    new Ptr[F](elemRawPtr(rawptr, tag.offset(${N - 1})))
 
 % end
+
 }

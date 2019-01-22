@@ -558,31 +558,65 @@ trait Eval { self: Interflow =>
     def bailOut =
       throw BailOut(
         s"can't eval comp op: $comp[${ty.show}] ${l.show}, ${r.show}")
+    def emit =
+      state.emit
+    def isNullBox(addr: Addr, comp: Comp): Val =
+      state.derefVirtual(addr) match {
+        // Null pointers are special because they box null value to
+        // a null box. We need to be extra careful not to infer them
+        // as being always non-null because it's a virtual allocation.
+        case VirtualInstance(BoxKind, cls, Array(value))
+            if cls.name == Rt.BoxedPtr.name =>
+          value match {
+            case Val.Null      => if (comp == Comp.Ieq) Val.True else Val.False
+            case _: Val.Global => if (comp == Comp.Ieq) Val.False else Val.True
+            case _: Val.Const  => if (comp == Comp.Ieq) Val.False else Val.True
+            case _             => emit.comp(comp, Type.Ptr, value, Val.Null, Next.None)
+          }
+        case _ =>
+          if (comp == Comp.Ieq) Val.False else Val.True
+      }
     comp match {
       case Comp.Ieq =>
         (l, r) match {
-          case (Val.Bool(l), Val.Bool(r))           => Val.Bool(l == r)
-          case (Val.Int(l), Val.Int(r))             => Val.Bool(l == r)
-          case (Val.Long(l), Val.Long(r))           => Val.Bool(l == r)
+          case (Val.Bool(l), Val.Bool(r))   => Val.Bool(l == r)
+          case (Val.Char(l), Val.Char(r))   => Val.Bool(l == r)
+          case (Val.Byte(l), Val.Byte(r))   => Val.Bool(l == r)
+          case (Val.Short(l), Val.Short(r)) => Val.Bool(l == r)
+          case (Val.Int(l), Val.Int(r))     => Val.Bool(l == r)
+          case (Val.Long(l), Val.Long(r))   => Val.Bool(l == r)
+
           case (Val.Null, Val.Null)                 => Val.True
           case (Val.Virtual(l), Val.Virtual(r))     => Val.Bool(l == r)
           case (Val.Global(l, _), Val.Global(r, _)) => Val.Bool(l == r)
-          case (Val.Null | _: Val.Virtual | _: Val.Global,
-                Val.Null | _: Val.Virtual | _: Val.Global) =>
-            Val.False
+
+          case (Val.Null, Val.Virtual(addr)) => isNullBox(addr, Comp.Ieq)
+          case (Val.Virtual(addr), Val.Null) => isNullBox(addr, Comp.Ieq)
+
+          case (_: Val.Global, _: Val.Virtual) => Val.False
+          case (_: Val.Virtual, _: Val.Global) => Val.False
+
           case _ => bailOut
         }
       case Comp.Ine =>
         (l, r) match {
-          case (Val.Bool(l), Val.Bool(r))           => Val.Bool(l != r)
-          case (Val.Int(l), Val.Int(r))             => Val.Bool(l != r)
-          case (Val.Long(l), Val.Long(r))           => Val.Bool(l != r)
+          case (Val.Bool(l), Val.Bool(r))   => Val.Bool(l != r)
+          case (Val.Char(l), Val.Char(r))   => Val.Bool(l != r)
+          case (Val.Byte(l), Val.Byte(r))   => Val.Bool(l != r)
+          case (Val.Short(l), Val.Short(r)) => Val.Bool(l != r)
+          case (Val.Int(l), Val.Int(r))     => Val.Bool(l != r)
+          case (Val.Long(l), Val.Long(r))   => Val.Bool(l != r)
+
           case (Val.Null, Val.Null)                 => Val.False
           case (Val.Virtual(l), Val.Virtual(r))     => Val.Bool(l != r)
           case (Val.Global(l, _), Val.Global(r, _)) => Val.Bool(l != r)
-          case (Val.Null | _: Val.Virtual | _: Val.Global,
-                Val.Null | _: Val.Virtual | _: Val.Global) =>
-            Val.True
+
+          case (Val.Null, Val.Virtual(addr)) => isNullBox(addr, Comp.Ine)
+          case (Val.Virtual(addr), Val.Null) => isNullBox(addr, Comp.Ine)
+
+          case (_: Val.Global, _: Val.Virtual) => Val.True
+          case (_: Val.Virtual, _: Val.Global) => Val.True
+
           case _ => bailOut
         }
       case Comp.Ugt =>
