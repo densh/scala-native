@@ -106,13 +106,15 @@ package object native {
    *
    *  Note: unlike alloc, the memory is not zero-initialized.
    */
-  def stackalloc[T](implicit tag: Tag[T]): Ptr[T] = intrinsic
+  def stackalloc[T](implicit tag: Tag[T]): Ptr[T] =
+    macro MacroImpl.stackalloc1[T]
 
   /** Stack allocate n values of given type.
    *
    *  Note: unlike alloc, the memory is not zero-initialized.
    */
-  def stackalloc[T](n: CSize)(implicit tag: Tag[T]): Ptr[T] = intrinsic
+  def stackalloc[T](n: CSize)(implicit tag: Tag[T]): Ptr[T] =
+    macro MacroImpl.stackallocN[T]
 
   /** Used as right hand side of external method and field declarations. */
   def extern: Nothing = intrinsic
@@ -233,7 +235,42 @@ package object native {
         val $ptr    = $z.alloc($size)
         val $rawptr = $runtime.toRawPtr($ptr)
         $runtime.libc.memset($rawptr, 0, $size)
-        $ptr.cast[Ptr[$T]]
+        $ptr.asInstanceOf[Ptr[$T]]
+      }"""
+    }
+
+    def stackalloc1[T: c.WeakTypeTag](c: Context)(tag: c.Tree): c.Tree = {
+      import c.universe._
+
+      val T = weakTypeOf[T]
+
+      val size, rawptr = TermName(c.freshName())
+
+      val runtime = q"_root_.scala.scalanative.runtime"
+
+      q"""{
+        val $size   = _root_.scala.scalanative.native.sizeof[$T]($tag)
+        val $rawptr = $runtime.Intrinsics.stackalloc($size)
+        $runtime.libc.memset($rawptr, 0, $size)
+        $runtime.fromRawPtr[$T]($rawptr)
+      }"""
+    }
+
+    def stackallocN[T: c.WeakTypeTag](c: Context)(n: c.Tree)(
+        tag: c.Tree): c.Tree = {
+      import c.universe._
+
+      val T = weakTypeOf[T]
+
+      val size, rawptr = TermName(c.freshName())
+
+      val runtime = q"_root_.scala.scalanative.runtime"
+
+      q"""{
+        val $size   = _root_.scala.scalanative.native.sizeof[$T]($tag) * $n
+        val $rawptr = $runtime.Intrinsics.stackalloc($size)
+        $runtime.libc.memset($rawptr, 0, $size)
+        $runtime.fromRawPtr[$T]($rawptr)
       }"""
     }
   }

@@ -1245,16 +1245,11 @@ trait NirGenExpr { self: NirGenPhase =>
       castConv(fromty, toty).fold(value)(buf.conv(_, toty, value, unwind))
 
     def genStackalloc(app: Apply): Val = {
-      val (sizeopt, tagp) = app match {
-        case Apply(_, Seq(tagp)) =>
-          (None, tagp)
-        case Apply(_, Seq(sizep, tagp)) =>
-          (Some(sizep), tagp)
-      }
-      val ty    = genType(unwrapTag(tagp))
-      val size  = sizeopt.fold[Val](Val.Int(1))(genExpr(_))
-      val alloc = buf.stackalloc(ty, size, unwind)
-      buf.box(nir.Rt.BoxedPtr, alloc, unwind)
+      val Apply(_, Seq(sizep)) = app
+
+      val size = genExpr(sizep)
+
+      buf.stackalloc(nir.Type.Byte, size, unwind)
     }
 
     def genCQuoteOp(app: Apply): Val = {

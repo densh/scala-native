@@ -32,8 +32,6 @@ trait NirDefinitions { self: NirGlobalAddons =>
       "scala.scalanative.native.package")
     lazy val CastMethod   = getMember(NativeModule, TermName("cast"))
     lazy val ExternMethod = getMember(NativeModule, TermName("extern"))
-    lazy val StackallocMethods =
-      getMember(NativeModule, TermName("stackalloc")).alternatives
 
     lazy val CVarargModule = getRequiredModule(
       "scala.scalanative.native.CVararg")
@@ -198,6 +196,8 @@ trait NirDefinitions { self: NirGlobalAddons =>
       getMember(IntrinsicsModule, TermName("castIntToRawPtr"))
     lazy val CastLongToRawPtrMethod =
       getMember(IntrinsicsModule, TermName("castLongToRawPtr"))
+    lazy val StackallocMethod =
+      getMember(IntrinsicsModule, TermName("stackalloc"))
 
     lazy val RuntimePrimitive: Map[Char, Symbol] = Map(
       'B' -> getRequiredClass("scala.scalanative.runtime.PrimitiveBoolean"),
