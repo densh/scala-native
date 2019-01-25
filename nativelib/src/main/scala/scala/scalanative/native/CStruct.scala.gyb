@@ -1,11 +1,31 @@
 package scala.scalanative
 package native
 
-final abstract class CStruct0
+import scalanative.runtime._
+import scalanative.runtime.Intrinsics._
 
-% for N in range(1, 23):
-%    Ts = ", ".join("T" + str(i) for i in range(1, N + 1))
+% for N in range(0, 23):
+%    Ts = "" if N == 0 else "[" + ", ".join("T" + str(i) for i in range(1, N + 1)) + "]"
+%    CStruct = "CStruct{}{}".format(N, Ts)
 
-final abstract class CStruct${N}[${Ts}]
+final class ${CStruct}(private[scalanative] val rawptr: RawPtr) {
+
+  % for fld in range(1, N + 1):
+  %   F = "T" + str(fld)
+
+  def _${fld}(implicit tag: Tag.${CStruct}): ${F} = {
+    val fldrawptr = elemRawPtr(rawptr, tag.offset${fld})
+    val fldptr = fromRawPtr[${F}](fldrawptr)
+    fldptr.unary_!(tag._${fld})
+  }
+
+  def _${fld}_=(value: ${F})(implicit tag: Tag.${CStruct}): Unit = {
+    val fldrawptr = elemRawPtr(rawptr, tag.offset${fld})
+    val fldptr = fromRawPtr[${F}](fldrawptr)
+    fldptr.`unary_!_=`(value)(tag._${fld})
+  }
+
+  % end
+}
 
 % end

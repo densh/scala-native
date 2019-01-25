@@ -8,7 +8,6 @@ import scalanative.runtime.Intrinsics._
 sealed abstract class Tag[T] {
   def size: Int
   def alignment: Int
-  def offset(idx: Int): Int = throwUndefined()
   def load(ptr: native.Ptr[T]): T = throwUndefined()
   def store(ptr: native.Ptr[T], value: T): Unit = throwUndefined()
 }
@@ -85,7 +84,10 @@ object Tag {
 
   % for N in range(1, 23):
 
-  sealed trait Field${N}[T, F] extends Tag[T]
+  sealed trait Field${N}[T, F] extends Tag[T] {
+    def _${N}: Tag[F]
+    def offset${N}: Int
+  }
 
   % end
 
@@ -117,11 +119,21 @@ object Tag {
       }
       of.size * natToInt(n)
     }
-    @inline final def alignment: Int = of.alignment
-    @inline override def offset(idx: Int): Int = of.size * idx
+    @inline final def alignment: Int =
+      of.alignment
+    override def load(ptr: native.Ptr[native.CArray[T, N]]): native.CArray[T, N] = {
+      new native.CArray[T, N](toRawPtr(ptr))
+    }
+    override def store(ptr: native.Ptr[native.CArray[T, N]], value: native.CArray[T, N]): Unit = {
+      val dst = toRawPtr(ptr)
+      val src = value.rawptr
+      libc.memcpy(dst, src, size)
+    }
+    % for N in range(1, 23):
+    def _${N}: Tag[T] = of
+    def offset${N}: Int = of.size * ${N - 1}
+    % end
   }
-
-  private[scalanative] sealed trait CStruct
 
   @inline private[scalanative] def align(offset: Int, alignment: Int) = {
     val alignmentMask = alignment - 1
@@ -136,10 +148,10 @@ object Tag {
   %   JustTs  = "" if N == 0 else "[" + ", ".join(Ts) + "]"
   %   TagTs   = ["Tag[{}]".format(T) for T in Ts]
   %   args    = ", ".join("_{}: {}".format(i + 1, T) for (i, T) in enumerate(TagTs))
+  %   CStruct = "CStruct{}{}".format(N, JustTs)
 
-  final case class CStruct${N}${JustTs}(${args})
-    extends Tag[native.CStruct${N}${JustTs}]
-    with CStruct
+  final case class ${CStruct}(${args})
+    extends Tag[native.${CStruct}]
   % for M in range(1, N + 1):
     with Field${M}[native.CStruct${N}${JustTs}, ${Ts[M - 1]}]
   % end
@@ -158,18 +170,23 @@ object Tag {
       % end
       res
     }
-    override def offset(idx: Int): Int = idx match {
-      % for fld in range(1, N + 1):
-      case ${fld - 1} =>
-        var res = 0
-        % for i in range(1, fld):
-        res = align(res, _${i}.alignment) + _${i}.size
-        % end
-        align(res, _${fld}.alignment)
-      % end
-      case _ =>
-        throwUndefined()
+    override def load(ptr: native.Ptr[native.${CStruct}]): native.${CStruct} = {
+      new native.${CStruct}(toRawPtr(ptr))
     }
+    override def store(ptr: native.Ptr[native.${CStruct}], value: native.${CStruct}): Unit = {
+      val dst = toRawPtr(ptr)
+      val src = value.rawptr
+      libc.memcpy(dst, src, size)
+    }
+    % for fld in range(1, N + 1):
+    def offset${fld}: Int = {
+      var res = 0
+      % for i in range(1, fld):
+      res = align(res, _${i}.alignment) + _${i}.size
+      % end
+      align(res, _${fld}.alignment)
+    }
+    % end
   }
 
   % end

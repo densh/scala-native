@@ -117,20 +117,20 @@ object TagSuite extends tests.Suite {
   }
 
   test("tag offset") {
-    assert(tagof[CArray[Byte, Nat._0]].offset(0) == 0)
-    assert(tagof[CArray[Byte, Nat._0]].offset(1) == 1)
-    assert(tagof[CArray[Byte, Nat._0]].offset(42) == 42)
-    assert(tagof[CArray[Int, Nat._0]].offset(0) == 0)
-    assert(tagof[CArray[Int, Nat._0]].offset(1) == 4)
-    assert(tagof[CArray[Int, Nat._0]].offset(42) == 4 * 42)
-    assert(tagof[CStruct1[Int]].offset(0) == 0)
-    assert(tagof[CStruct2[Byte, Int]].offset(0) == 0)
-    assert(tagof[CStruct2[Byte, Int]].offset(1) == 4)
-    assert(tagof[CStruct3[Byte, Byte, Int]].offset(0) == 0)
-    assert(tagof[CStruct3[Byte, Byte, Int]].offset(1) == 1)
-    assert(tagof[CStruct3[Byte, Byte, Int]].offset(2) == 4)
-    assert(tagof[CStruct2[Byte, CStruct2[Byte, Int]]].offset(0) == 0)
-    assert(tagof[CStruct2[Byte, CStruct2[Byte, Int]]].offset(1) == 4)
+    assert(implicitly[Tag.CArray[Byte, Nat._0]].offset1 == 0)
+    assert(implicitly[Tag.CArray[Byte, Nat._0]].offset2 == 1)
+    assert(implicitly[Tag.CArray[Byte, Nat._0]].offset22 == 21)
+    assert(implicitly[Tag.CArray[Int, Nat._0]].offset1 == 0)
+    assert(implicitly[Tag.CArray[Int, Nat._0]].offset2 == 4)
+    assert(implicitly[Tag.CArray[Int, Nat._0]].offset22 == 4 * 21)
+    assert(implicitly[Tag.CStruct1[Int]].offset1 == 0)
+    assert(implicitly[Tag.CStruct2[Byte, Int]].offset1 == 0)
+    assert(implicitly[Tag.CStruct2[Byte, Int]].offset2 == 4)
+    assert(implicitly[Tag.CStruct3[Byte, Byte, Int]].offset1 == 0)
+    assert(implicitly[Tag.CStruct3[Byte, Byte, Int]].offset2 == 1)
+    assert(implicitly[Tag.CStruct3[Byte, Byte, Int]].offset3 == 4)
+    assert(implicitly[Tag.CStruct2[Byte, CStruct2[Byte, Int]]].offset1 == 0)
+    assert(implicitly[Tag.CStruct2[Byte, CStruct2[Byte, Int]]].offset2 == 4)
   }
 
   type uint8_t  = UByte
