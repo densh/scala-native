@@ -2,7 +2,8 @@ package scala.scalanative
 
 import java.nio.charset.Charset
 import scala.language.experimental.macros
-import scalanative.runtime.{libc, intrinsic}
+import scalanative.runtime.{libc, intrinsic, fromRawPtr}
+import scalanative.runtime.Intrinsics.{castIntToRawPtr, castLongToRawPtr}
 
 package object native {
 
@@ -124,12 +125,6 @@ package object native {
     def c(): CString = intrinsic
   }
 
-  /** C-style unchecked cast. */
-  implicit class CCast[From](val from: From) {
-    def cast[To](implicit fromtag: Tag[From], totag: Tag[To]): To =
-      intrinsic
-  }
-
   /** Scala Native extensions to the standard Byte. */
   implicit class NativeRichByte(val value: Byte) extends AnyVal {
     @inline def toUByte: UByte   = new UByte(value)
@@ -152,6 +147,7 @@ package object native {
     @inline def toUShort: UShort = toUInt.toUShort
     @inline def toUInt: UInt     = new UInt(value)
     @inline def toULong: ULong   = toUInt.toULong
+    @inline def toPtr[T]: Ptr[T] = fromRawPtr[T](castIntToRawPtr(value))
   }
 
   /** Scala Native extensions to the standard Long. */
@@ -160,6 +156,7 @@ package object native {
     @inline def toUShort: UShort = toULong.toUShort
     @inline def toUInt: UInt     = toULong.toUInt
     @inline def toULong: ULong   = new ULong(value)
+    @inline def toPtr[T]: Ptr[T] = fromRawPtr[T](castLongToRawPtr(value))
   }
 
   /** Convert a CString to a String using given charset. */
@@ -216,7 +213,7 @@ package object native {
         val $ptr    = $z.alloc($size)
         val $rawptr = $runtime.toRawPtr($ptr)
         $runtime.libc.memset($rawptr, 0, $size)
-        $ptr.cast[Ptr[$T]]
+        $ptr.asInstanceOf[Ptr[$T]]
       }"""
     }
 

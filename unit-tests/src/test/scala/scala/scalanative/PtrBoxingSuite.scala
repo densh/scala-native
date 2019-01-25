@@ -78,15 +78,15 @@ object PtrBoxingSuite extends tests.Suite {
   test("null cast ptr") {
     val nullPtr: Ptr[Byte] = null
     val nullRef: Object    = null
-    assert(nullRef.cast[Ptr[Byte]] == nullPtr)
+    assert(nullRef.asInstanceOf[Ptr[Byte]] == nullPtr)
   }
 
   test("hash code on ptr") {
     assertThrows[NullPointerException] {
       nullPtr.hashCode
     }
-    assert(ptr.hashCode == toRawPtr(ptr).cast[Long].hashCode)
-    assert(ptr2.hashCode == toRawPtr(ptr2).cast[Long].hashCode)
+    assert(ptr.hashCode == ptr.toLong.hashCode)
+    assert(ptr2.hashCode == ptr2.toLong.hashCode)
   }
 
   test("equals on same box") {
@@ -157,8 +157,8 @@ object PtrBoxingSuite extends tests.Suite {
       nullBoxed.toString
     }
     val boxed1: Any = ptr
-    assert(boxed1.toString == ("Ptr@" + toHexString(toRawPtr(ptr).cast[Long])))
+    assert(boxed1.toString == ("Ptr@" + toHexString(ptr.toLong)))
     val boxed2: Any = ptr2
-    assert(boxed2.toString == ("Ptr@" + toHexString(toRawPtr(ptr2).cast[Long])))
+    assert(boxed2.toString == ("Ptr@" + toHexString(ptr2.toLong)))
   }
 }

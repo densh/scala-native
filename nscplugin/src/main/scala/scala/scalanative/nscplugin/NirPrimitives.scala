@@ -9,8 +9,7 @@ object NirPrimitives {
   final val ARRAY_CLONE = 1 + BOXED_UNIT
 
   final val CQUOTE     = 1 + ARRAY_CLONE
-  final val CCAST      = 1 + CQUOTE
-  final val STACKALLOC = 1 + CCAST
+  final val STACKALLOC = 1 + CQUOTE
 
   final val DIV_UINT       = 1 + STACKALLOC
   final val DIV_ULONG      = 1 + DIV_UINT
@@ -107,7 +106,6 @@ abstract class NirPrimitives {
     addPrimitive(BoxedUnit_UNIT, BOXED_UNIT)
     addPrimitive(Array_clone, ARRAY_CLONE)
     addPrimitive(CQuoteMethod, CQUOTE)
-    addPrimitive(CCastMethod, CCAST)
     addPrimitive(StackallocMethod, STACKALLOC)
     addPrimitive(DivUIntMethod, DIV_UINT)
     addPrimitive(DivULongMethod, DIV_ULONG)

@@ -3,6 +3,8 @@ package java.lang
 import scalanative.native._
 import scalanative.libc._
 
+import scalanative.runtime.Intrinsics
+
 final class Double(val _value: scala.Double)
     extends Number
     with Comparable[Double] {
@@ -212,7 +214,7 @@ object Double {
     else doubleToRawLongBits(value)
 
   @inline def doubleToRawLongBits(value: scala.Double): scala.Long =
-    value.cast[scala.Long]
+    Intrinsics.castDoubleToLong(value)
 
   @inline def hashCode(value: scala.Double): scala.Int = {
     val v = doubleToLongBits(value)
@@ -229,7 +231,7 @@ object Double {
     v != v
 
   @inline def longBitsToDouble(value: scala.Long): scala.Double =
-    value.cast[scala.Double]
+    Intrinsics.castLongToDouble(value)
 
   @inline def max(a: scala.Double, b: scala.Double): scala.Double =
     Math.max(a, b)

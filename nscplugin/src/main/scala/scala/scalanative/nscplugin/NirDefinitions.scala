@@ -30,7 +30,6 @@ trait NirDefinitions { self: NirGlobalAddons =>
 
     lazy val NativeModule = getRequiredModule(
       "scala.scalanative.native.package")
-    lazy val CastMethod   = getMember(NativeModule, TermName("cast"))
     lazy val ExternMethod = getMember(NativeModule, TermName("extern"))
 
     lazy val CVarargModule = getRequiredModule(
@@ -48,17 +47,6 @@ trait NirDefinitions { self: NirGlobalAddons =>
     lazy val FuncPtrClass = (0 to 22).map { n =>
       getRequiredClass("scala.scalanative.native.FuncPtr" + n)
     }
-
-    lazy val CStructClass = (0 to 22).map { n =>
-      getRequiredClass("scala.scalanative.native.CStruct" + n)
-    }
-    lazy val CArrayClass =
-      getRequiredClass("scala.scalanative.native.CArray")
-    lazy val NatBaseClass = (0 to 9).map { n =>
-      getRequiredClass("scala.scalanative.native.Nat$_" + n)
-    }
-    lazy val NatDigitClass =
-      getRequiredClass("scala.scalanative.native.Nat$Digit")
 
     lazy val TagModule     = getRequiredModule("scala.scalanative.native.Tag")
     lazy val UnitTagMethod = getDecl(TagModule, TermName("materializeUnitTag"))

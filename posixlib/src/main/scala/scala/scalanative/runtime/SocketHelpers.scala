@@ -22,7 +22,7 @@ object SocketHelpers {
       var hints = stackalloc[addrinfo]
       var ret   = stackalloc[Ptr[addrinfo]]
 
-      string.memset(hints.cast[Ptr[Byte]], 0, sizeof[addrinfo])
+      string.memset(hints.asInstanceOf[Ptr[Byte]], 0, sizeof[addrinfo])
       hints.ai_family = AF_UNSPEC
       hints.ai_protocol = 0
       hints.ai_addr = null
@@ -55,11 +55,11 @@ object SocketHelpers {
         connect(sock, res.ai_addr, res.ai_addrlen)
 
         if (select(sock + 1, null, fdset, null, time) == 1) {
-          val so_error = stackalloc[CInt].cast[Ptr[Byte]]
+          val so_error = stackalloc[CInt].asInstanceOf[Ptr[Byte]]
           val len      = stackalloc[socklen_t]
           !len = sizeof[CInt].toUInt
           getsockopt(sock, SOL_SOCKET, SO_ERROR, so_error, len)
-          if (!(so_error.cast[Ptr[CInt]]) != 0) {
+          if (!(so_error.asInstanceOf[Ptr[CInt]]) != 0) {
             return false
           }
         } else {
@@ -96,7 +96,7 @@ object SocketHelpers {
       var ret   = stackalloc[Ptr[addrinfo]]
 
       var ipstr = stackalloc[CChar](INET6_ADDRSTRLEN + 1)
-      string.memset(hints.cast[Ptr[Byte]], 0, sizeof[addrinfo])
+      string.memset(hints.asInstanceOf[Ptr[Byte]], 0, sizeof[addrinfo])
       hints.ai_family = AF_UNSPEC
       hints.ai_socktype = 0
       hints.ai_next = null
@@ -107,9 +107,15 @@ object SocketHelpers {
 
       var addr = stackalloc[Byte]
       if ((!ret).ai_family == AF_INET) {
-        addr = (!ret).ai_addr.cast[Ptr[sockaddr_in]].sin_addr.cast[Ptr[Byte]]
+        addr = (!ret).ai_addr
+          .asInstanceOf[Ptr[sockaddr_in]]
+          .sin_addr
+          .asInstanceOf[Ptr[Byte]]
       } else {
-        addr = (!ret).ai_addr.cast[Ptr[sockaddr_in6]].sin6_addr.cast[Ptr[Byte]]
+        addr = (!ret).ai_addr
+          .asInstanceOf[Ptr[sockaddr_in6]]
+          .sin6_addr
+          .asInstanceOf[Ptr[Byte]]
       }
       inet_ntop((!ret).ai_family, addr, ipstr, INET6_ADDRSTRLEN.toUInt)
       freeaddrinfo(!ret)
@@ -122,7 +128,7 @@ object SocketHelpers {
       var hints = stackalloc[addrinfo]
       var ret   = stackalloc[Ptr[addrinfo]]
 
-      string.memset(hints.cast[Ptr[Byte]], 0, sizeof[addrinfo])
+      string.memset(hints.asInstanceOf[Ptr[Byte]], 0, sizeof[addrinfo])
       hints.ai_family = AF_UNSPEC
       hints.ai_socktype = SOCK_STREAM
       hints.ai_protocol = 0
@@ -138,13 +144,19 @@ object SocketHelpers {
         var ipstr = stackalloc[CChar](INET6_ADDRSTRLEN + 1)
         var addr  = stackalloc[Byte]
         if (p.ai_family == AF_INET) {
-          addr = p.ai_addr.cast[Ptr[sockaddr_in]].sin_addr.cast[Ptr[Byte]]
+          addr = p.ai_addr
+            .asInstanceOf[Ptr[sockaddr_in]]
+            .sin_addr
+            .asInstanceOf[Ptr[Byte]]
         } else {
-          addr = p.ai_addr.cast[Ptr[sockaddr_in6]].sin6_addr.cast[Ptr[Byte]]
+          addr = p.ai_addr
+            .asInstanceOf[Ptr[sockaddr_in6]]
+            .sin6_addr
+            .asInstanceOf[Ptr[Byte]]
         }
         inet_ntop(p.ai_family, addr, ipstr, INET6_ADDRSTRLEN.toUInt)
         retArray += fromCString(ipstr)
-        p = p.ai_next.cast[Ptr[addrinfo]]
+        p = p.ai_next.asInstanceOf[Ptr[addrinfo]]
       }
       freeaddrinfo(!ret)
       retArray.toArray
@@ -159,8 +171,10 @@ object SocketHelpers {
       if (isV6) {
         val addr6 = stackalloc[sockaddr_in6]
         addr6.sin6_family = AF_INET6.toUShort
-        inet_pton(AF_INET6, toCString(ip), addr6.sin6_addr.cast[Ptr[Byte]])
-        status = getnameinfo(addr6.cast[Ptr[sockaddr]],
+        inet_pton(AF_INET6,
+                  toCString(ip),
+                  addr6.sin6_addr.asInstanceOf[Ptr[Byte]])
+        status = getnameinfo(addr6.asInstanceOf[Ptr[sockaddr]],
                              sizeof[sockaddr_in6].toUInt,
                              host,
                              1024.toUInt,
@@ -170,8 +184,10 @@ object SocketHelpers {
       } else {
         val addr4 = stackalloc[sockaddr_in]
         addr4.sin_family = AF_INET.toUShort
-        inet_pton(AF_INET, toCString(ip), addr4.sin_addr.cast[Ptr[Byte]])
-        status = getnameinfo(addr4.cast[Ptr[sockaddr]],
+        inet_pton(AF_INET,
+                  toCString(ip),
+                  addr4.sin_addr.asInstanceOf[Ptr[Byte]])
+        status = getnameinfo(addr4.asInstanceOf[Ptr[sockaddr]],
                              sizeof[sockaddr_in].toUInt,
                              host,
                              1024.toUInt,

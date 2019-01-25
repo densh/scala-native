@@ -742,8 +742,6 @@ trait NirGenExpr { self: NirGenPhase =>
         genCoercion(app, receiver, code)
       } else if (code == SYNCHRONIZED) {
         genSynchronized(app)
-      } else if (code == CCAST) {
-        genCastOp(app)
       } else if (code == STACKALLOC) {
         genStackalloc(app)
       } else if (code == CQUOTE) {
@@ -1226,20 +1224,6 @@ trait NirGenExpr { self: NirGenPhase =>
         case _ =>
           unsupported(s"cast from $fromty to $toty")
       }
-
-    def genCastOp(app: Apply): Val = {
-      val Apply(Select(Apply(_, List(valuep)), _), List(fromtagp, totagp)) = app
-
-      val fromst = unwrapTag(fromtagp)
-      val tost   = unwrapTag(totagp)
-      val fromty = genType(fromst)
-      val toty   = genType(tost)
-      val value  = genExpr(valuep)
-      val from   = unboxValue(fromst, partial = false, value)
-      val conv   = genCastOp(fromty, toty, from)
-
-      boxValue(tost, conv)
-    }
 
     def genCastOp(fromty: nir.Type, toty: nir.Type, value: Val): Val =
       castConv(fromty, toty).fold(value)(buf.conv(_, toty, value, unwind))

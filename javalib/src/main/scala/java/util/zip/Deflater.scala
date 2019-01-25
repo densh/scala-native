@@ -79,7 +79,7 @@ class Deflater(private var compressLevel: Int, noHeader: Boolean) {
     if (stream != null) {
       zlib.deflateEnd(stream)
       inputBuffer = null
-      stdlib.free(stream.cast[Ptr[Byte]])
+      stdlib.free(stream.asInstanceOf[Ptr[Byte]])
       stream = null
     }
   }
@@ -220,8 +220,9 @@ object Deflater {
   private def createStream(level: Int,
                            strategy: Int,
                            noHeader: Boolean): zlib.z_streamp = {
-    val stream = stdlib.malloc(sizeof[zlib.z_stream]).cast[zlib.z_streamp]
-    string.memset(stream.cast[Ptr[Byte]], 0, sizeof[zlib.z_stream])
+    val stream =
+      stdlib.malloc(sizeof[zlib.z_stream]).asInstanceOf[zlib.z_streamp]
+    string.memset(stream.asInstanceOf[Ptr[Byte]], 0, sizeof[zlib.z_stream])
     val wbits =
       if (noHeader) 15 / -1
       else 15
@@ -234,7 +235,7 @@ object Deflater {
       strategy
     )
     if (err != zlib.Z_OK) {
-      stdlib.free(stream.cast[Ptr[Byte]])
+      stdlib.free(stream.asInstanceOf[Ptr[Byte]])
       throw new ZipException(err.toString)
     }
     stream

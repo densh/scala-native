@@ -92,41 +92,7 @@ trait NirGenType { self: NirGenPhase =>
     case NullClass    => nir.Type.Null
     case NothingClass => nir.Type.Nothing
     case RawPtrClass  => nir.Type.Ptr
-
-    case sym if CStructClass.contains(sym) =>
-      nir.Type.StructValue(st.targs.map(genType(_)))
-    case CArrayClass =>
-      genCArrayType(st)
-    case _ =>
-      genRefType(st)
-  }
-
-  def genCArrayType(st: SimpleType): nir.Type = st.targs match {
-    case Seq() =>
-      nir.Type.ArrayValue(nir.Rt.Object, 0)
-    case Seq(targ, tnat) =>
-      val ty = genType(targ)
-      val n  = genNatType(tnat)
-      nir.Type.ArrayValue(ty, n)
-  }
-
-  def genNatType(st: SimpleType): Int = {
-    def base(st: SimpleType): Int = st.sym match {
-      case sym if NatBaseClass.contains(sym) =>
-        NatBaseClass.indexOf(sym)
-      case _ =>
-        scalanative.util.unsupported("base nat type expected")
-    }
-    def digits(st: SimpleType): List[Int] = st.sym match {
-      case sym if NatBaseClass.contains(sym) =>
-        base(st) :: Nil
-      case NatDigitClass =>
-        base(st.targs(0)) :: digits(st.targs(1))
-      case _ =>
-        scalanative.util.unsupported("nat type expected")
-    }
-
-    digits(st).foldLeft(0)(_ * 10 + _)
+    case _            => genRefType(st)
   }
 
   def genRefType(st: SimpleType): nir.Type = st.sym match {

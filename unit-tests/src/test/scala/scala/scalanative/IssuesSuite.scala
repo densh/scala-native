@@ -143,11 +143,6 @@ object IssuesSuite extends tests.Suite {
     assert(x1 == 1)
     val x2 = fptrFloat()
     assert(x2 == 1.0)
-
-    // Should be possible
-    val conv1: Int = (1: Float).cast[Int]
-    // Should fail
-    //val conv2: Int = (1: Double).cast[Int]
   }
 
   test("#404") {
