@@ -857,17 +857,8 @@ object Lower {
   val BoxesRunTime = Global.Top("scala.runtime.BoxesRunTime$")
   val RuntimeBoxes = Global.Top("scala.scalanative.runtime.Boxes$")
 
-  val BoxTo: Map[Type, Global] = Seq(
-    "java.lang.Boolean",
-    "java.lang.Character",
-    "java.lang.Byte",
-    "java.lang.Short",
-    "java.lang.Integer",
-    "java.lang.Long",
-    "java.lang.Float",
-    "java.lang.Double",
-    "scala.scalanative.native.Ptr"
-  ).map { name =>
+  val BoxTo: Map[Type, Global] = Type.boxClasses.map { cls =>
+    val name   = cls.asInstanceOf[Global.Top].id
     val boxty  = Type.Ref(Global.Top(name))
     val module = if (name.startsWith("java.")) BoxesRunTime else RuntimeBoxes
     val id     = "boxTo" + name.split("\\.").last
@@ -877,17 +868,8 @@ object Lower {
     boxty -> meth
   }.toMap
 
-  val UnboxTo: Map[Type, Global] = Seq(
-    "java.lang.Boolean",
-    "java.lang.Character",
-    "java.lang.Byte",
-    "java.lang.Short",
-    "java.lang.Integer",
-    "java.lang.Long",
-    "java.lang.Float",
-    "java.lang.Double",
-    "scala.scalanative.native.Ptr"
-  ).map { name =>
+  val UnboxTo: Map[Type, Global] = Type.boxClasses.map { cls =>
+    val name   = cls.asInstanceOf[Global.Top].id
     val boxty  = Type.Ref(Global.Top(name))
     val module = if (name.startsWith("java.")) BoxesRunTime else RuntimeBoxes
     val id = {

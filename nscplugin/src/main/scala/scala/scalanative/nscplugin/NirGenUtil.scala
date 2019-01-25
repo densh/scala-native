@@ -95,10 +95,9 @@ trait NirGenUtil { self: NirGenPhase =>
     }
 
   object CVararg {
-    def unapply(tree: Tree): Option[(SimpleType, Tree)] = tree match {
-      case Apply(fun, Seq(argp, tagp)) if fun.symbol == CVarargMethod =>
-        val st = unwrapTag(tagp)
-        Some((st, argp))
+    def unapply(tree: Tree): Option[Tree] = tree match {
+      case Apply(fun, Seq(argp)) if fun.symbol == CVarargMethod =>
+        Some(argp)
       case _ =>
         None
     }

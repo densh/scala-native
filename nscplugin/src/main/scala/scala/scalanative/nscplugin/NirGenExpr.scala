@@ -1723,9 +1723,15 @@ trait NirGenExpr { self: NirGenPhase =>
             WrapArray(MaybeAsInstanceOf(ArrayValue(tpt, elems)))) =>
           val values = mutable.UnrolledBuffer.empty[Val]
           elems.foreach {
-            case CVararg(st, argp) =>
+            case CVararg(argp) =>
               val arg = genExpr(argp)
-              values += unboxValue(st, partial = false, arg)
+
+              arg.ty match {
+                case refty: Type.Ref if Type.boxClasses.contains(refty.name) =>
+                  values += toExtern(Type.unbox(Type.Ref(refty.name)), arg)
+                case _ =>
+                  values += arg
+              }
           }
           Some(values)
 
