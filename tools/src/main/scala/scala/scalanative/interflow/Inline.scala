@@ -4,7 +4,6 @@ package interflow
 import scala.util.{Try, Success, Failure}
 import scalanative.nir._
 import scalanative.linker._
-import scalanative.interflow.MergeProcessor.process
 
 trait Inline { self: Interflow =>
   def shallInline(name: Global, args: Seq[Val], unwind: Next)(
@@ -37,29 +36,35 @@ trait Inline { self: Interflow =>
           context.contains(s"inlining ${name.show}")
         val isBlacklisted =
           blacklist.contains(name)
+        val calleeTooBig =
+          defn.insts.size > 8192
+        val callerTooBig =
+          mergeProcessor.currentSize() > 8192
 
         val shall =
           isCtor || hintInline || isSmall || (mode == build.Mode.Release && hasVirtualArgs)
         val shallNot =
-          noInline || hasUnwind || isRecursive || isBlacklisted
+          noInline || hasUnwind || isRecursive || isBlacklisted || calleeTooBig || callerTooBig
 
-        if (shall) {
-          if (shallNot) {
-            log(s"not inlining ${name.show}, because:")
-            if (noInline) { log("* has noinline attr") }
-            if (hasUnwind) { log("* has unwind") }
-            if (isRecursive) { log("* is recursive") }
-            if (isBlacklisted) { log("* is blacklisted") }
-          }
-        } else {
-          log(
-            s"no reason to inline ${name.show}(${args.map(_.show).mkString(",")})")
-        }
+        // if (shall) {
+        //   if (shallNot) {
+        //     log(s"not inlining ${name.show}, because:")
+        //     if (noInline) { log("* has noinline attr") }
+        //     if (hasUnwind) { log("* has unwind") }
+        //     if (isRecursive) { log("* is recursive") }
+        //     if (isBlacklisted) { log("* is blacklisted") }
+        //     if (callerTooBig) { log("* caller is too big") }
+        //     if (calleeTooBig) { log("* callee is too big") }
+        //   }
+        // } else {
+        //   log(
+        //     s"no reason to inline ${name.show}(${args.map(_.show).mkString(",")})")
+        // }
 
         shall && !shallNot
       }
 
-  def inline(name: Global, args: Seq[Val], unwind: Next, blockFresh: Fresh)(
+  def inline(name: Global, args: Seq[Val], unwind: Next)(
       implicit state: State,
       linked: linker.Result): Option[Val] =
     in(s"inlining ${name.show}") {
@@ -79,12 +84,7 @@ trait Inline { self: Interflow =>
       }
       val inlineInsts = defn.insts
       val blocks =
-        process(inlineInsts.toArray,
-                args,
-                state,
-                blockFresh,
-                inline = true,
-                this)
+        process(inlineInsts.toArray, args, state, inline = true)
       def nothing = {
         emit.label(state.fresh(), Seq.empty)
         Val.Zero(Type.Nothing)

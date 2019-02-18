@@ -8,15 +8,12 @@ import scalanative.codegen.MemoryLayout
 import scalanative.util.{unreachable, And}
 
 trait Eval { self: Interflow =>
-  def run(insts: Array[Inst],
-          offsets: Map[Local, Int],
-          from: Local,
-          blockFresh: Fresh)(implicit state: State): Inst.Cf = {
-    countReduction()
-
+  def run(insts: Array[Inst], offsets: Map[Local, Int], from: Local)(
+      implicit state: State): Inst.Cf = {
     var pc = offsets(from) + 1
 
     while (true) {
+      countReduction()
       val inst = insts(pc)
       def bailOut =
         throw BailOut("can't eval inst: " + inst.show)
@@ -24,7 +21,7 @@ trait Eval { self: Interflow =>
         case _: Inst.Label =>
           unreachable
         case Inst.Let(local, op, unwind) =>
-          val value = eval(local, op, unwind, blockFresh)
+          val value = eval(local, op, unwind)
           if (value.ty == Type.Nothing) {
             return Inst.Unreachable(unwind)
           } else {
@@ -107,10 +104,8 @@ trait Eval { self: Interflow =>
     unreachable
   }
 
-  def eval(local: Local, op: Op, unwind: Next, blockFresh: Fresh)(
-      implicit state: State,
-      linked: linker.Result): Val = {
-    countReduction()
+  def eval(local: Local, op: Op, unwind: Next)(implicit state: State,
+                                               linked: linker.Result): Val = {
     import state.materialize
     def emit = {
       if (unwind ne Next.None) {
@@ -124,7 +119,7 @@ trait Eval { self: Interflow =>
       case Op.Call(sig, meth, args) =>
         eval(meth) match {
           case Val.Global(name, _) if intrinsics.contains(name) =>
-            intrinsic(local, sig, name, args, unwind, blockFresh)
+            intrinsic(local, sig, name, args, unwind)
           case emeth =>
             val eargs = args.map(eval)
             val argtys = eargs.map {
@@ -184,7 +179,7 @@ trait Eval { self: Interflow =>
 
             dtarget match {
               case Val.Global(name, _) if shallInline(name, eargs, unwind) =>
-                inline(name, eargs, unwind, blockFresh).getOrElse {
+                inline(name, eargs, unwind).getOrElse {
                   fallback
                 }
               case _ =>
