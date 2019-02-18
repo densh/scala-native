@@ -61,8 +61,11 @@ trait Inline { self: Interflow =>
 
   def inline(name: Global, args: Seq[Val], unwind: Next, blockFresh: Fresh)(
       implicit state: State,
-      linked: linker.Result): Val =
+      linked: linker.Result): Option[Val] =
     in(s"inlining ${name.show}") {
+      val startReductions = currentReductions()
+      val emit            = new nir.Buffer()(state.fresh)
+
       val defn = done(name)
       val defnArgTys = {
         val Type.Function(argtys, _) = defn.ty
@@ -70,7 +73,7 @@ trait Inline { self: Interflow =>
       }
       val inlineArgs = args.zip(defnArgTys).foreach {
         case (local @ Val.Local(_, ty), argTy) if !Sub.is(ty, argTy) =>
-          state.emit.conv(Conv.Bitcast, argTy, local, unwind)
+          emit.conv(Conv.Bitcast, argTy, local, unwind)
         case v =>
           v
       }
@@ -83,34 +86,32 @@ trait Inline { self: Interflow =>
                 inline = true,
                 this)
       def nothing = {
-        state.emit.label(state.fresh(), Seq.empty)
+        emit.label(state.fresh(), Seq.empty)
         Val.Zero(Type.Nothing)
       }
-      blocks match {
+
+      val (res, endState) = blocks match {
         case Seq() =>
           util.unreachable
 
         case Seq(block) =>
           block.cf match {
             case Inst.Ret(value) =>
-              state.emit ++= block.end.emit
-              state.inherit(block.end, value +: args)
-              value
+              emit ++= block.end.emit
+              (value, block.end)
             case Inst.Throw(value, unwind) =>
               val excv = block.end.materialize(value)
-              state.emit ++= block.end.emit
-              state.emit.raise(excv, unwind)
-              state.inherit(block.end, value +: args)
-              nothing
+              emit ++= block.end.emit
+              emit.raise(excv, unwind)
+              (nothing, block.end)
             case Inst.Unreachable(unwind) =>
-              state.emit ++= block.end.emit
-              state.emit.unreachable(unwind)
-              state.inherit(block.end, args)
-              nothing
+              emit ++= block.end.emit
+              emit.unreachable(unwind)
+              (nothing, block.end)
           }
 
         case first +: rest =>
-          state.emit ++= first.toInsts.tail
+          emit ++= first.toInsts.tail
 
           rest.foreach { block =>
             block.cf match {
@@ -118,10 +119,10 @@ trait Inline { self: Interflow =>
                 ()
               case Inst.Throw(value, unwind) =>
                 val excv = block.end.materialize(value)
-                state.emit ++= block.toInsts.init
-                state.emit.raise(excv, unwind)
+                emit ++= block.toInsts.init
+                emit.raise(excv, unwind)
               case _ =>
-                state.emit ++= block.toInsts
+                emit ++= block.toInsts
             }
           }
 
@@ -129,13 +130,24 @@ trait Inline { self: Interflow =>
             .collectFirst {
               case block if block.cf.isInstanceOf[Inst.Ret] =>
                 val Inst.Ret(value) = block.cf
-                state.emit ++= block.toInsts.init
-                state.inherit(block.end, value +: args)
-                value
+                emit ++= block.toInsts.init
+                (value, block.end)
             }
             .getOrElse {
-              nothing
+              (nothing, state)
             }
+      }
+
+      val dreds  = currentReductions() - startReductions
+      val dsize  = emit.size
+      val dratio = dsize.toDouble / dreds
+
+      if (dsize <= 8 || dratio <= 0.8D) {
+        state.emit ++= emit
+        state.inherit(endState, res +: args)
+        Some(res)
+      } else {
+        None
       }
     }
 }

@@ -17,6 +17,19 @@ class Interflow(val mode: build.Mode, val originals: Map[Global, Defn.Define])(
   val started   = mutable.Set.empty[Global]
   val blacklist = mutable.Set.empty[Global]
   var context   = List.empty[String]
+
+  val reductions = mutable.Map.empty[String, Int]
+  def currentRoot(): String = {
+    context.collectFirst {
+      case e if e.startsWith("visit") => e
+    }.get
+  }
+  def currentReductions(): Int =
+    reductions.getOrElseUpdate(currentRoot, 0)
+  def countReduction(): Unit = {
+    val last = reductions.getOrElseUpdate(currentRoot, 0)
+    reductions(currentRoot) = last + 1
+  }
 }
 
 object Interflow {

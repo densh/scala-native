@@ -12,6 +12,8 @@ trait Eval { self: Interflow =>
           offsets: Map[Local, Int],
           from: Local,
           blockFresh: Fresh)(implicit state: State): Inst.Cf = {
+    countReduction()
+
     var pc = offsets(from) + 1
 
     while (true) {
@@ -108,6 +110,7 @@ trait Eval { self: Interflow =>
   def eval(local: Local, op: Op, unwind: Next, blockFresh: Fresh)(
       implicit state: State,
       linked: linker.Result): Val = {
+    countReduction()
     import state.materialize
     def emit = {
       if (unwind ne Next.None) {
@@ -181,7 +184,9 @@ trait Eval { self: Interflow =>
 
             dtarget match {
               case Val.Global(name, _) if shallInline(name, eargs, unwind) =>
-                inline(name, eargs, unwind, blockFresh)
+                inline(name, eargs, unwind, blockFresh).getOrElse {
+                  fallback
+                }
               case _ =>
                 fallback
             }
