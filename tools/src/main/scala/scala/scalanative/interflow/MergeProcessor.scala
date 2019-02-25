@@ -192,7 +192,7 @@ final class MergeProcessor(insts: Array[Inst],
   def done(): Boolean =
     todo.isEmpty
 
-  def invalidateForwardTransitiveSuccessors(rootBlock: MergeBlock): Unit = {
+  def invalidate(rootBlock: MergeBlock): Unit = {
     val invalid = mutable.Map.empty[Local, MergeBlock]
 
     def visitBlock(from: MergeBlock, block: MergeBlock): Unit = {
@@ -306,7 +306,7 @@ final class MergeProcessor(insts: Array[Inst],
       throw BailOut("too many block invalidations")
     } else {
       if (block.invalidations > 0) {
-        invalidateForwardTransitiveSuccessors(block)
+        invalidate(block)
       }
       block.invalidations += 1
     }
@@ -325,15 +325,6 @@ final class MergeProcessor(insts: Array[Inst],
     val block      = findMergeBlock(sortedTodo.head)
     todo.clear()
     todo ++= sortedTodo.tail
-
-    def heap(s: State): String = {
-      s.heap.toSeq
-        .map {
-          case (addr, v) =>
-            s"${addr} -> ${v}"
-        }
-        .mkString(", ")
-    }
 
     val (newPhis, newState) = merge(block)
     block.phis = newPhis
