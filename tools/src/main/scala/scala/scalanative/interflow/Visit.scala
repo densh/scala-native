@@ -82,10 +82,10 @@ trait Visit { self: Interflow =>
     val argtys   = argumentTypes(name)
 
     // Wrap up the result.
-    def result(retty: Type, rawInsts: Seq[Inst]) =
+    def result(retty: Type, insts: Seq[Inst]) =
       origdefn.copy(name = name,
                     ty = Type.Function(argtys, retty),
-                    insts = ControlFlow.removeDeadBlocks(rawInsts))
+                    insts = ControlFlow.removeDeadBlocks(insts))
 
     // Create new fresh and state for the first basic block.
     val fresh = Fresh(0)
@@ -115,25 +115,15 @@ trait Visit { self: Interflow =>
     }
 
     // Run a merge processor starting from the entry basic block.
-    val blocks = util.ScopedVar.scoped(
+    val insts = util.ScopedVar.scoped(
       blockFresh := fresh
     ) {
       process(origdefn.insts.toArray, args, state, inline = false)
+        .toVisitInsts()
     }
 
     // Collect instructions, materialize all returned values
     // and compute the result type.
-    val insts = blocks.flatMap { block =>
-      block.cf = block.cf match {
-        case Inst.Ret(retv) =>
-          Inst.Ret(block.end.materialize(retv))
-        case Inst.Throw(excv, unwind) =>
-          Inst.Throw(block.end.materialize(excv), unwind)
-        case cf =>
-          cf
-      }
-      block.toInsts()
-    }
     val rets = insts.collect {
       case Inst.Ret(v) => v.ty
     }
@@ -190,7 +180,7 @@ trait Visit { self: Interflow =>
   def process(insts: Array[Inst],
               args: Seq[Val],
               state: State,
-              inline: Boolean): Seq[MergeBlock] = {
+              inline: Boolean): MergeProcessor = {
     val processor =
       MergeProcessor.fromEntry(insts, args, state, inline, blockFresh.get, this)
 
@@ -201,7 +191,7 @@ trait Visit { self: Interflow =>
         processor.advance()
       }
 
-      processor.toSeq()
+      processor
     }
   }
 }

@@ -87,7 +87,7 @@ object UseDef {
       val deps      = mutable.UnrolledBuffer.empty[Def]
       val uses      = mutable.UnrolledBuffer.empty[Def]
       val paramDefs = params.map(defs)
-      assert(!defs.contains(n))
+      assert(!defs.contains(n), "double definition of " + n.show)
       defs += ((n, BlockDef(n, deps, uses, paramDefs)))
     }
     def enterInst(n: Local) = {

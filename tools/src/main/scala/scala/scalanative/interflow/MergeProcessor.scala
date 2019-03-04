@@ -343,7 +343,7 @@ final class MergeProcessor(insts: Array[Inst],
   }
 
   def advance(): Unit = {
-    val sortedTodo = todo.toArray.sortBy(n => offsets(n))
+    val sortedTodo = todo.toArray.sortBy(offsets)
     val block      = findMergeBlock(sortedTodo.head)
     todo.clear()
     todo ++= sortedTodo.tail
@@ -420,6 +420,187 @@ final class MergeProcessor(insts: Array[Inst],
 
     orderedBlocks ++= sortedBlocks.filter(isExceptional)
     orderedBlocks
+  }
+
+  def toInsts(block: MergeBlock): Seq[Inst] = {
+    val result = new nir.Buffer()(Fresh(0))
+    def mergeNext(next: Next.Label): Next.Label = {
+      val nextBlock = block.outgoing(next.name)
+      val mergeValues = nextBlock.phis.flatMap {
+        case MergePhi(_, incoming) =>
+          incoming.collect {
+            case (name, value) if name == block.label.name =>
+              value
+          }
+      }
+      Next.Label(nextBlock.name, mergeValues)
+    }
+    def mergeUnwind(next: Next): Next = next match {
+      case Next.None =>
+        next
+      case Next.Unwind(exc, next: Next.Label) =>
+        Next.Unwind(exc, mergeNext(next))
+      case _ =>
+        util.unreachable
+    }
+    val params = block.phis.map(_.param)
+    result.label(block.name, params)
+    result ++= block.end.emit
+    block.cf match {
+      case ret: Inst.Ret =>
+        result += ret
+      case Inst.Jump(next: Next.Label) =>
+        result.jump(mergeNext(next))
+      case Inst.If(cond, thenNext: Next.Label, elseNext: Next.Label) =>
+        result.branch(cond, mergeNext(thenNext), mergeNext(elseNext))
+      case Inst.Switch(scrut, defaultNext: Next.Label, cases) =>
+        val mergeCases = cases.map {
+          case Next.Case(v, next: Next.Label) =>
+            Next.Case(v, mergeNext(next))
+          case _ =>
+            util.unreachable
+        }
+        result.switch(scrut, mergeNext(defaultNext), mergeCases)
+      case Inst.Throw(v, unwind) =>
+        result.raise(v, mergeUnwind(unwind))
+      case Inst.Unreachable(unwind) =>
+        result.unreachable(mergeUnwind(unwind))
+    }
+    result.toSeq
+  }
+
+  def toVisitInsts(): Seq[Inst] = {
+    val result = new nir.Buffer()(Fresh(0))
+    val done   = mutable.Set.empty[Local]
+    val entry  = toSeq.head.label.name
+    val todo   = mutable.Set[Local](entry)
+
+    def mergeNext(block: MergeBlock, next: Next.Label): Next.Label = {
+      val nextBlock = block.outgoing(next.name)
+      val mergeValues = nextBlock.phis.flatMap {
+        case MergePhi(_, incoming) =>
+          incoming.collect {
+            case (name, value) if name == block.label.name =>
+              value
+          }
+      }
+      todo += nextBlock.label.name
+      Next.Label(nextBlock.name, mergeValues)
+    }
+
+    def mergeUnwind(block: MergeBlock, next: Next): Next = next match {
+      case Next.None =>
+        next
+      case Next.Unwind(exc, next: Next.Label) =>
+        Next.Unwind(exc, mergeNext(block, next))
+      case _ =>
+        util.unreachable
+    }
+
+    def mergeCf(block: MergeBlock): Inst.Cf = block.cf match {
+      case Inst.Ret(retv) =>
+        Inst.Ret(block.end.materialize(retv))
+      case Inst.Jump(next: Next.Label) =>
+        val nextBlock = blocks(next.name)
+        if (nextBlock.incoming.size > 1) {
+          Inst.Jump(mergeNext(block, next))
+        } else {
+          val cf = mergeCf(nextBlock)
+          block.end.emit ++= nextBlock.end.emit
+          cf
+        }
+      case Inst.If(cond, thenNext: Next.Label, elseNext: Next.Label) =>
+        Inst.If(cond, mergeNext(block, thenNext), mergeNext(block, elseNext))
+      case Inst.Switch(scrut, defaultNext: Next.Label, cases) =>
+        val mergeCases = cases.map {
+          case Next.Case(v, next: Next.Label) =>
+            Next.Case(v, mergeNext(block, next))
+          case _ =>
+            util.unreachable
+        }
+        Inst.Switch(scrut, mergeNext(block, defaultNext), mergeCases)
+      case Inst.Throw(v, unwind) =>
+        Inst.Throw(block.end.materialize(v), mergeUnwind(block, unwind))
+      case Inst.Unreachable(unwind) =>
+        Inst.Unreachable(mergeUnwind(block, unwind))
+    }
+
+    def visitBlock(block: MergeBlock): Unit =
+      if (!done.contains(block.label.name)) {
+        val params = block.phis.map(_.param)
+        val cf     = mergeCf(block)
+        result.label(block.name, params)
+        result ++= block.end.emit
+        result += cf
+        done += block.label.name
+      }
+
+    while (todo.nonEmpty) {
+      val name = todo.toSeq.sortBy(offsets).head
+      todo -= name
+      visitBlock(blocks(name))
+    }
+
+    result.toSeq
+  }
+
+  def toInlineInsts(state: State): (Seq[Inst], Val, State) = {
+    val emit = new nir.Buffer()(state.fresh)
+
+    def nothing = {
+      emit.label(state.fresh(), Seq.empty)
+      Val.Zero(Type.Nothing)
+    }
+
+    val (res, endState) = toSeq match {
+      case Seq() =>
+        util.unreachable
+
+      case Seq(block) =>
+        block.cf match {
+          case Inst.Ret(value) =>
+            emit ++= block.end.emit
+            (value, block.end)
+          case Inst.Throw(value, unwind) =>
+            val excv = block.end.materialize(value)
+            emit ++= block.end.emit
+            emit.raise(excv, unwind)
+            (nothing, block.end)
+          case Inst.Unreachable(unwind) =>
+            emit ++= block.end.emit
+            emit.unreachable(unwind)
+            (nothing, block.end)
+        }
+
+      case first +: rest =>
+        emit ++= toInsts(first).tail
+
+        rest.foreach { block =>
+          block.cf match {
+            case _: Inst.Ret =>
+              ()
+            case Inst.Throw(value, unwind) =>
+              val excv = block.end.materialize(value)
+              emit ++= toInsts(block).init
+              emit.raise(excv, unwind)
+            case _ =>
+              emit ++= toInsts(block)
+          }
+        }
+
+        rest
+          .collectFirst {
+            case block if block.cf.isInstanceOf[Inst.Ret] =>
+              val Inst.Ret(value) = block.cf
+              emit ++= toInsts(block).init
+              (value, block.end)
+          }
+          .getOrElse {
+            (nothing, state)
+          }
+    }
+
+    (emit.toSeq, res, endState)
   }
 }
 

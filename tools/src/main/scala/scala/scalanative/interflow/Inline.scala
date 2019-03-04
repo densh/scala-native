@@ -64,65 +64,12 @@ trait Inline { self: Interflow =>
   def inline(name: Global, args: Seq[Val])(implicit state: State,
                                            linked: linker.Result): Val =
     in(s"inlining ${name.show}") {
-      val defn   = done(name)
-      val blocks = process(defn.insts.toArray, args, state, inline = true)
+      val defn      = done(name)
+      val processor = process(defn.insts.toArray, args, state, inline = true)
 
-      val emit = new nir.Buffer()(state.fresh)
+      val (insts, res, endState) = processor.toInlineInsts(state)
 
-      def nothing = {
-        emit.label(state.fresh(), Seq.empty)
-        Val.Zero(Type.Nothing)
-      }
-
-      val (res, endState) = blocks match {
-        case Seq() =>
-          util.unreachable
-
-        case Seq(block) =>
-          block.cf match {
-            case Inst.Ret(value) =>
-              emit ++= block.end.emit
-              (value, block.end)
-            case Inst.Throw(value, unwind) =>
-              val excv = block.end.materialize(value)
-              emit ++= block.end.emit
-              emit.raise(excv, unwind)
-              (nothing, block.end)
-            case Inst.Unreachable(unwind) =>
-              emit ++= block.end.emit
-              emit.unreachable(unwind)
-              (nothing, block.end)
-          }
-
-        case first +: rest =>
-          emit ++= first.toInsts.tail
-
-          rest.foreach { block =>
-            block.cf match {
-              case _: Inst.Ret =>
-                ()
-              case Inst.Throw(value, unwind) =>
-                val excv = block.end.materialize(value)
-                emit ++= block.toInsts.init
-                emit.raise(excv, unwind)
-              case _ =>
-                emit ++= block.toInsts
-            }
-          }
-
-          rest
-            .collectFirst {
-              case block if block.cf.isInstanceOf[Inst.Ret] =>
-                val Inst.Ret(value) = block.cf
-                emit ++= block.toInsts.init
-                (value, block.end)
-            }
-            .getOrElse {
-              (nothing, state)
-            }
-      }
-
-      state.emit ++= emit
+      state.emit ++= insts
       state.inherit(endState, res +: args)
       res
     }
