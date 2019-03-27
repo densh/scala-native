@@ -266,6 +266,13 @@ lazy val nir =
     .settings(mavenPublishSettings)
     .dependsOn(util)
 
+lazy val nir03 =
+  project
+    .in(file("nir03"))
+    .settings(toolSettings)
+    .settings(mavenPublishSettings)
+    .dependsOn(util, nir)
+
 lazy val nirparser =
   project
     .in(file("nirparser"))
@@ -296,13 +303,14 @@ lazy val tools =
       fullClasspath in Test := ((fullClasspath in Test) dependsOn setUpTestingCompiler).value,
       publishLocal := publishLocal
         .dependsOn(publishLocal in nir)
+        .dependsOn(publishLocal in nir03)
         .dependsOn(publishLocal in util)
         .value,
       // Running tests in parallel results in `FileSystemAlreadyExistsException`
       parallelExecution in Test := false,
       mimaSettings
     )
-    .dependsOn(nir, util, testingCompilerInterface % Test)
+    .dependsOn(nir, nir03, util, testingCompilerInterface % Test)
 
 lazy val nscplugin =
   project

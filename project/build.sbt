@@ -5,6 +5,7 @@ unmanagedSourceDirectories in Compile ++= {
     Seq(
     "util",
     "nir",
+    "nir03",
     "tools",
     "sbt-scala-native",
     "test-interface-serialization",

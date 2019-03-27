@@ -7,6 +7,7 @@ import nir.serialization.deserializeBinary
 import java.nio.file.{FileSystems, Path}
 import scalanative.io.VirtualDirectory
 import scalanative.util.Scope
+import scalanative.nir03
 
 sealed trait ClassPath {
 
@@ -45,10 +46,24 @@ object ClassPath {
       files.contains(name.top)
 
     def load(name: Global): Option[Seq[Defn]] =
-      cache.getOrElseUpdate(name, {
-        files.get(name.top).map { file =>
-          deserializeBinary(directory.read(file))
+      cache.getOrElseUpdate(
+        name, {
+          files.get(name.top).map {
+            file =>
+              val data = directory.read(file)
+              try {
+                deserializeBinary(data)
+              } catch {
+                case _: AssertionError =>
+                  val deserializer = nir03.serialization.deserializeBinary(data)
+                  val defns = deserializer.globals.toSeq.map { g =>
+                    val (_, _, _, defn) = deserializer.deserialize(g).get
+                    defn
+                  }
+                  nir03.Upgrade(defns)
+              }
+          }
         }
-      })
+      )
   }
 }
