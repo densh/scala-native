@@ -202,6 +202,8 @@ final class Field(val attrs: Attrs,
 }
 
 final class Result(val infos: mutable.Map[Global, Info],
+                   val ids: mutable.Map[Global, Int],
+                   val fromIds: mutable.Map[Int, Global],
                    val entries: Seq[Global],
                    val unavailable: Seq[Global],
                    val referencedFrom: mutable.Map[Global, Global],

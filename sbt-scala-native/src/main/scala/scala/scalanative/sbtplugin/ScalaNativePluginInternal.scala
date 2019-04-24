@@ -73,7 +73,9 @@ object ScalaNativePluginInternal {
     nativeCheck := false,
     nativeCheck in NativeTest := (nativeCheck in Test).value,
     nativeDump := false,
-    nativeDump in NativeTest := (nativeDump in Test).value
+    nativeDump in NativeTest := (nativeDump in Test).value,
+    nativeProfile := java.nio.file.Paths.get("profile.data"),
+    nativeProfile in NativeTest := (nativeProfile in Test).value
   )
 
   lazy val scalaNativeGlobalSettings: Seq[Setting[_]] = Seq(
@@ -136,6 +138,7 @@ object ScalaNativePluginInternal {
         .withLTO(nativeLTO.value)
         .withCheck(nativeCheck.value)
         .withDump(nativeDump.value)
+        .withProfile(nativeProfile.value)
     },
     nativeLink := {
       val logger  = streams.value.log.toLogger

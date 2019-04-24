@@ -9,18 +9,20 @@ trait Inline { self: Interflow =>
   def shallInline(name: Global, args: Seq[Val])(
       implicit state: State,
       linked: linker.Result): Boolean = {
-    val maybeDefn = mode match {
-      case build.Mode.Baseline | build.Mode.Debug =>
+    val maybeDefn =
+      if (optLevel() != Opt.Aggressive) {
         maybeOriginal(name)
-      case _: build.Mode.Release =>
+      } else {
         maybeDone(name)
-    }
+      }
 
     maybeDefn
       .fold[Boolean] {
         false
       } { defn =>
-        val isCtor = originalName(name) match {
+        val origName =
+          originalName(name)
+        val isCtor = origName match {
           case Global.Member(_, sig) if sig.isCtor || sig.isImplCtor =>
             true
           case _ =>
@@ -54,17 +56,21 @@ trait Inline { self: Interflow =>
           case Inst.Unreachable(unwind) => unwind ne Next.None
           case _                        => false
         }
+        val isHot =
+          isProfileGuided() && self.isHot(origName)
+        val isCold =
+          isProfileGuided() && self.isCold(origName)
 
-        val shall = mode match {
-          case build.Mode.Baseline | build.Mode.Debug =>
+        val shall = optLevel() match {
+          case Opt.None =>
             isCtor || alwaysInline
-          case build.Mode.ReleaseFast =>
+          case Opt.Conservative =>
             isCtor || alwaysInline || hintInline || isSmall
-          case build.Mode.ReleaseFull =>
-            isCtor || alwaysInline || hintInline || isSmall || hasVirtualArgs
+          case Opt.Aggressive =>
+            isCtor || alwaysInline || hintInline || isSmall || hasVirtualArgs || isHot
         }
         val shallNot =
-          noOpt || noInline || isRecursive || isBlacklisted || calleeTooBig || callerTooBig || isExtern || hasUnwind
+          noOpt || noInline || isRecursive || isBlacklisted || calleeTooBig || callerTooBig || isExtern || hasUnwind || isCold
 
         if (shall) {
           if (shallNot) {
@@ -123,12 +129,12 @@ trait Inline { self: Interflow =>
   def inline(name: Global, args: Seq[Val])(implicit state: State,
                                            linked: linker.Result): Val =
     in(s"inlining ${name.show}") {
-      val defn = mode match {
-        case build.Mode.Baseline | build.Mode.Debug =>
+      val defn =
+        if (optLevel() != Opt.Aggressive) {
           getOriginal(name)
-        case _: build.Mode.Release =>
+        } else {
           getDone(name)
-      }
+        }
 
       val inlineArgs  = adapt(args, defn.ty)
       val inlineInsts = defn.insts.toArray

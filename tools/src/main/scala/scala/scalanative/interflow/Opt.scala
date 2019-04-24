@@ -5,6 +5,16 @@ import scalanative.nir._
 import scalanative.linker._
 
 trait Opt { self: Interflow =>
+  def optLevel(): Opt.Level =
+    mode match {
+      case build.Mode.Baseline | build.Mode.Debug | build.Mode.PgoInstrument =>
+        Opt.None
+      case build.Mode.ReleaseFast =>
+        Opt.Conservative
+      case build.Mode.ReleaseFull | build.Mode.PgoRelease =>
+        Opt.Aggressive
+    }
+
   def shallOpt(name: Global): Boolean = {
     val defn =
       getOriginal(originalName(name))
@@ -14,8 +24,14 @@ trait Opt { self: Interflow =>
       case Inst.Unreachable(unwind) => unwind == Next.None
       case _                        => true
     }
+    val isDeopt = defn.name match {
+      case Global.Member(_, sig) if sig.isDeopt =>
+        true
+      case _ =>
+        false
+    }
 
-    defn.attrs.opt != Attr.NoOpt && noUnwind
+    defn.attrs.opt != Attr.NoOpt && noUnwind && !isDeopt
   }
 
   def opt(name: Global): Defn.Define = in(s"visit ${name.show}") {
@@ -126,4 +142,11 @@ trait Opt { self: Interflow =>
 
     processor.toSeq()
   }
+}
+
+object Opt {
+  sealed abstract class Level
+  final case object None         extends Level
+  final case object Conservative extends Level
+  final case object Aggressive   extends Level
 }

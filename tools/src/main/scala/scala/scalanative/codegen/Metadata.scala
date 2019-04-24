@@ -6,12 +6,13 @@ import scalanative.nir._
 import scalanative.linker.{Trait, Class}
 
 class Metadata(val linked: linker.Result, proxies: Seq[Defn]) {
-  val rtti   = mutable.Map.empty[linker.Info, RuntimeTypeInformation]
-  val vtable = mutable.Map.empty[linker.Class, VirtualTable]
-  val layout = mutable.Map.empty[linker.Class, FieldLayout]
-  val dynmap = mutable.Map.empty[linker.Class, DynamicHashMap]
-  val ids    = mutable.Map.empty[linker.ScopeInfo, Int]
-  val ranges = mutable.Map.empty[linker.Class, Range]
+  val rtti      = mutable.Map.empty[linker.Info, RuntimeTypeInformation]
+  val vtable    = mutable.Map.empty[linker.Class, VirtualTable]
+  val layout    = mutable.Map.empty[linker.Class, FieldLayout]
+  val dynmap    = mutable.Map.empty[linker.Class, DynamicHashMap]
+  val ids       = mutable.Map.empty[linker.ScopeInfo, Int]
+  val ranges    = mutable.Map.empty[linker.Class, Range]
+  val methodIds = mutable.Map.empty[Global, Int]
 
   val classes        = initClassIdsAndRanges()
   val traits         = initTraitIds()
@@ -24,6 +25,7 @@ class Metadata(val linked: linker.Result, proxies: Seq[Defn]) {
 
   initClassMetadata()
   initTraitMetadata()
+  initMethodIds()
 
   def initTraitIds(): Seq[Trait] = {
     val traits =
@@ -76,5 +78,19 @@ class Metadata(val linked: linker.Result, proxies: Seq[Defn]) {
     traits.foreach { node =>
       rtti(node) = new RuntimeTypeInformation(this, node)
     }
+  }
+
+  def initMethodIds(): Unit = {
+    linked.defns
+      .collect {
+        case defn: Defn.Define =>
+          defn.name
+      }
+      .sortBy(_.show)
+      .zipWithIndex
+      .map {
+        case (name, idx) =>
+          methodIds(name) = idx
+      }
   }
 }

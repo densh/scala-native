@@ -14,18 +14,26 @@ final class MergeBlock(val label: Inst.Label, val name: Local) {
   var invalidations: Int  = 0
 
   def toInsts(): Seq[Inst] = {
-    val block  = this
-    val result = new nir.Buffer()(Fresh(0))
+    val block    = this
+    val result   = new nir.Buffer()(Fresh(0))
+    val trailing = new nir.Buffer()(Fresh(0))
     def mergeNext(next: Next.Label): Next.Label = {
-      val nextBlock = outgoing(next.name)
-      val mergeValues = nextBlock.phis.flatMap {
-        case MergePhi(_, incoming) =>
-          incoming.collect {
-            case (name, value) if name == block.label.name =>
-              value
-          }
+      if (next.weight == 0) {
+        val fallback = end.fresh()
+        trailing.label(fallback, Seq())
+        trailing.unreachable(Next.None)
+        Next(fallback)
+      } else {
+        val nextBlock = outgoing(next.name)
+        val mergeValues = nextBlock.phis.flatMap {
+          case MergePhi(_, incoming) =>
+            incoming.collect {
+              case (name, value) if name == block.label.name =>
+                value
+            }
+        }
+        Next(nextBlock.name, mergeValues, next.weight)
       }
-      Next.Label(nextBlock.name, mergeValues)
     }
     def mergeUnwind(next: Next): Next = next match {
       case Next.None =>
@@ -58,6 +66,7 @@ final class MergeBlock(val label: Inst.Label, val name: Local) {
       case Inst.Unreachable(unwind) =>
         result.unreachable(mergeUnwind(unwind))
     }
+    result ++= trailing
     result.toSeq
   }
 }

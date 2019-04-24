@@ -183,8 +183,8 @@ final class State(block: Local) {
       case _: Op.Classalloc            => ()
       case Op.Fieldload(_, v, _)       => reachVal(v)
       case Op.Fieldstore(_, v1, _, v2) => reachVal(v1); reachVal(v2)
-      case Op.Method(v, _)             => reachVal(v)
-      case Op.Dynmethod(v, _)          => reachVal(v)
+      case Op.Method(v, _, _)          => reachVal(v)
+      case Op.Dynmethod(v, _, _)       => reachVal(v)
       case _: Op.Module                => ()
       case Op.As(_, v)                 => reachVal(v)
       case Op.Is(_, v)                 => reachVal(v)
@@ -336,8 +336,8 @@ final class State(block: Local) {
       case _: Op.Classalloc            => ()
       case Op.Fieldload(_, v, _)       => reachVal(v)
       case Op.Fieldstore(_, v1, _, v2) => reachVal(v1); reachVal(v2)
-      case Op.Method(v, _)             => reachVal(v)
-      case Op.Dynmethod(v, _)          => reachVal(v)
+      case Op.Method(v, _, _)          => reachVal(v)
+      case Op.Dynmethod(v, _, _)       => reachVal(v)
       case _: Op.Module                => ()
       case Op.As(_, v)                 => reachVal(v)
       case Op.Is(_, v)                 => reachVal(v)
@@ -390,10 +390,10 @@ final class State(block: Local) {
         Op.Fieldload(ty, escapedVal(v), n)
       case Op.Fieldstore(ty, v1, n, v2) =>
         Op.Fieldstore(ty, escapedVal(v1), n, escapedVal(v2))
-      case Op.Method(v, n) =>
-        Op.Method(escapedVal(v), n)
-      case Op.Dynmethod(v, n) =>
-        Op.Dynmethod(escapedVal(v), n)
+      case Op.Method(v, n, weights) =>
+        Op.Method(escapedVal(v), n, weights)
+      case Op.Dynmethod(v, n, weights) =>
+        Op.Dynmethod(escapedVal(v), n, weights)
       case op: Op.Module =>
         op
       case Op.As(ty, v) =>

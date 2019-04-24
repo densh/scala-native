@@ -108,11 +108,13 @@ object Show {
         str("\")")
       case Attr.Abstract =>
         str("abstract")
+      case Attr.Weight(v) =>
+        str("weight(")
+        str(v)
+        str(")")
     }
 
     def next_(next: Next): Unit = next match {
-      case Next.Label(name, Seq()) =>
-        local_(name)
       case Next.Unwind(exc, next) =>
         str("unwind ")
         val_(exc)
@@ -123,11 +125,17 @@ object Show {
         val_(v)
         str(" => ")
         next_(next)
-      case Next.Label(name, args) =>
+      case Next.Label(name, args, weight) =>
         local_(name)
-        str("(")
-        rep(args, sep = ", ")(val_)
-        str(")")
+        if (args.nonEmpty) {
+          str("(")
+          rep(args, sep = ", ")(val_)
+          str(")")
+        }
+        if (weight != -1) {
+          str(" weight ")
+          str(weight)
+        }
     }
 
     def inst_(inst: Inst): Unit = inst match {
@@ -281,18 +289,37 @@ object Show {
         global_(name)
         str(", ")
         val_(value)
-      case Op.Method(value, sig) =>
+      case Op.Method(value, sig, weights) =>
         str("method ")
         val_(value)
         str(", \"")
         str(escapeQuotes(sig.mangle))
         str("\"")
-      case Op.Dynmethod(value, sig) =>
+        if (weights.nonEmpty) {
+          str(", weights [")
+          rep(weights, sep = ", ") {
+            case (name, weight) =>
+              global_(name)
+              str(", ")
+              str(weight)
+          }
+          str("]")
+        }
+      case Op.Dynmethod(value, sig, weights) =>
         str("dynmethod ")
         val_(value)
         str(", \"")
         str(escapeQuotes(sig.mangle))
         str("\"")
+        if (weights.nonEmpty) {
+          str(", weights [")
+          rep(weights, sep = ",") {
+            case (name, weight) =>
+              global_(name)
+              str(", ")
+              str(weight)
+          }
+        }
       case Op.Module(name) =>
         str("module ")
         global_(name)

@@ -191,7 +191,7 @@ final class BinaryDeserializer(buffer: ByteBuffer) {
     case T.NoneNext   => Next.None
     case T.UnwindNext => Next.Unwind(getParam, getNext)
     case T.CaseNext   => Next.Case(getVal, getNext)
-    case T.LabelNext  => Next.Label(getLocal, getVals)
+    case T.LabelNext  => Next.Label(getLocal, getVals, -1)
   }
 
   private def getOp(): Op = getInt match {
@@ -209,8 +209,8 @@ final class BinaryDeserializer(buffer: ByteBuffer) {
     case T.ClassallocOp  => Op.Classalloc(getGlobal)
     case T.FieldloadOp   => Op.Fieldload(getType, getVal, getGlobal)
     case T.FieldstoreOp  => Op.Fieldstore(getType, getVal, getGlobal, getVal)
-    case T.MethodOp      => Op.Method(getVal, getSig)
-    case T.DynmethodOp   => Op.Dynmethod(getVal, getSig)
+    case T.MethodOp      => Op.Method(getVal, getSig, Nil)
+    case T.DynmethodOp   => Op.Dynmethod(getVal, getSig, Nil)
     case T.ModuleOp      => Op.Module(getGlobal)
     case T.AsOp          => Op.As(getType, getVal)
     case T.IsOp          => Op.Is(getType, getVal)

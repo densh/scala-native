@@ -8,16 +8,17 @@ import scala.scalanative.linker.Class
 object Generate {
   import Impl._
 
-  def apply(entry: Global.Top, defns: Seq[Defn])(
+  def apply(config: build.Config, defns: Seq[Defn])(
       implicit meta: Metadata): Seq[Defn] =
-    (new Impl(entry, defns)).generate()
+    (new Impl(config, defns)).generate()
 
   implicit def linked(implicit meta: Metadata): linker.Result =
     meta.linked
 
-  private class Impl(entry: Global.Top, defns: Seq[Defn])(
+  private class Impl(config: build.Config, defns: Seq[Defn])(
       implicit meta: Metadata) {
-    val buf = mutable.UnrolledBuffer.empty[Defn]
+    val entry = Global.Top(config.mainClass)
+    val buf   = mutable.UnrolledBuffer.empty[Defn]
 
     def generate(): Seq[Defn] = {
       genDefnsExcludingGenerated()
@@ -30,7 +31,7 @@ object Generate {
       genTraitDispatchTables()
       genModuleAccessors()
       genModuleArray()
-      genModuleArraySize()
+      genProfileStorage()
       genObjectArrayId()
       genArrayIds()
       genStackBottom()
@@ -135,7 +136,7 @@ object Generate {
       val handler = fresh()
       def unwind = {
         val exc = Val.Local(fresh(), nir.Rt.Object)
-        Next.Unwind(exc, Next.Label(handler, Seq(exc)))
+        Next.Unwind(exc, Next(handler, Seq(exc)))
       }
 
       buf += Defn.Define(
@@ -159,10 +160,12 @@ object Generate {
           Inst.Let(module.name, Op.Module(entry.top), unwind),
           Inst.Let(Op.Call(entryMainTy, entryMain, Seq(module, arr)), unwind),
           Inst.Let(Op.Call(RuntimeLoopSig, RuntimeLoop, Seq(module)), unwind),
+          Inst.Let(Op.Call(ExitSig, Exit, Seq(Val.Int(0))), Next.None),
           Inst.Ret(Val.Int(0)),
           Inst.Label(handler, Seq(exc)),
           Inst.Let(Op.Call(PrintStackTraceSig, PrintStackTrace, Seq(exc)),
                    Next.None),
+          Inst.Let(Op.Call(ExitSig, Exit, Seq(Val.Int(1))), Next.None),
           Inst.Ret(Val.Int(1))
         )
       )
@@ -243,19 +246,40 @@ object Generate {
       }
     }
 
-    def genModuleArray(): Unit =
+    def genModuleArray(): Unit = {
       buf +=
         Defn.Var(Attrs.None,
                  moduleArrayName,
                  meta.moduleArray.value.ty,
                  meta.moduleArray.value)
-
-    def genModuleArraySize(): Unit =
       buf +=
         Defn.Var(Attrs.None,
                  moduleArraySizeName,
                  Type.Int,
                  Val.Int(meta.moduleArray.size))
+    }
+
+    def genProfileStorage(): Unit = {
+      val profileStorageSize =
+        if (config.mode == build.Mode.PgoInstrument) {
+          meta.methodIds.values.max + 1
+        } else {
+          0
+        }
+      val profileStorageValue =
+        Val.Zero(Type.ArrayValue(Type.Ptr, profileStorageSize))
+
+      buf +=
+        Defn.Var(Attrs.None,
+                 profileStorageName,
+                 profileStorageValue.ty,
+                 profileStorageValue)
+      buf +=
+        Defn.Var(Attrs.None,
+                 profileStorageSizeName,
+                 Type.Int,
+                 Val.Int(profileStorageSize))
+    }
 
     private def tpe2arrayId(tpe: String): Int = {
       val clazz =
@@ -354,16 +378,25 @@ object Generate {
     val Init     = Val.Global(extern("scalanative_init"), Type.Ptr)
     val InitDecl = Defn.Declare(Attrs.None, Init.name, InitSig)
 
-    val stackBottomName     = extern("__stack_bottom")
-    val moduleArrayName     = extern("__modules")
-    val moduleArraySizeName = extern("__modules_size")
-    val objectArrayIdName   = extern("__object_array_id")
-    val arrayIdsMinName     = extern("__array_ids_min")
-    val arrayIdsMaxName     = extern("__array_ids_max")
+    val ExitSig  = Type.Function(Seq(Type.Int), Type.Unit)
+    val Exit     = Val.Global(extern("scalanative_exit"), Type.Ptr)
+    val ExitDecl = Defn.Declare(Attrs.None, Exit.name, ExitSig)
+
+    val stackBottomName        = extern("__stack_bottom")
+    val moduleArrayName        = extern("__modules")
+    val moduleArraySizeName    = extern("__modules_size")
+    val objectArrayIdName      = extern("__object_array_id")
+    val arrayIdsMinName        = extern("__array_ids_min")
+    val arrayIdsMaxName        = extern("__array_ids_max")
+    val profileStorageName     = extern("__profile_storage")
+    val profileStorageSizeName = extern("__profile_storage_size")
 
     private def extern(id: String): Global =
       Global.Member(Global.Top("__"), Sig.Extern(id))
   }
+
+  val injects =
+    Seq(ExitDecl)
 
   val depends =
     Seq(ObjectArray.name,

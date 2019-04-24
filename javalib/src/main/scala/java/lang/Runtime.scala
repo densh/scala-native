@@ -8,7 +8,7 @@ import scala.scalanative.libc.stdlib
 class Runtime private () {
   import Runtime.ProcessBuilderOps
   def availableProcessors(): Int = 1
-  def exit(status: Int): Unit    = stdlib.exit(status)
+  def exit(status: Int): Unit    = scalanative.runtime.exit(status)
   def gc(): Unit                 = ()
 
   @stub

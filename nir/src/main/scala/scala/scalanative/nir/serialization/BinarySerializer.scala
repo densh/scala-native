@@ -259,10 +259,10 @@ final class BinarySerializer(buffer: ByteBuffer) {
 
   private def putNexts(nexts: Seq[Next]) = putSeq(nexts)(putNext)
   private def putNext(next: Next): Unit = next match {
-    case Next.None         => putInt(T.NoneNext)
-    case Next.Unwind(e, n) => putInt(T.UnwindNext); putParam(e); putNext(n)
-    case Next.Case(v, n)   => putInt(T.CaseNext); putVal(v); putNext(n)
-    case Next.Label(n, vs) => putInt(T.LabelNext); putLocal(n); putVals(vs)
+    case Next.None            => putInt(T.NoneNext)
+    case Next.Unwind(e, n)    => putInt(T.UnwindNext); putParam(e); putNext(n)
+    case Next.Case(v, n)      => putInt(T.CaseNext); putVal(v); putNext(n)
+    case Next.Label(n, vs, _) => putInt(T.LabelNext); putLocal(n); putVals(vs)
   }
 
   private def putOp(op: Op) = op match {
@@ -342,12 +342,12 @@ final class BinarySerializer(buffer: ByteBuffer) {
       putGlobal(name)
       putVal(value)
 
-    case Op.Method(v, sig) =>
+    case Op.Method(v, sig, _) =>
       putInt(T.MethodOp)
       putVal(v)
       putSig(sig)
 
-    case Op.Dynmethod(obj, sig) =>
+    case Op.Dynmethod(obj, sig, _) =>
       putInt(T.DynmethodOp)
       putVal(obj)
       putSig(sig)

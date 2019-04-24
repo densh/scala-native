@@ -16,7 +16,8 @@ class Interflow(val mode: build.Mode)(implicit val linked: linker.Result)
     with Inline
     with PolyInline
     with Intrinsics
-    with Log {
+    with Log
+    with Profile {
   private val originals = {
     val out = mutable.Map.empty[Global, Defn]
     linked.defns.foreach { defn =>

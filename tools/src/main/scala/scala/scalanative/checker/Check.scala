@@ -192,7 +192,7 @@ final class Check(implicit linked: linker.Result) {
       checkFieldOp(ty, obj, name, None)
     case Op.Fieldstore(ty, obj, name, value) =>
       checkFieldOp(ty, obj, name, Some(value))
-    case Op.Method(obj, sig) =>
+    case Op.Method(obj, sig, _) =>
       expect(Rt.Object, obj)
       sig match {
         case sig if sig.isMethod || sig.isCtor || sig.isGenerated =>
@@ -214,7 +214,7 @@ final class Check(implicit linked: linker.Result) {
         case ty =>
           error(s"can't resolve method on ${ty.show}")
       }
-    case Op.Dynmethod(obj, sig) =>
+    case Op.Dynmethod(obj, sig, _) =>
       expect(Rt.Object, obj)
       sig match {
         case sig if sig.isProxy =>
@@ -624,7 +624,7 @@ final class Check(implicit linked: linker.Result) {
       error("can't use unwind next in non-unwind context")
     case Next.Case(_, next) =>
       checkNext(next)
-    case Next.Label(name, args) =>
+    case Next.Label(name, args, _) =>
       labels
         .get(name)
         .fold {

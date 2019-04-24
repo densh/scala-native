@@ -17,10 +17,16 @@ object Next {
   final case class Case(value: Val, next: Next) extends Next {
     def name: Local = next.name
   }
-  final case class Label(name: Local, args: Seq[Val]) extends Next
+  final case class Label(name: Local, args: Seq[Val], weight: Long) extends Next
 
   def apply(name: Local): Label =
-    Label(name, Seq())
+    Label(name, Seq.empty, -1)
+  def apply(name: Local, args: Seq[Val]): Label =
+    Label(name, args, -1)
+  def apply(name: Local, weight: Long): Label =
+    Label(name, Seq.empty, weight)
+  def apply(name: Local, args: Seq[Val], weight: Long): Label =
+    Label(name, args, weight)
   def Case(value: Val, name: Local): Case =
     Case(value, Next(name))
 }

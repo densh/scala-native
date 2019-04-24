@@ -6,9 +6,11 @@ import scalanative.nir._
 import scalanative.linker._
 
 trait PolyInline { self: Interflow =>
+  import PolyInline.Candidate
+
   private def polyTargets(op: Op.Method)(
-      implicit state: State): Seq[(Class, Global)] = {
-    val Op.Method(obj, sig) = op
+      implicit state: State): Seq[Candidate] = {
+    val Op.Method(obj, sig, weights) = op
 
     val objty = obj match {
       case InstanceRef(ty) =>
@@ -19,13 +21,13 @@ trait PolyInline { self: Interflow =>
 
     val res = objty match {
       case ExactClassRef(cls, _) =>
-        cls.resolve(sig).map(g => (cls, g)).toSeq
+        cls.resolve(sig).map(g => Candidate(cls, g)).toSeq
       case ScopeRef(scope) =>
-        val targets = mutable.UnrolledBuffer.empty[(Class, Global)]
+        val targets = mutable.UnrolledBuffer.empty[Candidate]
         scope.implementors.foreach { cls =>
           if (cls.allocated) {
             cls.resolve(sig).foreach { g =>
-              targets += ((cls, g))
+              targets += Candidate(cls, g)
             }
           }
         }
@@ -34,25 +36,24 @@ trait PolyInline { self: Interflow =>
         Seq.empty
     }
 
-    res.sortBy(_._1.name)
+    res.sortBy(_.cls.name)
   }
 
   def shallPolyInline(op: Op.Method, args: Seq[Val])(
       implicit state: State,
-      linked: linker.Result): Boolean = mode match {
-    case build.Mode.Baseline | build.Mode.Debug =>
-      false
+      linked: linker.Result): Boolean = {
+    val targets    = polyTargets(op)
+    val classCount = targets.map(_.cls).size
+    val implCount  = targets.map(_.impl).distinct.size
 
-    case _: build.Mode.Release =>
-      val targets    = polyTargets(op)
-      val classCount = targets.map(_._1).size
-      val implCount  = targets.map(_._2).distinct.size
-
-      if (mode == build.Mode.ReleaseFast) {
+    optLevel() match {
+      case Opt.None =>
+        false
+      case Opt.Conservative =>
         classCount <= 8 && implCount == 2
-      } else {
+      case Opt.Aggressive =>
         classCount <= 16 && implCount >= 2 && implCount <= 4
-      }
+    }
   }
 
   def polyInline(op: Op.Method, args: Seq[Val])(implicit state: State,
@@ -62,13 +63,13 @@ trait PolyInline { self: Interflow =>
     val obj     = materialize(op.obj)
     val margs   = args.map(materialize(_))
     val targets = polyTargets(op)
-    val classes = targets.map(_._1)
-    val impls   = targets.map(_._2).distinct
+    val classes = targets.map(_.cls)
+    val impls   = targets.map(_.impl).distinct
 
     val checkLabels = (1 until targets.size).map(_ => fresh()).toSeq
     val callLabels  = (1 to impls.size).map(_ => fresh()).toSeq
     val callLabelIndex =
-      (0 until targets.size).map(i => impls.indexOf(targets(i)._2))
+      (0 until targets.size).map(i => impls.indexOf(targets(i).impl))
     val mergeLabel = fresh()
 
     val objty =
@@ -114,7 +115,7 @@ trait PolyInline { self: Interflow =>
             }
         }
         val res = emit.call(ty, Val.Global(m, Type.Ptr), cargs, Next.None)
-        emit.jump(Next.Label(mergeLabel, Seq(res)))
+        emit.jump(Next.Label(mergeLabel, Seq(res), -1))
     }
 
     val result = Val.Local(fresh(), Sub.lub(rettys))
@@ -122,4 +123,8 @@ trait PolyInline { self: Interflow =>
 
     result
   }
+}
+
+object PolyInline {
+  final case class Candidate(cls: Class, impl: Global)
 }

@@ -72,6 +72,11 @@ object Mangle {
         mangleSig(sig)
         types.foreach(mangleType)
         str("E")
+      case Sig.Deopt(sig, id) =>
+        str("O")
+        mangleSig(sig)
+        str(id)
+        str("_")
     }
 
     def mangleType(ty: Type): Unit = ty match {

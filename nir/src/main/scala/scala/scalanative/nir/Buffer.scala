@@ -28,7 +28,9 @@ class Buffer(implicit fresh: Fresh) {
   def jump(next: Next): Unit =
     this += Inst.Jump(next)
   def jump(to: Local, args: Seq[Val]): Unit =
-    this += Inst.Jump(Next.Label(to, args))
+    jump(to, args, -1)
+  def jump(to: Local, args: Seq[Val], weight: Long): Unit =
+    this += Inst.Jump(Next.Label(to, args, weight))
   def branch(value: Val, thenp: Next, elsep: Next): Unit =
     this += Inst.If(value, thenp, elsep)
   def switch(value: Val, default: Next, cases: Seq[Next]): Unit =
@@ -74,9 +76,19 @@ class Buffer(implicit fresh: Fresh) {
                  unwind: Next): Val =
     let(Op.Fieldstore(ty, obj, name, value), unwind)
   def method(obj: Val, sig: Sig, unwind: Next): Val =
-    let(Op.Method(obj, sig), unwind)
+    let(Op.Method(obj, sig, Nil), unwind)
+  def method(obj: Val,
+             sig: Sig,
+             unwind: Next,
+             weights: List[(Global, Long)]): Val =
+    let(Op.Method(obj, sig, weights), unwind)
   def dynmethod(obj: Val, sig: Sig, unwind: Next): Val =
-    let(Op.Dynmethod(obj, sig), unwind)
+    let(Op.Dynmethod(obj, sig, Nil), unwind)
+  def dynmethod(obj: Val,
+                sig: Sig,
+                unwind: Next,
+                weights: List[(Global, Long)]): Val =
+    let(Op.Dynmethod(obj, sig, weights), unwind)
   def module(name: Global, unwind: Next): Val =
     let(Op.Module(name), unwind)
   def as(ty: Type, obj: Val, unwind: Next): Val =

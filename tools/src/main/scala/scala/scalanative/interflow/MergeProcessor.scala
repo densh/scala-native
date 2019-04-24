@@ -144,9 +144,17 @@ final class MergeProcessor(insts: Array[Inst],
                   mergeHeap(addr) =
                     VirtualInstance(headKind, headCls, mergeValues)
                 case DelayedInstance(op) =>
-                  assert(
-                    states.forall(s => s.derefDelayed(addr).delayedOp == op))
-                  mergeHeap(addr) = DelayedInstance(op)
+                  if (states.forall(s => s.derefDelayed(addr).delayedOp == op)) {
+                    mergeHeap(addr) = DelayedInstance(op)
+                  } else {
+                    val values = states.map { s =>
+                      s.deref(addr) match {
+                        case EscapedInstance(value) => value
+                        case _                      => Val.Virtual(addr)
+                      }
+                    }
+                    mergeHeap(addr) = EscapedInstance(mergePhi(values))
+                  }
               }
             }
             out
@@ -252,7 +260,9 @@ final class MergeProcessor(insts: Array[Inst],
     }
 
     def visitLabel(from: MergeBlock, next: Next.Label): Unit =
-      visitBlock(from, findMergeBlock(next.name))
+      if (next.weight != 0) {
+        visitBlock(from, findMergeBlock(next.name))
+      }
 
     def visitUnwind(from: MergeBlock, next: Next): Unit = next match {
       case Next.None =>
@@ -432,7 +442,7 @@ final class MergeProcessor(insts: Array[Inst],
       // and update incoming/outgoing edges to include result block.
       retMergeBlocks.foreach { block =>
         val Inst.Ret(v) = block.cf
-        block.cf = Inst.Jump(Next.Label(syntheticLabel.name, Seq(v)))
+        block.cf = Inst.Jump(Next(syntheticLabel.name, Seq(v)))
         block.outgoing(syntheticLabel.name) = resultMergeBlock
         resultMergeBlock.incoming(block.label.name) = ((Seq(v), block.end))
       }

@@ -41,7 +41,7 @@ abstract class NirGenPhase
   protected def unwind(implicit fresh: Fresh): Next =
     curUnwindHandler.get.fold[Next](Next.None) { handler =>
       val exc = Val.Local(fresh(), nir.Rt.Object)
-      Next.Unwind(exc, Next.Label(handler, Seq(exc)))
+      Next.Unwind(exc, Next(handler, Seq(exc)))
     }
 
   override def newPhase(prev: Phase): StdPhase =

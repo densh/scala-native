@@ -40,17 +40,17 @@ trait Eval { self: Interflow =>
           }
         case Inst.Ret(v) =>
           return Inst.Ret(eval(v))
-        case Inst.Jump(Next.Label(target, args)) =>
+        case Inst.Jump(Next.Label(target, args, weight)) =>
           val evalArgs = args.map(eval)
-          val next     = Next.Label(target, evalArgs)
+          val next     = Next.Label(target, evalArgs, weight)
           return Inst.Jump(next)
         case Inst.If(cond,
-                     Next.Label(thenTarget, thenArgs),
-                     Next.Label(elseTarget, elseArgs)) =>
+                     Next.Label(thenTarget, thenArgs, thenWeight),
+                     Next.Label(elseTarget, elseArgs, elseWeight)) =>
           def thenNext =
-            Next.Label(thenTarget, thenArgs.map(eval))
+            Next.Label(thenTarget, thenArgs.map(eval), thenWeight)
           def elseNext =
-            Next.Label(elseTarget, elseArgs.map(eval))
+            Next.Label(elseTarget, elseArgs.map(eval), elseWeight)
           val next = eval(cond) match {
             case Val.True =>
               return Inst.Jump(thenNext)
@@ -60,18 +60,19 @@ trait Eval { self: Interflow =>
               return Inst.If(materialize(cond), thenNext, elseNext)
           }
         case Inst.Switch(scrut,
-                         Next.Label(defaultTarget, defaultArgs),
+                         Next.Label(defaultTarget, defaultArgs, defaultWeight),
                          cases) =>
           def defaultNext =
-            Next.Label(defaultTarget, defaultArgs.map(eval))
+            Next.Label(defaultTarget, defaultArgs.map(eval), defaultWeight)
           eval(scrut) match {
             case value if value.isCanonical =>
               cases
                 .collectFirst {
-                  case Next.Case(caseValue, Next.Label(caseTarget, caseArgs))
+                  case Next.Case(caseValue,
+                                 Next.Label(caseTarget, caseArgs, weight))
                       if caseValue == value =>
                     val evalArgs = caseArgs.map(eval)
-                    val next     = Next.Label(caseTarget, evalArgs)
+                    val next     = Next.Label(caseTarget, evalArgs, weight)
                     return Inst.Jump(next)
                 }
                 .getOrElse {
@@ -227,7 +228,7 @@ trait Eval { self: Interflow =>
             emit(Op
               .Fieldstore(ty, materialize(obj), name, materialize(eval(value))))
         }
-      case Op.Method(rawObj, sig) =>
+      case Op.Method(rawObj, sig, weights) =>
         val obj = eval(rawObj)
         val objty = obj match {
           case InstanceRef(ty) =>
@@ -247,22 +248,22 @@ trait Eval { self: Interflow =>
         }
 
         if (targets.size == 0) {
-          emit(Op.Method(materialize(obj), sig))
+          emit(Op.Method(materialize(obj), sig, weights))
           Val.Zero(Type.Nothing)
         } else if (targets.size == 1) {
           Val.Global(targets.head, Type.Ptr)
         } else {
           targets.foreach(visitRoot)
-          delay(Op.Method(materialize(obj), sig))
+          delay(Op.Method(materialize(obj), sig, weights))
         }
-      case Op.Dynmethod(obj, dynsig) =>
+      case Op.Dynmethod(obj, dynsig, weights) =>
         linked.dynimpls.foreach {
           case impl @ Global.Member(_, sig) if sig.toProxy == dynsig =>
             visitRoot(impl)
           case _ =>
             ()
         }
-        emit(Op.Dynmethod(materialize(eval(obj)), dynsig))
+        emit(Op.Dynmethod(materialize(eval(obj)), dynsig, weights))
       case Op.Module(clsName) =>
         val isPure =
           isPureModule(clsName)

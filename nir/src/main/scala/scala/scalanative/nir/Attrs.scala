@@ -30,6 +30,8 @@ object Attr {
   final case object Extern            extends Attr
   final case class Link(name: String) extends Attr
   final case object Abstract          extends Attr
+
+  final case class Weight(value: Long) extends Attr
 }
 
 final case class Attrs(inline: Inline = MayInline,
@@ -39,7 +41,8 @@ final case class Attrs(inline: Inline = MayInline,
                        isDyn: Boolean = false,
                        isStub: Boolean = false,
                        isAbstract: Boolean = false,
-                       links: Seq[Attr.Link] = Seq()) {
+                       links: Seq[Attr.Link] = Seq(),
+                       weight: Long = -1L) {
   def toSeq: Seq[Attr] = {
     val out = mutable.UnrolledBuffer.empty[Attr]
 
@@ -50,6 +53,7 @@ final case class Attrs(inline: Inline = MayInline,
     if (isDyn) out += Dyn
     if (isStub) out += Stub
     if (isAbstract) out += Abstract
+    if (weight != -1) out += Weight(weight)
     out ++= links
 
     out
@@ -68,6 +72,7 @@ object Attrs {
     var isAbstract = false
     val overrides  = mutable.UnrolledBuffer.empty[Global]
     val links      = mutable.UnrolledBuffer.empty[Attr.Link]
+    var weight     = -1L
 
     attrs.foreach {
       case attr: Inline     => inline = attr
@@ -78,6 +83,7 @@ object Attrs {
       case Stub             => isStub = true
       case link: Attr.Link  => links += link
       case Abstract         => isAbstract = true
+      case Weight(value)    => weight = value
     }
 
     new Attrs(inline,
@@ -87,6 +93,7 @@ object Attrs {
               isDyn,
               isStub,
               isAbstract,
-              links)
+              links,
+              weight)
   }
 }

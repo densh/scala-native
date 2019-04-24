@@ -47,7 +47,7 @@ sealed trait Config {
   /** The logger used by the toolchain. */
   def logger: Logger
 
-  /** The LTO mode to use used during a release build. */
+  /** The LTO mode to use during a release build. */
   def LTO: String
 
   /** Shall linker check that NIR is well-formed after every phase? */
@@ -55,6 +55,9 @@ sealed trait Config {
 
   /** Shall linker dump intermediate NIR after every phase? */
   def dump: Boolean
+
+  /** The PGO mode to use during a release build. */
+  def profile: Path
 
   /** Create a new config with given garbage collector. */
   def withGC(value: GC): Config
@@ -103,6 +106,9 @@ sealed trait Config {
 
   /** Create a new config with given dump value. */
   def withDump(value: Boolean): Config
+
+  /** Create a new config with virtual dispatch profiling enabled or disabled */
+  def withProfile(value: Path): Config
 }
 
 object Config {
@@ -125,7 +131,8 @@ object Config {
       logger = Logger.default,
       LTO = "none",
       check = false,
-      dump = false
+      dump = false,
+      profile = Paths.get("")
     )
 
   private final case class Impl(nativelib: Path,
@@ -143,7 +150,8 @@ object Config {
                                 logger: Logger,
                                 LTO: String,
                                 check: Boolean,
-                                dump: Boolean)
+                                dump: Boolean,
+                                profile: Path)
       extends Config {
     def withNativelib(value: Path): Config =
       copy(nativelib = value)
@@ -192,5 +200,8 @@ object Config {
 
     def withDump(value: Boolean): Config =
       copy(dump = value)
+
+    def withProfile(value: Path): Config =
+      copy(profile = value)
   }
 }
