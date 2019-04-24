@@ -624,7 +624,7 @@ final class Check(implicit linked: linker.Result) {
       error("can't use unwind next in non-unwind context")
     case Next.Case(_, next) =>
       checkNext(next)
-    case Next.Label(name, args) =>
+    case Next.Label(name, args, _) =>
       labels
         .get(name)
         .fold {

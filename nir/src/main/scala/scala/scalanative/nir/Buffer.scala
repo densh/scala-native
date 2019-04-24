@@ -28,7 +28,9 @@ class Buffer(implicit fresh: Fresh) {
   def jump(next: Next): Unit =
     this += Inst.Jump(next)
   def jump(to: Local, args: Seq[Val]): Unit =
-    this += Inst.Jump(Next.Label(to, args))
+    jump(to, args, -1)
+  def jump(to: Local, args: Seq[Val], weight: Long): Unit =
+    this += Inst.Jump(Next.Label(to, args, weight))
   def branch(value: Val, thenp: Next, elsep: Next): Unit =
     this += Inst.If(value, thenp, elsep)
   def switch(value: Val, default: Next, cases: Seq[Next]): Unit =

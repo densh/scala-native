@@ -432,7 +432,7 @@ final class MergeProcessor(insts: Array[Inst],
       // and update incoming/outgoing edges to include result block.
       retMergeBlocks.foreach { block =>
         val Inst.Ret(v) = block.cf
-        block.cf = Inst.Jump(Next.Label(syntheticLabel.name, Seq(v)))
+        block.cf = Inst.Jump(Next(syntheticLabel.name, Seq(v)))
         block.outgoing(syntheticLabel.name) = resultMergeBlock
         resultMergeBlock.incoming(block.label.name) = ((Seq(v), block.end))
       }

@@ -39,20 +39,19 @@ trait PolyInline { self: Interflow =>
 
   def shallPolyInline(op: Op.Method, args: Seq[Val])(
       implicit state: State,
-      linked: linker.Result): Boolean = mode match {
-    case build.Mode.Baseline | build.Mode.Debug =>
-      false
+      linked: linker.Result): Boolean = {
+    val targets    = polyTargets(op)
+    val classCount = targets.map(_._1).size
+    val implCount  = targets.map(_._2).distinct.size
 
-    case _: build.Mode.Release =>
-      val targets    = polyTargets(op)
-      val classCount = targets.map(_._1).size
-      val implCount  = targets.map(_._2).distinct.size
-
-      if (mode == build.Mode.ReleaseFast) {
+    optLevel() match {
+      case Opt.None =>
+        false
+      case Opt.Conservative =>
         classCount <= 8 && implCount == 2
-      } else {
+      case Opt.Aggressive =>
         classCount <= 16 && implCount >= 2 && implCount <= 4
-      }
+    }
   }
 
   def polyInline(op: Op.Method, args: Seq[Val])(implicit state: State,
@@ -114,7 +113,7 @@ trait PolyInline { self: Interflow =>
             }
         }
         val res = emit.call(ty, Val.Global(m, Type.Ptr), cargs, Next.None)
-        emit.jump(Next.Label(mergeLabel, Seq(res)))
+        emit.jump(Next.Label(mergeLabel, Seq(res), -1))
     }
 
     val result = Val.Local(fresh(), Sub.lub(rettys))

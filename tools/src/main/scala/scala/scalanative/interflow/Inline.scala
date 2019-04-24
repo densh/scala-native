@@ -9,12 +9,12 @@ trait Inline { self: Interflow =>
   def shallInline(name: Global, args: Seq[Val])(
       implicit state: State,
       linked: linker.Result): Boolean = {
-    val maybeDefn = mode match {
-      case build.Mode.Baseline | build.Mode.Debug =>
+    val maybeDefn =
+      if (optLevel() != Opt.Aggressive) {
         maybeOriginal(name)
-      case _: build.Mode.Release =>
+      } else {
         maybeDone(name)
-    }
+      }
 
     maybeDefn
       .fold[Boolean] {
@@ -55,12 +55,12 @@ trait Inline { self: Interflow =>
           case _                        => false
         }
 
-        val shall = mode match {
-          case build.Mode.Baseline | build.Mode.Debug =>
+        val shall = optLevel() match {
+          case Opt.None =>
             isCtor || alwaysInline
-          case build.Mode.ReleaseFast =>
+          case Opt.Conservative =>
             isCtor || alwaysInline || hintInline || isSmall
-          case build.Mode.ReleaseFull =>
+          case Opt.Aggressive =>
             isCtor || alwaysInline || hintInline || isSmall || hasVirtualArgs
         }
         val shallNot =
@@ -123,12 +123,12 @@ trait Inline { self: Interflow =>
   def inline(name: Global, args: Seq[Val])(implicit state: State,
                                            linked: linker.Result): Val =
     in(s"inlining ${name.show}") {
-      val defn = mode match {
-        case build.Mode.Baseline | build.Mode.Debug =>
+      val defn =
+        if (optLevel() != Opt.Aggressive) {
           getOriginal(name)
-        case _: build.Mode.Release =>
+        } else {
           getDone(name)
-      }
+        }
 
       val inlineArgs  = adapt(args, defn.ty)
       val inlineInsts = defn.insts.toArray

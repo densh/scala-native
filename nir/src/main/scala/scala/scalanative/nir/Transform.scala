@@ -137,9 +137,9 @@ trait Transform {
   }
 
   def onNext(next: Next): Next = next match {
-    case Next.None            => Next.None
-    case Next.Case(v, n)      => Next.Case(onVal(v), onNext(n))
-    case Next.Unwind(n, next) => Next.Unwind(n, onNext(next))
-    case Next.Label(n, args)  => Next.Label(n, args.map(onVal))
+    case Next.None                   => Next.None
+    case Next.Case(v, n)             => Next.Case(onVal(v), onNext(n))
+    case Next.Unwind(n, next)        => Next.Unwind(n, onNext(next))
+    case Next.Label(n, args, weight) => Next.Label(n, args.map(onVal), weight)
   }
 }

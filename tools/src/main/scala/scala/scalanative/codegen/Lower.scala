@@ -18,10 +18,12 @@ import scalanative.interflow.UseDef.eliminateDeadCode
 
 object Lower {
 
-  def apply(defns: Seq[Defn])(implicit meta: Metadata): Seq[Defn] =
-    (new Impl).onDefns(defns)
+  def apply(config: build.Config, defns: Seq[Defn])(
+      implicit meta: Metadata): Seq[Defn] =
+    (new Impl(config)).onDefns(defns)
 
-  private final class Impl(implicit meta: Metadata) extends Transform {
+  private final class Impl(config: build.Config)(implicit meta: Metadata)
+      extends Transform {
     import meta._
 
     implicit val linked = meta.linked
@@ -42,6 +44,8 @@ object Lower {
 
     private val fresh         = new util.ScopedVar[Fresh]
     private val unwindHandler = new util.ScopedVar[Option[Local]]
+    private val methodName    = new util.ScopedVar[Global]
+    private val methodProfile = new util.ScopedVar[Option[Local]]
 
     private val unreachableSlowPath    = mutable.Map.empty[Option[Local], Local]
     private val nullPointerSlowPath    = mutable.Map.empty[Option[Local], Local]
@@ -49,11 +53,12 @@ object Lower {
     private val classCastSlowPath      = mutable.Map.empty[Option[Local], Local]
     private val outOfBoundsSlowPath    = mutable.Map.empty[Option[Local], Local]
     private val noSuchMethodSlowPath   = mutable.Map.empty[Option[Local], Local]
+    private val callSiteIds            = mutable.Map.empty[Local, Int]
 
     private def unwind: Next =
       unwindHandler.get.fold[Next](Next.None) { handler =>
         val exc = Val.Local(fresh(), Rt.Object)
-        Next.Unwind(exc, Next.Label(handler, Seq(exc)))
+        Next.Unwind(exc, Next(handler, Seq(exc)))
       }
 
     override def onDefns(defns: Seq[Defn]): Seq[Defn] = {
@@ -77,13 +82,49 @@ object Lower {
     override def onDefn(defn: Defn): Defn = defn match {
       case defn: Defn.Define =>
         val Type.Function(_, ty) = defn.ty
+        val defnFresh            = Fresh(defn.insts)
+        val defnProfile =
+          if (config.mode == build.Mode.PgoInstrument
+              && meta.methodIds.contains(defn.name)) {
+            Some(defnFresh())
+          } else {
+            None
+          }
+
         ScopedVar.scoped(
-          fresh := Fresh(defn.insts)
+          fresh := defnFresh,
+          methodName := defn.name,
+          methodProfile := defnProfile
         ) {
           super.onDefn(defn)
         }
       case _ =>
         super.onDefn(defn)
+    }
+
+    private def countEdges(insts: Seq[Inst]): Int = {
+      var count = 0
+      insts.foreach {
+        case _: Inst.If =>
+          count += 2
+        case inst: Inst.Switch =>
+          count += inst.cases.size + 1
+        case _ =>
+          ()
+      }
+      count
+    }
+
+    private def countCallSites(insts: Seq[Inst]): Int = {
+      var count = 0
+      insts.map {
+        case Inst.Let(n, _: Op.Method | _: Op.Dynmethod, _) =>
+          callSiteIds(n) = count
+          count += 1
+        case _ =>
+          ()
+      }
+      count
     }
 
     override def onInsts(insts: Seq[Inst]): Seq[Inst] = {
@@ -92,6 +133,18 @@ object Lower {
       import buf._
 
       buf += insts.head
+
+      methodProfile.foreach { profile =>
+        val methodId      = Val.Long(meta.methodIds(methodName))
+        val edgeCount     = Val.Long(countEdges(insts))
+        val callSiteCount = Val.Long(countCallSites(insts))
+
+        buf += Inst.Let(profile,
+                        Op.Call(recordCallSig,
+                                recordCall,
+                                Seq(methodId, edgeCount, callSiteCount)),
+                        Next.None)
+      }
 
       def newUnwindHandler(next: Next): Option[Local] = next match {
         case Next.None =>
@@ -110,6 +163,14 @@ object Lower {
           buf.let(n, Op.Stackalloc(ty, Val.Int(1)), unwind)
         case _ =>
           ()
+      }
+
+      var edgeId = 0
+
+      def nextEdgeId(): Val = {
+        val res = Val.Long(edgeId)
+        edgeId += 1
+        res
       }
 
       insts.tail.foreach {
@@ -134,6 +195,57 @@ object Lower {
             genUnreachable(buf)
           }
 
+        case Inst.If(value, thenNext, elseNext) if methodProfile.nonEmpty =>
+          val thenProfName = fresh()
+          val elseProfName = fresh()
+          val profile      = Val.Local(methodProfile.get.get, Type.Ptr)
+
+          buf += Inst.If(value, Next(thenProfName), Next(elseProfName))
+
+          buf.label(thenProfName, Seq.empty)
+          buf.call(recordEdgeSig,
+                   recordEdge,
+                   Seq(profile, nextEdgeId()),
+                   Next.None)
+          buf.jump(thenNext)
+
+          buf.label(elseProfName, Seq.empty)
+          buf.call(recordEdgeSig,
+                   recordEdge,
+                   Seq(profile, nextEdgeId()),
+                   Next.None)
+          buf.jump(elseNext)
+
+        case Inst.Switch(value, defaultNext, caseNexts)
+            if methodProfile.nonEmpty =>
+          val defaultProfName = fresh()
+          val caseProfNames   = caseNexts.map(_ => fresh())
+          val profile         = Val.Local(methodProfile.get.get, Type.Ptr)
+
+          val profCases = caseProfNames.zip(caseNexts).map {
+            case (caseProfName, Next.Case(v, _)) =>
+              Next.Case(v, caseProfName)
+          }
+
+          buf += Inst.Switch(value, Next(defaultProfName), profCases)
+
+          buf.label(defaultProfName, Seq.empty)
+          buf.call(recordEdgeSig,
+                   recordEdge,
+                   Seq(profile, nextEdgeId()),
+                   Next.None)
+          buf.jump(defaultNext)
+
+          caseNexts.zip(caseProfNames).foreach {
+            case (Next.Case(_, caseNext), caseProfName) =>
+              buf.label(caseProfName, Seq.empty)
+              buf.call(recordEdgeSig,
+                       recordEdge,
+                       Seq(profile, nextEdgeId()),
+                       Next.None)
+              buf.jump(caseNext)
+          }
+
         case inst =>
           buf += inst
       }
@@ -151,6 +263,7 @@ object Lower {
       unreachableSlowPath.clear()
       outOfBoundsSlowPath.clear()
       noSuchMethodSlowPath.clear()
+      callSiteIds.clear()
 
       buf ++= handlers
 
@@ -350,7 +463,7 @@ object Lower {
           nullPointerSlowPath.getOrElseUpdate(unwindHandler, fresh())
 
         val isNull = comp(Comp.Ine, obj.ty, obj, Val.Null, unwind)
-        branch(isNull, Next(notNullL), Next(isNullL))
+        branch(isNull, Next(notNullL, 1), Next(isNullL, 0))
         label(notNullL)
     }
 
@@ -364,7 +477,7 @@ object Lower {
       val gt0      = comp(Comp.Sge, Type.Int, idx, Val.Int(0), unwind)
       val ltLen    = comp(Comp.Slt, Type.Int, idx, len, unwind)
       val inBounds = bin(Bin.And, Type.Bool, gt0, ltLen, unwind)
-      branch(inBounds, Next(inBoundsL), Next.Label(outOfBoundsL, Seq(idx)))
+      branch(inBounds, Next(inBoundsL, 1), Next(outOfBoundsL, Seq(idx), 0))
       label(inBoundsL)
     }
 
@@ -453,7 +566,18 @@ object Lower {
         }
       }
 
+      def genRecordTypeProfile(): Unit = {
+        if (methodProfile.nonEmpty) {
+          val profile    = Val.Local(methodProfile.get.get, Type.Ptr)
+          val callSiteId = Val.Long(callSiteIds(n))
+
+          let(Op.Call(recordTypeSig, recordType, Seq(profile, callSiteId, obj)),
+              Next.None)
+        }
+      }
+
       genGuardNotNull(buf, obj)
+      genRecordTypeProfile()
       genMethodLookup()
     }
 
@@ -469,8 +593,8 @@ object Lower {
 
         val condNull = comp(Comp.Ine, Type.Ptr, value, Val.Null, unwind)
         branch(condNull,
-               Next(notNullL),
-               Next.Label(noSuchMethodL, Seq(Val.String(sig.mangle))))
+               Next(notNullL, 1),
+               Next(noSuchMethodL, Seq(Val.String(sig.mangle)), 0))
         label(notNullL)
       }
 
@@ -498,7 +622,18 @@ object Lower {
         let(n, Op.Load(Type.Ptr, methptrptr), unwind)
       }
 
+      def genRecordTypeProfile(): Unit = {
+        if (methodProfile.nonEmpty) {
+          val profile    = Val.Local(methodProfile.get.get, Type.Ptr)
+          val callSiteId = Val.Long(callSiteIds(n))
+
+          let(Op.Call(recordTypeSig, recordType, Seq(profile, callSiteId, obj)),
+              Next.None)
+        }
+      }
+
       genGuardNotNull(buf, obj)
+      genRecordTypeProfile()
       genReflectiveLookup()
     }
 
@@ -514,7 +649,7 @@ object Lower {
 
           // check if obj is null
           val isNull = let(Op.Comp(Comp.Ieq, Type.Ptr, obj, Val.Null), unwind)
-          branch(isNull, Next(isNullL), Next(checkL))
+          branch(isNull, Next(isNullL, 0), Next(checkL, 1))
 
           // in case it's null, result is always false
           label(isNullL)
@@ -579,12 +714,12 @@ object Lower {
           val failL                       = classCastSlowPath.getOrElseUpdate(unwindHandler, fresh())
 
           val isNull = comp(Comp.Ieq, v.ty, v, Val.Null, unwind)
-          branch(isNull, Next(castL), Next(checkIfIsInstanceOfL))
+          branch(isNull, Next(castL, 0), Next(checkIfIsInstanceOfL, 1))
 
           label(checkIfIsInstanceOfL)
           val isInstanceOf = genIsOp(buf, ty, v)
           val toTy         = Val.Global(rtti(linked.infos(ty.className)).name, Type.Ptr)
-          branch(isInstanceOf, Next(castL), Next.Label(failL, Seq(v, toTy)))
+          branch(isInstanceOf, Next(castL, 1), Next(failL, Seq(v, toTy), 0))
 
           label(castL)
           let(n, Op.Conv(Conv.Bitcast, ty, v), unwind)
@@ -667,21 +802,23 @@ object Lower {
           largerThanMaxL, inBoundsL, resultL = fresh()
 
           val isNaN = comp(Comp.Fne, v.ty, v, v, unwind)
-          branch(isNaN, Next(isNaNL), Next(checkLessThanMinL))
+          branch(isNaN, Next(isNaNL, 0), Next(checkLessThanMinL, 1))
 
           label(isNaNL)
           jump(resultL, Seq(Val.Zero(op.resty)))
 
           label(checkLessThanMinL)
           val isLessThanMin = comp(Comp.Fle, v.ty, v, fmin, unwind)
-          branch(isLessThanMin, Next(lessThanMinL), Next(checkLargerThanMaxL))
+          branch(isLessThanMin,
+                 Next(lessThanMinL, Seq.empty, 0),
+                 Next(checkLargerThanMaxL, 1))
 
           label(lessThanMinL)
           jump(resultL, Seq(imin))
 
           label(checkLargerThanMaxL)
           val isLargerThanMax = comp(Comp.Fge, v.ty, v, fmax, unwind)
-          branch(isLargerThanMax, Next(largerThanMaxL), Next(inBoundsL))
+          branch(isLargerThanMax, Next(largerThanMaxL, 0), Next(inBoundsL, 1))
 
           label(largerThanMaxL)
           jump(resultL, Seq(imax))
@@ -714,7 +851,7 @@ object Lower {
 
         val isZero =
           comp(Comp.Ine, ty, divisor, Val.Zero(ty), unwind)
-        branch(isZero, Next(succL), Next(failL))
+        branch(isZero, Next(succL, 1), Next(failL, 0))
 
         label(succL)
         if (bin == Bin.Srem || bin == Bin.Sdiv) {
@@ -754,12 +891,12 @@ object Lower {
 
         val divisorIsMinus1 =
           let(Op.Comp(Comp.Ieq, ty, divisor, minus1), unwind)
-        branch(divisorIsMinus1, Next(mayOverflowL), Next(noOverflowL))
+        branch(divisorIsMinus1, Next(mayOverflowL, 0), Next(noOverflowL, 1))
 
         label(mayOverflowL)
         val dividendIsMinValue =
           let(Op.Comp(Comp.Ieq, ty, dividend, minValue), unwind)
-        branch(dividendIsMinValue, Next(didOverflowL), Next(noOverflowL))
+        branch(dividendIsMinValue, Next(didOverflowL, 0), Next(noOverflowL, 1))
 
         label(didOverflowL)
         val overflowResult = bin match {
@@ -964,15 +1101,15 @@ object Lower {
   val allocSig = Type.Function(Seq(Type.Ptr, Type.Long), Type.Ptr)
 
   val allocSmallName = extern("scalanative_alloc_small")
-  val alloc          = Val.Global(allocSmallName, allocSig)
+  val alloc          = Val.Global(allocSmallName, Type.Ptr)
 
   val largeAllocName = extern("scalanative_alloc_large")
-  val largeAlloc     = Val.Global(largeAllocName, allocSig)
+  val largeAlloc     = Val.Global(largeAllocName, Type.Ptr)
 
   val dyndispatchName = extern("scalanative_dyndispatch")
   val dyndispatchSig =
     Type.Function(Seq(Type.Ptr, Type.Int), Type.Ptr)
-  val dyndispatch = Val.Global(dyndispatchName, dyndispatchSig)
+  val dyndispatch = Val.Global(dyndispatchName, Type.Ptr)
 
   val excptnGlobal = Global.Top("java.lang.NoSuchMethodException")
   val excptnInitGlobal =
@@ -1151,12 +1288,30 @@ object Lower {
   val RuntimeNull    = Type.Ref(Global.Top("scala.runtime.Null$"))
   val RuntimeNothing = Type.Ref(Global.Top("scala.runtime.Nothing$"))
 
+  val recordCallName = extern("scalanative_recordcall")
+  val recordCall     = Val.Global(recordCallName, Type.Ptr)
+  val recordCallSig =
+    Type.Function(Seq(Type.Long, Type.Long, Type.Long), Type.Ptr)
+
+  val recordEdgeName = extern("scalanative_recordedge")
+  val recordEdge     = Val.Global(recordEdgeName, Type.Ptr)
+  val recordEdgeSig  = Type.Function(Seq(Type.Ptr, Type.Long), Type.Unit)
+
+  val recordTypeName = extern("scalanative_recordtype")
+  val recordType     = Val.Global(recordTypeName, Type.Ptr)
+  val recordTypeSig =
+    Type.Function(Seq(Type.Ptr, Type.Long, Type.Ptr), Type.Unit)
+
   val injects: Seq[Defn] = {
     val buf = mutable.UnrolledBuffer.empty[Defn]
     buf += Defn.Declare(Attrs.None, allocSmallName, allocSig)
     buf += Defn.Declare(Attrs.None, largeAllocName, allocSig)
     buf += Defn.Declare(Attrs.None, dyndispatchName, dyndispatchSig)
     buf += Defn.Declare(Attrs.None, throwName, throwSig)
+    buf ++= Generate.injects
+    buf += Defn.Declare(Attrs.None, recordCallName, recordCallSig)
+    buf += Defn.Declare(Attrs.None, recordEdgeName, recordEdgeSig)
+    buf += Defn.Declare(Attrs.None, recordTypeName, recordTypeSig)
     buf
   }
 

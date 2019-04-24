@@ -33,6 +33,7 @@ final class Sig(val mangle: String) {
   final def isExtern: Boolean    = mangle(0) == 'C'
   final def isGenerated: Boolean = mangle(0) == 'G'
   final def isDuplicate: Boolean = mangle(0) == 'K'
+  final def isDeopt: Boolean     = mangle(0) == 'O'
 }
 object Sig {
   sealed abstract class Unmangled {
@@ -45,6 +46,7 @@ object Sig {
   final case class Extern(id: String)                   extends Unmangled
   final case class Generated(id: String)                extends Unmangled
   final case class Duplicate(of: Sig, types: Seq[Type]) extends Unmangled
+  final case class Deopt(of: Sig, id: Long)             extends Unmangled
 
   implicit def unmangledToMangled(sig: Sig.Unmangled): Sig = sig.mangled
 }

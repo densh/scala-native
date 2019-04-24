@@ -25,7 +25,7 @@ final class MergeBlock(val label: Inst.Label, val name: Local) {
               value
           }
       }
-      Next.Label(nextBlock.name, mergeValues)
+      Next(nextBlock.name, mergeValues, next.weight)
     }
     def mergeUnwind(next: Next): Next = next match {
       case Next.None =>

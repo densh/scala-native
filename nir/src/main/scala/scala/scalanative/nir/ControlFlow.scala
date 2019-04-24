@@ -121,6 +121,8 @@ object ControlFlow {
             if (next ne Next.None) {
               edge(node, block(next.name), next)
             }
+          case _: Inst.Deopt =>
+            ()
           case inst =>
             unsupported(inst)
         }

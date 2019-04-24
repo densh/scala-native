@@ -108,11 +108,13 @@ object Show {
         str("\")")
       case Attr.Abstract =>
         str("abstract")
+      case Attr.Weight(v) =>
+        str("weight(")
+        str(v)
+        str(")")
     }
 
     def next_(next: Next): Unit = next match {
-      case Next.Label(name, Seq()) =>
-        local_(name)
       case Next.Unwind(exc, next) =>
         str("unwind ")
         val_(exc)
@@ -123,11 +125,17 @@ object Show {
         val_(v)
         str(" => ")
         next_(next)
-      case Next.Label(name, args) =>
+      case Next.Label(name, args, weight) =>
         local_(name)
-        str("(")
-        rep(args, sep = ", ")(val_)
-        str(")")
+        if (args.nonEmpty) {
+          str("(")
+          rep(args, sep = ", ")(val_)
+          str(")")
+        }
+        if (weight != -1) {
+          str(" weight ")
+          str(weight)
+        }
     }
 
     def inst_(inst: Inst): Unit = inst match {

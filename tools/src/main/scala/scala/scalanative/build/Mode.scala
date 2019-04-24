@@ -26,6 +26,11 @@ object Mode {
   private[scalanative] final case object ReleaseFull
       extends Mode("release-full")
       with Release
+  private[scalanative] final case object PgoInstrument
+      extends Mode("pgo-instrument")
+  private[scalanative] final case object PgoRelease
+      extends Mode("pgo-release")
+      with Release
 
   /** Debug compilation mode. */
   def baseline: Mode = Baseline
@@ -54,6 +59,10 @@ object Mode {
       ReleaseFast
     case "release-full" =>
       ReleaseFull
+    case "pgo-instrument" =>
+      PgoInstrument
+    case "pgo-release" =>
+      PgoRelease
     case value =>
       throw new IllegalArgumentException(s"Unknown mode: '$value'")
   }

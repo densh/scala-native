@@ -120,6 +120,9 @@ private[scalanative] object LLVM {
         case Mode.Baseline | Mode.Debug => "-O0"
         case Mode.ReleaseFast           => "-O2"
         case Mode.ReleaseFull           => "-O3"
+
+        case Mode.PgoInstrument => "-O2"
+        case Mode.PgoRelease    => "-O2"
       }
     val opts = optimizationOpt +: config.compileOptions
 
@@ -185,8 +188,8 @@ private[scalanative] object LLVM {
   private def lto(config: Config): Option[String] =
     (config.mode, config.LTO) match {
       case (Mode.Baseline | Mode.Debug, _) => None
-      case (_: Mode.Release, "none")       => None
-      case (_: Mode.Release, name)         => Some(name)
+      case (_, "none")                     => None
+      case (_, name)                       => Some(name)
     }
 
   private def flto(config: Config): Seq[String] =

@@ -37,7 +37,7 @@ trait NoOpt { self: Interflow =>
   }
 
   def noOptNext(next: Next): Unit = next match {
-    case Next.Label(_, args) =>
+    case Next.Label(_, args, _) =>
       args.foreach(noOptVal)
     case _ =>
       ()

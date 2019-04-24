@@ -21,27 +21,25 @@ trait Visit { self: Interflow =>
   }
 
   def shallDuplicate(name: Global, argtys: Seq[Type]): Boolean =
-    mode match {
-      case build.Mode.Baseline | build.Mode.Debug | build.Mode.ReleaseFast =>
+    if (optLevel() != Opt.Aggressive) {
+      false
+    } else {
+      if (!shallVisit(name)) {
         false
+      } else {
+        val defn =
+          getOriginal(name)
+        val nonExtern =
+          !defn.attrs.isExtern
+        val canOptimize =
+          defn.attrs.opt != Attr.NoOpt
+        val canSpecialize =
+          defn.attrs.specialize != Attr.NoSpecialize
+        val differentArgumentTypes =
+          argumentTypes(name) != argtys
 
-      case build.Mode.ReleaseFull =>
-        if (!shallVisit(name)) {
-          false
-        } else {
-          val defn =
-            getOriginal(name)
-          val nonExtern =
-            !defn.attrs.isExtern
-          val canOptimize =
-            defn.attrs.opt != Attr.NoOpt
-          val canSpecialize =
-            defn.attrs.specialize != Attr.NoSpecialize
-          val differentArgumentTypes =
-            argumentTypes(name) != argtys
-
-          canOptimize && canSpecialize && nonExtern && differentArgumentTypes
-        }
+        canOptimize && canSpecialize && nonExtern && differentArgumentTypes
+      }
     }
 
   def visitEntries(): Unit =
@@ -54,10 +52,12 @@ trait Visit { self: Interflow =>
             visitEntry(defn.name)
           }
         }
-      case build.Mode.Debug =>
-        linked.defns.foreach(defn => visitEntry(defn.name))
-      case _: build.Mode.Release =>
-        linked.entries.foreach(visitEntry)
+      case _ =>
+        if (optLevel() != Opt.Aggressive) {
+          linked.defns.foreach(defn => visitEntry(defn.name))
+        } else {
+          linked.entries.foreach(visitEntry)
+        }
     }
 
   def visitEntry(name: Global): Unit = {
@@ -83,19 +83,18 @@ trait Visit { self: Interflow =>
     }
 
   def visitDuplicate(name: Global, argtys: Seq[Type]): Option[Defn.Define] = {
-    mode match {
-      case build.Mode.Baseline | build.Mode.Debug =>
-        None
-      case _: build.Mode.Release =>
-        val dup = duplicateName(name, argtys)
-        if (shallVisit(dup)) {
-          if (!isDone(dup)) {
-            visitMethod(dup)
-          }
-          maybeDone(dup)
-        } else {
-          None
+    if (optLevel() != Opt.Aggressive) {
+      None
+    } else {
+      val dup = duplicateName(name, argtys)
+      if (shallVisit(dup)) {
+        if (!isDone(dup)) {
+          visitMethod(dup)
         }
+        maybeDone(dup)
+      } else {
+        None
+      }
     }
   }
 
@@ -114,11 +113,10 @@ trait Visit { self: Interflow =>
       }
     }
 
-    mode match {
-      case build.Mode.Baseline | build.Mode.Debug =>
-        allTodo().par.foreach(visit)
-      case _: build.Mode.Release =>
-        loop()
+    if (optLevel() != Opt.Aggressive) {
+      allTodo().par.foreach(visit)
+    } else {
+      loop()
     }
   }
 

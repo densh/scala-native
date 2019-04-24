@@ -40,17 +40,17 @@ trait Eval { self: Interflow =>
           }
         case Inst.Ret(v) =>
           return Inst.Ret(eval(v))
-        case Inst.Jump(Next.Label(target, args)) =>
+        case Inst.Jump(Next.Label(target, args, weight)) =>
           val evalArgs = args.map(eval)
-          val next     = Next.Label(target, evalArgs)
+          val next     = Next.Label(target, evalArgs, weight)
           return Inst.Jump(next)
         case Inst.If(cond,
-                     Next.Label(thenTarget, thenArgs),
-                     Next.Label(elseTarget, elseArgs)) =>
+                     Next.Label(thenTarget, thenArgs, thenWeight),
+                     Next.Label(elseTarget, elseArgs, elseWeight)) =>
           def thenNext =
-            Next.Label(thenTarget, thenArgs.map(eval))
+            Next.Label(thenTarget, thenArgs.map(eval), thenWeight)
           def elseNext =
-            Next.Label(elseTarget, elseArgs.map(eval))
+            Next.Label(elseTarget, elseArgs.map(eval), elseWeight)
           val next = eval(cond) match {
             case Val.True =>
               return Inst.Jump(thenNext)
@@ -60,18 +60,19 @@ trait Eval { self: Interflow =>
               return Inst.If(materialize(cond), thenNext, elseNext)
           }
         case Inst.Switch(scrut,
-                         Next.Label(defaultTarget, defaultArgs),
+                         Next.Label(defaultTarget, defaultArgs, defaultWeight),
                          cases) =>
           def defaultNext =
-            Next.Label(defaultTarget, defaultArgs.map(eval))
+            Next.Label(defaultTarget, defaultArgs.map(eval), defaultWeight)
           eval(scrut) match {
             case value if value.isCanonical =>
               cases
                 .collectFirst {
-                  case Next.Case(caseValue, Next.Label(caseTarget, caseArgs))
+                  case Next.Case(caseValue,
+                                 Next.Label(caseTarget, caseArgs, weight))
                       if caseValue == value =>
                     val evalArgs = caseArgs.map(eval)
-                    val next     = Next.Label(caseTarget, evalArgs)
+                    val next     = Next.Label(caseTarget, evalArgs, weight)
                     return Inst.Jump(next)
                 }
                 .getOrElse {

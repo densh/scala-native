@@ -23,4 +23,6 @@ private[runtime] object Shutdown {
 private[runtime] object NativeShutdown {
   @name("scalanative_native_shutdown_init")
   def init(func: CFuncPtr0[Unit]): Unit = extern
+  @name("scalanative_exit")
+  def exit(status: Int): Unit = extern
 }
