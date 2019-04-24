@@ -23,7 +23,7 @@ object Fresh {
         max = Math.max(max, exc.id)
       case Inst.Let(local, _, _) =>
         max = Math.max(max, local.id)
-      case Inst.Label(local, params) =>
+      case Inst.Label(local, params, _) =>
         max = Math.max(max, local.id)
         params.foreach { param =>
           max = Math.max(max, param.name.id)

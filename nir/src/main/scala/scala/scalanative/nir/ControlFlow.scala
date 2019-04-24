@@ -75,7 +75,7 @@ object ControlFlow {
       def block(local: Local): Block =
         blocks.get(local).getOrElse {
           val k                     = locations(local)
-          val Inst.Label(n, params) = insts(k)
+          val Inst.Label(n, params, _) = insts(k)
 
           // copy all instruction up until and including
           // first control-flow instruction after the label
@@ -139,7 +139,7 @@ object ControlFlow {
       }
 
       val all = insts.collect {
-        case Inst.Label(name, _) if visited.contains(name) =>
+        case Inst.Label(name, _, _) if visited.contains(name) =>
           blocks(name)
       }
 

@@ -19,7 +19,7 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
     val tys  = mutable.Map.empty[Local, Type]
     val uses = mutable.Map.empty[Local, mutable.Set[Local]]
 
-    cfg.foreach { b =>
+    cfg.all.foreach { b =>
       val blockUses = mutable.Set.empty[Local]
       val blockDefs = mutable.Set.empty[Local]
       b.params.foreach { p =>

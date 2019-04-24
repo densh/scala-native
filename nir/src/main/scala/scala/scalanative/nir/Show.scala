@@ -118,7 +118,7 @@ object Show {
     }
 
     def inst_(inst: Inst): Unit = inst match {
-      case Inst.Label(name, params) =>
+      case Inst.Label(name, params, warmth) =>
         local_(name)
         if (params.isEmpty) {
           ()
@@ -130,6 +130,11 @@ object Show {
               str(" : ")
               type_(ty)
           }
+          str(")")
+        }
+        if (warmth != -1) {
+          str(" warmth(")
+          str(warmth)
           str(")")
         }
         str(":")

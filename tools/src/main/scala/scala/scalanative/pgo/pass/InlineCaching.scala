@@ -28,36 +28,16 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
         (key, pvalues)
     }
 
-  type TypeID = Int
   type Count  = Int
 
-  private def resolve(meth: Global, typeId: TypeID): Option[Val] =
-    top.classWithId(typeId).map { scope =>
-      val cls    = scope.asInstanceOf[Class]
-      val method = top.nodes(meth).asInstanceOf[Method]
-
-      if (method.inClass) {
-        val index = cls.vtable.index(method)
-        assert(
-          index >= 0,
-          s"method ${method.name.show} can not be found in vtable of ${cls.name.show} = ${cls.vtable}")
-        cls.vtable.at(index)
-      } else if (method.inTrait) {
-        val sig = method.name.id
-        if (top.tables.traitInlineSigs.contains(sig)) {
-          top.tables.traitInlineSigs(sig)
-        } else {
-          val sigid  = top.tables.traitDispatchSigs(sig)
-          val offset = top.tables.dispatchOffset(sigid)
-          top.tables.dispatchArray(offset + typeId)
-        }
-      } else {
-        util.unreachable
-      }
-    }
+  private def resolve(typeName: Global, sig: Sig): Option[Val] =
+    linked.infos.get(typeName).collect {
+      case info: linker.Class =>
+        info.resolve(sig).map(Val.Global(_, Type.Ptr))
+    }.flatten
 
   private def selectCandidates(
-      info: Seq[(TypeID, Double, Int)]): Seq[(TypeID, Double, Int)] =
+      info: Seq[(Global, Double, Int)]): Seq[(Global, Double, Int)] =
     INLINE_CACHING_MODE match {
       case NoInlineCaching =>
         Seq.empty
@@ -99,45 +79,44 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
       inst: Let,
       callop: Op.Call,
       meth: Op.Method,
-      info: Seq[(TypeID, Double, Int)])(implicit fresh: Fresh): Unit = {
+      info: Seq[(Global, Double, Int)])(implicit fresh: Fresh): Unit = {
     import buf._
 
     val candidates = selectCandidates(info).map {
       case (id, p, count) =>
-        (id, fresh(), fresh(), resolve(meth.name, id).get, count)
+        (id, fresh(), fresh(), resolve(id, meth.sig).get, count)
     }
 
     val fail, merge = fresh()
 
     def genCheck(check: Local,
-                 typeId: Int,
+                 typeName: Global,
                  succ: Local,
                  fail: Local,
                  warmth: Int) = {
       label(check, Seq.empty, warmth)
-      val ty   = load(Type.Ptr, meth.obj)
-      val id   = load(Type.Int, ty)
-      val cond = comp(Comp.Ieq, Type.Int, id, Val.Int(typeId))
+      val ty = call(Rt.GetRawTypeTy, Rt.GetRawType, Seq(Val.Null, meth.obj), Next.None)
+      val cond = comp(Comp.Ieq, Type.Ptr, ty, Val.Global(typeName, Type.Ptr), Next.None)
       branch(cond, Next(succ), Next(fail))
     }
 
     def genStatic(succ: Local, impl: Val, warmth: Int) = {
       label(succ, Seq.empty, warmth)
-      val succres = let(callop.copy(ptr = impl))
+      val succres = let(callop.copy(ptr = impl), Next.None)
       jump(merge, Seq(succres))
     }
 
     def genFail(warmth: Int) = {
       label(fail, Seq.empty, warmth)
-      val failmeth = let(meth)
-      val failres  = let(callop.copy(ptr = failmeth))
+      val failmeth = let(meth, Next.None)
+      val failres  = let(callop.copy(ptr = failmeth), Next.None)
       jump(merge, Seq(failres))
     }
 
     val total     = info.map(_._3).sum
     var remaining = total
 
-    def loop(candidates: Seq[(Int, Local, Local, Val, Int)]): Unit =
+    def loop(candidates: Seq[(Global, Local, Local, Val, Int)]): Unit =
       candidates match {
         case Seq() =>
           genFail(remaining)
@@ -155,7 +134,7 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
       }
 
     if (candidates.nonEmpty) {
-      val precond = comp(Comp.Ine, Type.Ptr, meth.obj, Val.Null)
+      val precond = comp(Comp.Ine, Type.Ptr, meth.obj, Val.Null, Next.None)
       branch(precond, Next(candidates.head._2), Next(fail))
       loop(candidates)
     } else {
@@ -165,7 +144,6 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
 
   private def onMethod(defn: Defn.Define): Seq[Inst] = {
     val insts  = defn.insts
-    val defnId = top.nodes(defn.name).id
 
     implicit val scope = LocalScope(insts)
     implicit val fresh = Fresh(insts)
@@ -180,8 +158,7 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
                                            MethodRef(scoperef, methref))),
                         _,
                         _))
-          if (methref.isVirtual || scoperef.isInstanceOf[Trait]) && dispatchInfo
-            .contains((defnId.toLong << 32) | local.id) =>
+          if (methref.isVirtual || scoperef.isInstanceOf[Trait]) && dispatchInfo.contains(defn.name) =>
         val info = dispatchInfo((defnId.toLong << 32) | local.id)
         ic(defn.name, buf, inst, call, meth, info)
       case inst =>
@@ -201,7 +178,7 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
 }
 
 object InlineCaching extends PassCompanion {
-  final val INLINE_CACHING_MODE = InlineCacheNP(2, 0.9)
+  final val INLINE_CACHING_MODE: InlineCachingMode = InlineCacheNP(2, 0.9)
 
   sealed abstract class InlineCachingMode
   final case object NoInlineCaching                 extends InlineCachingMode

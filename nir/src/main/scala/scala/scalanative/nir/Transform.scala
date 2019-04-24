@@ -26,11 +26,11 @@ trait Transform {
     insts.map(onInst)
 
   def onInst(inst: Inst): Inst = inst match {
-    case Inst.Label(n, params) =>
+    case Inst.Label(n, params, warmth) =>
       val newparams = params.map { param =>
         Val.Local(param.name, onType(param.ty))
       }
-      Inst.Label(n, newparams)
+      Inst.Label(n, newparams, warmth)
     case Inst.Let(n, op, unwind) =>
       Inst.Let(n, onOp(op), onNext(unwind))
 

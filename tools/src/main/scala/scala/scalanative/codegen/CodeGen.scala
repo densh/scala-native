@@ -245,7 +245,7 @@ object CodeGen {
         rep(argtys, sep = ", ")(genType)
       } else {
         insts.head match {
-          case Inst.Label(_, params) =>
+          case Inst.Label(_, params, _) =>
             rep(params, sep = ", ")(genVal)
           case _ =>
             unreachable

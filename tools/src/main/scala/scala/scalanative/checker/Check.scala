@@ -92,7 +92,7 @@ final class Check(implicit linked: linker.Result) {
       case Inst.Let(n, op, unwind) =>
         env(n) = op.resty
         enterUnwind(unwind)
-      case Inst.Label(name, params) =>
+      case Inst.Label(name, params, _) =>
         labels(name) = params.map(_.ty)
         params.foreach(enterParam)
       case _: Inst.Ret | _: Inst.Jump | _: Inst.If | _: Inst.Switch =>

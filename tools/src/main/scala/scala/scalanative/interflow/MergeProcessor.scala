@@ -12,7 +12,7 @@ final class MergeProcessor(insts: Array[Inst],
                            eval: Eval)(implicit linked: linker.Result) {
   val offsets =
     insts.zipWithIndex.collect {
-      case (Inst.Label(local, _), offset) =>
+      case (Inst.Label(local, _, _), offset) =>
         local -> offset
     }.toMap
   val blocks = mutable.Map.empty[Local, MergeBlock]

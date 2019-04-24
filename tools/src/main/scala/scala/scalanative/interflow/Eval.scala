@@ -852,7 +852,7 @@ trait Eval { self: Interflow =>
     }
 
     def isPureModuleCtor(defn: Defn.Define): Boolean = {
-      val Inst.Label(_, Val.Local(self, _) +: _) = defn.insts.head
+      val Inst.Label(_, Val.Local(self, _) +: _, _) = defn.insts.head
 
       val canStoreTo  = mutable.Set(self)
       val arrayLength = mutable.Map.empty[Local, Int]

@@ -103,7 +103,7 @@ final class BinarySerializer(buffer: ByteBuffer) {
 
   private def putInsts(insts: Seq[Inst]) = putSeq(insts)(putInst)
   private def putInst(cf: Inst) = cf match {
-    case Inst.Label(name, params) =>
+    case Inst.Label(name, params, _) =>
       putInt(T.LabelInst)
       putLocal(name)
       putParams(params)
