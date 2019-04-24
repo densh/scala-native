@@ -47,8 +47,11 @@ sealed trait Config {
   /** The logger used by the toolchain. */
   def logger: Logger
 
-  /** The LTO mode to use used during a release build. */
+  /** The LTO mode to use during a release build. */
   def LTO: String
+
+  /** The PGO mode to use during a release build. */
+  def profileMode: ProfileMode
 
   /** Create a new config with given garbage collector. */
   def withGC(value: GC): Config
@@ -91,6 +94,9 @@ sealed trait Config {
 
   /** Create a new config with the given lto mode. */
   def withLTO(value: String): Config
+
+  /** Create a new config with virtual dispatch profiling enabled or disabled */
+  def withProfileMode(mode: ProfileMode): Config
 }
 
 object Config {
@@ -111,7 +117,8 @@ object Config {
       mode = Mode.default,
       linkStubs = false,
       logger = Logger.default,
-      LTO = "none"
+      LTO = "none",
+      profileMode = NoProfile
     )
 
   private final case class Impl(nativelib: Path,
@@ -126,6 +133,7 @@ object Config {
                                 gc: GC,
                                 mode: Mode,
                                 linkStubs: Boolean,
+                                profileMode: ProfileMode,
                                 logger: Logger,
                                 LTO: String)
       extends Config {
@@ -170,5 +178,8 @@ object Config {
 
     def withLTO(value: String): Config =
       copy(LTO = value)
+
+    def withProfileMode(value: ProfileMode): Config =
+      copy(profileMode = value)
   }
 }
