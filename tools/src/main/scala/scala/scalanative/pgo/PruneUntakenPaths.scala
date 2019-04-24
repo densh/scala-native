@@ -293,7 +293,7 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
 
 object PruneUntakenPaths extends PassCompanion {
   val PRUNE_UNTAKEN_BRANCHES    = true
-  val PROFILE_DIRECTED_INLINING = false
+  val PROFILE_DIRECTED_INLINING = true
 
   override def apply(config: build.Config, linked: linker.Result) = {
     new PruneUntakenPaths()(linked)
