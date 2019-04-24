@@ -290,6 +290,9 @@ lazy val tools =
     .settings(mavenPublishSettings)
     .settings(
       libraryDependencies ++= Seq(
+        "com.lihaoyi" %% "fastparse"  % "1.0.0"
+      ),
+      libraryDependencies ++= Seq(
         "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
         "org.scalatest"  %% "scalatest"  % "3.0.0"  % "test"
       ),
