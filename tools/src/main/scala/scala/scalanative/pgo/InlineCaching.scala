@@ -29,13 +29,16 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
         (key, pvalues)
     }
 
-  type Count  = Int
+  type Count = Int
 
   private def resolve(typeName: Global, sig: Sig): Option[Val] =
-    linked.infos.get(typeName).collect {
-      case info: linker.Class =>
-        info.resolve(sig).map(Val.Global(_, Type.Ptr))
-    }.flatten
+    linked.infos
+      .get(typeName)
+      .collect {
+        case info: linker.Class =>
+          info.resolve(sig).map(Val.Global(_, Type.Ptr))
+      }
+      .flatten
 
   private def selectCandidates(
       info: Seq[(Global, Double, Long)]): Seq[(Global, Double, Long)] =
@@ -96,8 +99,10 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
                  fail: Local,
                  warmth: Long) = {
       label(check, Seq.empty, warmth)
-      val ty = call(Rt.GetRawTypeTy, Rt.GetRawType, Seq(Val.Null, meth.obj), Next.None)
-      val cond = comp(Comp.Ieq, Type.Ptr, ty, Val.Global(typeName, Type.Ptr), Next.None)
+      val ty =
+        call(Rt.GetRawTypeTy, Rt.GetRawType, Seq(Val.Null, meth.obj), Next.None)
+      val cond =
+        comp(Comp.Ieq, Type.Ptr, ty, Val.Global(typeName, Type.Ptr), Next.None)
       branch(cond, Next(succ), Next(fail))
     }
 
@@ -144,7 +149,7 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
   }
 
   def onDefn(defn: Defn.Define): Seq[Inst] = {
-    val insts  = defn.insts
+    val insts = defn.insts
 
     implicit val scope = LocalScope(insts)
     implicit val fresh = Fresh(insts)
@@ -154,11 +159,11 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
       case inst @ Let(_,
                       call @ Op.Call(
                         _,
-                        LocalRef(
-                          meth @ Op.Method(Val.Local(local, _), sig)),
-                        _), Next.None)
+                        LocalRef(meth @ Op.Method(Val.Local(local, _), sig)),
+                        _),
+                      Next.None)
           if linked.ids.contains(defn.name)
-          && dispatchInfo.contains(linked.ids(defn.name)) =>
+            && dispatchInfo.contains(linked.ids(defn.name)) =>
         val info = dispatchInfo(linked.ids(defn.name))
         ic(defn.name, buf, inst, call, meth, info)
       case inst =>

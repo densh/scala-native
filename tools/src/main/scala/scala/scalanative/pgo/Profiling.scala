@@ -18,9 +18,16 @@ class Profiling(implicit linked: linker.Result) extends Pass {
         out += defn
     }
 
-    out += Defn.Module(ExternAttrs, profilingName, Some(Rt.Object.name), Seq.empty)
-    out += Defn.Declare(ExternAttrs, typeProfileMethodName, typeProfileMethodSig)
-    out += Defn.Declare(ExternAttrs, freqProfileMethodName, freqProfileMethodSig)
+    out += Defn.Module(ExternAttrs,
+                       profilingName,
+                       Some(Rt.Object.name),
+                       Seq.empty)
+    out += Defn.Declare(ExternAttrs,
+                        typeProfileMethodName,
+                        typeProfileMethodSig)
+    out += Defn.Declare(ExternAttrs,
+                        freqProfileMethodName,
+                        freqProfileMethodSig)
     out
   }
 
@@ -31,17 +38,16 @@ class Profiling(implicit linked: linker.Result) extends Pass {
     import buf._
 
     def typeLog(local: Local, obj: Val): Unit =
-      let(
-        Op.Call(typeProfileMethodSig,
-                typeProfileMethod,
-                Seq(Val.Long((defnId.toLong << 32) | local.id), obj)),
-              Next.None)
+      let(Op.Call(typeProfileMethodSig,
+                  typeProfileMethod,
+                  Seq(Val.Long((defnId.toLong << 32) | local.id), obj)),
+          Next.None)
 
     def freqLog(local: Local): Unit =
-      let(
-        Op.Call(freqProfileMethodSig,
-                freqProfileMethod,
-                Seq(Val.Long((defnId.toLong << 32) | local.id))), Next.None)
+      let(Op.Call(freqProfileMethodSig,
+                  freqProfileMethod,
+                  Seq(Val.Long((defnId.toLong << 32) | local.id))),
+          Next.None)
 
     val profileLocals =
       defn.insts.collect {

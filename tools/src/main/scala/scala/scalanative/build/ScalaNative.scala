@@ -47,8 +47,8 @@ private[scalanative] object ScalaNative {
       val optimized = scalanative.pgo.PGO(config, linked)
       val newlinked = linker.Link(config, linked.entries, optimized)
       assert(newlinked.unavailable.isEmpty,
-        "some definitions where unavailable after pgo: " +
-          newlinked.unavailable.map(_.show).mkString(", "))
+             "some definitions where unavailable after pgo: " +
+               newlinked.unavailable.map(_.show).mkString(", "))
       newlinked
     }
 

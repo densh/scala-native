@@ -7,8 +7,7 @@ import nir._
 object PGO {
 
   /** Run all pgo passes on given linker result. */
-  def apply(config: build.Config,
-            linked: linker.Result): Seq[Defn] = {
+  def apply(config: build.Config, linked: linker.Result): Seq[Defn] = {
     val driver = Driver(config)
 
     def loop(batchId: Int,
@@ -23,7 +22,9 @@ object PGO {
           loop(batchId, passResult, rest)
       }
 
-    util.partitionBy(linked.defns)(_.name).par
+    util
+      .partitionBy(linked.defns)(_.name)
+      .par
       .map {
         case (batchId, batchDefns) =>
           val passes = driver.passes.map(_.apply(config, linked))

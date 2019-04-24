@@ -6,8 +6,11 @@ sealed abstract class Inst {
 }
 
 object Inst {
-  final case class Label(name: Local, params: Seq[Val.Local], warmth: Long = -1L) extends Inst
-  final case class Let(name: Local, op: Op, unwind: Next)     extends Inst
+  final case class Label(name: Local,
+                         params: Seq[Val.Local],
+                         warmth: Long = -1L)
+      extends Inst
+  final case class Let(name: Local, op: Op, unwind: Next) extends Inst
   object Let {
     def apply(op: Op, unwind: Next)(implicit fresh: Fresh): Let =
       Let(fresh(), op, unwind)
@@ -19,7 +22,7 @@ object Inst {
   final case class If(value: Val, thenp: Next, elsep: Next) extends Cf
   final case class Switch(value: Val, default: Next, cases: Seq[Next])
       extends Cf
-  final case class Throw(value: Val, unwind: Next) extends Cf
-  final case class Unreachable(unwind: Next)       extends Cf
+  final case class Throw(value: Val, unwind: Next)           extends Cf
+  final case class Unreachable(unwind: Next)                 extends Cf
   final case class Deopt(entry: Local, live: Seq[Val.Local]) extends Cf
 }

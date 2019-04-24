@@ -5,7 +5,8 @@ import scala.collection.mutable
 import scalanative.nir._
 
 class PruneUntakenPaths()(implicit linked: linker.Result)
-    extends Pass with Transform {
+    extends Pass
+    with Transform {
   import PruneUntakenPaths._
 
   type Liveness = mutable.Map[Local, mutable.Set[Val.Local]]
@@ -291,7 +292,7 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
 }
 
 object PruneUntakenPaths extends PassCompanion {
-  val PRUNE_UNTAKEN_BRANCHES = true
+  val PRUNE_UNTAKEN_BRANCHES    = true
   val PROFILE_DIRECTED_INLINING = false
 
   override def apply(config: build.Config, linked: linker.Result) = {

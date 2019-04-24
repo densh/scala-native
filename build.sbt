@@ -290,7 +290,7 @@ lazy val tools =
     .settings(mavenPublishSettings)
     .settings(
       libraryDependencies ++= Seq(
-        "com.lihaoyi" %% "fastparse"  % "1.0.0"
+        "com.lihaoyi" %% "fastparse" % "1.0.0"
       ),
       libraryDependencies ++= Seq(
         "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
@@ -547,7 +547,7 @@ lazy val sandbox =
       //   crossTarget.value),
       scalaVersion := libScalaVersion,
       nativeMode := "release",
-      nativeProfileMode := CollectProfile(file("profile.data"))
+      nativeProfileMode := UseProfile(file("profile.data"))
     )
     .enablePlugins(ScalaNativePlugin)
 

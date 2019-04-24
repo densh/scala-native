@@ -6,7 +6,8 @@ import scala.io.Source
 import scala.collection.mutable
 import scalanative.nir._
 
-class RecoverBlockWarmth(freqProfile: File)(implicit linked: linker.Result) extends Pass {
+class RecoverBlockWarmth(freqProfile: File)(implicit linked: linker.Result)
+    extends Pass {
   private val freqMap = {
     assert(freqProfile.exists)
     var res    = mutable.Map.empty[Long, Long]
@@ -42,7 +43,7 @@ class RecoverBlockWarmth(freqProfile: File)(implicit linked: linker.Result) exte
 object RecoverBlockWarmth extends PassCompanion {
   override def apply(config: build.Config, linked: linker.Result) = {
     val build.UseProfile(profile) = config.profileMode
-    val freqProfile         = new File(profile.getAbsolutePath + ".freq")
+    val freqProfile               = new File(profile.getAbsolutePath + ".freq")
     new RecoverBlockWarmth(freqProfile)(linked)
   }
 }

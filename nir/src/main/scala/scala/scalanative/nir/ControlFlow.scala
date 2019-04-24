@@ -74,7 +74,7 @@ object ControlFlow {
 
       def block(local: Local): Block =
         blocks.get(local).getOrElse {
-          val k                     = locations(local)
+          val k                        = locations(local)
           val Inst.Label(n, params, _) = insts(k)
 
           // copy all instruction up until and including
