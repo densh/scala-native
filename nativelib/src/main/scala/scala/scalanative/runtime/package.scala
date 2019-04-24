@@ -71,6 +71,10 @@ package object runtime {
   def loop(): Unit =
     ExecutionContext.loop()
 
+  /** Terminate current process with given status code. */
+  def exit(code: Int): Unit =
+    NativeShutdown.exit(code)
+
   /** Called by the generated code in case of division by zero. */
   @noinline def throwDivisionByZero(): Nothing =
     throw new java.lang.ArithmeticException("/ by zero")

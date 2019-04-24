@@ -159,10 +159,12 @@ object Generate {
           Inst.Let(module.name, Op.Module(entry.top), unwind),
           Inst.Let(Op.Call(entryMainTy, entryMain, Seq(module, arr)), unwind),
           Inst.Let(Op.Call(RuntimeLoopSig, RuntimeLoop, Seq(module)), unwind),
+          Inst.Let(Op.Call(ExitSig, Exit, Seq(Val.Int(0))), Next.None),
           Inst.Ret(Val.Int(0)),
           Inst.Label(handler, Seq(exc)),
           Inst.Let(Op.Call(PrintStackTraceSig, PrintStackTrace, Seq(exc)),
                    Next.None),
+          Inst.Let(Op.Call(ExitSig, Exit, Seq(Val.Int(1))), Next.None),
           Inst.Ret(Val.Int(1))
         )
       )
@@ -354,6 +356,10 @@ object Generate {
     val Init     = Val.Global(extern("scalanative_init"), Type.Ptr)
     val InitDecl = Defn.Declare(Attrs.None, Init.name, InitSig)
 
+    val ExitSig  = Type.Function(Seq(Type.Int), Type.Unit)
+    val Exit     = Val.Global(extern("scalanative_exit"), Type.Ptr)
+    val ExitDecl = Defn.Declare(Attrs.None, Exit.name, ExitSig)
+
     val stackBottomName     = extern("__stack_bottom")
     val moduleArrayName     = extern("__modules")
     val moduleArraySizeName = extern("__modules_size")
@@ -364,6 +370,9 @@ object Generate {
     private def extern(id: String): Global =
       Global.Member(Global.Top("__"), Sig.Extern(id))
   }
+
+  val injects =
+    Seq(ExitDecl)
 
   val depends =
     Seq(ObjectArray.name,
