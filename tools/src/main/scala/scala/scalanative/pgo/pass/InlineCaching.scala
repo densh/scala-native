@@ -18,7 +18,7 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
 
   assert(profile.exists)
   val dispatchInfo =
-    analysis.DispatchInfoParser(Source.fromFile(profile).mkString).map {
+    DispatchInfo(Source.fromFile(profile).mkString).map {
       case (key, values) =>
         val total = values.map(_._2).sum.toDouble
         val pvalues = values.sortBy(-_._2).map {
