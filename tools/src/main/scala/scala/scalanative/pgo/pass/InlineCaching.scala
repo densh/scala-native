@@ -5,6 +5,7 @@ package pass
 import java.io.File
 import scala.io.Source
 import scala.collection.mutable
+import scalanative.linker._
 import scalanative.nir._, Inst.Let
 
 /**
@@ -23,7 +24,8 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
         val total = values.map(_._2).sum.toDouble
         val pvalues = values.sortBy(-_._2).map {
           case (typeId, count) =>
-            (typeId, count / total, count)
+            val typeName = linked.fromIds(typeId)
+            (typeName, count / total, count)
         }
         (key, pvalues)
     }
@@ -154,12 +156,11 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
                       call @ Op.Call(
                         _,
                         LocalRef(
-                          meth @ Op.Method(Val.Local(local, _),
-                                           MethodRef(scoperef, methref))),
-                        _,
-                        _))
-          if (methref.isVirtual || scoperef.isInstanceOf[Trait]) && dispatchInfo.contains(defn.name) =>
-        val info = dispatchInfo((defnId.toLong << 32) | local.id)
+                          meth @ Op.Method(Val.Local(local, _), sig)),
+                        _), Next.None)
+          if linked.ids.contains(defn.name)
+          && dispatchInfo.contains(linked.ids(defn.name)) =>
+        val info = dispatchInfo(linked.ids(defn.name))
         ic(defn.name, buf, inst, call, meth, info)
       case inst =>
         buf += inst
@@ -169,7 +170,7 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
   }
 
   override def onDefn(defn: Defn): Defn = defn match {
-    case defn: Defn.Define if top.nodes.contains(defn.name) =>
+    case defn: Defn.Define if linked.infos.contains(defn.name) =>
       defn.copy(insts = onMethod(defn))
 
     case _ =>

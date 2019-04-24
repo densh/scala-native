@@ -6,7 +6,7 @@ import scala.collection.mutable
 import scalanative.nir._
 
 class PruneUntakenPaths()(implicit linked: linker.Result)
-    extends Pass {
+    extends Pass with Transform {
   import PruneUntakenPaths._
 
   type Liveness = mutable.Map[Local, mutable.Set[Val.Local]]
@@ -27,13 +27,13 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
         tys(p.name) = p.ty
       }
       b.insts.foreach {
-        case Inst.Let(name, op) =>
+        case Inst.Let(name, op, _) =>
           blockDefs += name
           tys(name) = op.resty
         case _ =>
           ()
       }
-      val collectUses = new Pass {
+      val collectUses = new Transform {
         override def onVal(value: Val) = {
           value match {
             case Val.Local(name, _) =>
@@ -90,7 +90,7 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
     } else {
       val defs = mutable.Set.empty[Local]
       val cfg  = ControlFlow.Graph(dirty.toSeq)
-      cfg.foreach { b =>
+      cfg.all.foreach { b =>
         b.label.params.foreach { p =>
           defs += p.name
         }
@@ -114,7 +114,7 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
       val clean = new Buffer
       clean.label(fresh(), entryParams)
       clean.jump(entry, entryNext)
-      cfg.foreach { b =>
+      cfg.all.foreach { b =>
         if (b ne cfg.entry) {
           var blockDefs = mutable.Set.empty[Local]
           b.params.foreach { p =>
@@ -142,7 +142,7 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
               }
           }
 
-          val subs = new Pass {
+          val subs = new Transform {
             override def onVal(value: Val): Val = value match {
               case value: Val.Local if subsVars.contains(value.name) =>
                 subsVars(value.name)
@@ -150,7 +150,7 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
                 super.onVal(value)
             }
           }
-          val appendParams = new Pass {
+          val appendParams = new Transform {
             override def onNext(next: Next): Next = next match {
               case Next.None =>
                 Next.None

@@ -28,7 +28,7 @@ object DispatchInfo {
   // val dispatchInfo: P[Map[Long, Seq[(Int, Int)]]] =
   //   dispatchMethod.rep ~ End map (_.toMap)
 
-  def apply(in: String): Map[nir.Global, Seq[(nir.Global, Int)]] = ???
+  def apply(in: String): Map[Int, Seq[(Int, Int)]] = ???
     // dispatchInfo.parse(in) match {
     //   case Parsed.Success(info, _) => info
     //   case Parsed.Failure(_, _, _) => Map.empty

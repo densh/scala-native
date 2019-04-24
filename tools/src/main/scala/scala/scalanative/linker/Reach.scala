@@ -14,6 +14,7 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
   val stack       = mutable.Stack.empty[Global]
   val links       = mutable.Set.empty[Attr.Link]
   val infos       = mutable.Map.empty[Global, Info]
+  val ids         = mutable.Map.empty[Global, Int]
   val from        = mutable.Map.empty[Global, Global]
 
   val dyncandidates = mutable.Map.empty[Sig, mutable.Set[Global]]
@@ -28,7 +29,11 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
     val defns = mutable.UnrolledBuffer.empty[Defn]
     defns ++= done.valuesIterator
 
+    val fromIds = ids.map { case (n, id) => (id, n) }
+
     new Result(infos,
+               ids,
+               fromIds,
                entries,
                unavailable.toSeq,
                links.toSeq,
@@ -164,6 +169,7 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
 
   def newInfo(info: Info): Unit = {
     infos(info.name) = info
+    ids(info.name) = ids.size
     info match {
       case info: MemberInfo =>
         info.owner match {

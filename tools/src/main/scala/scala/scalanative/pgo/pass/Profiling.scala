@@ -9,7 +9,7 @@ class Profiling(implicit linked: linker.Result) extends Pass {
   import Profiling._
 
   override def onDefn(defn: Defn): Defn = defn match {
-    case defn: Defn.Define if top.nodes.contains(defn.name) =>
+    case defn: Defn.Define if linked.infos.contains(defn.name) =>
       defn.copy(insts = onMethod(defn))
     case _ =>
       defn
@@ -18,33 +18,25 @@ class Profiling(implicit linked: linker.Result) extends Pass {
   def onMethod(defn: Defn.Define): Seq[Inst] = {
     implicit val fresh = Fresh(defn.insts)
     val buf            = new Buffer
-    val defnId         = top.nodes(defn.name).id
+    val defnId         = linked.ids(defn.name)
     import buf._
 
     def typeLog(local: Local, obj: Val): Unit =
       let(
         Op.Call(typeProfileMethodSig,
                 typeProfileMethod,
-                Seq(Val.Long((defnId.toLong << 32) | local.id), obj),
-                Next.None))
+                Seq(Val.Long((defnId.toLong << 32) | local.id), obj)),
+              Next.None)
 
     def freqLog(local: Local): Unit =
       let(
         Op.Call(freqProfileMethodSig,
                 freqProfileMethod,
-                Seq(Val.Long((defnId.toLong << 32) | local.id)),
-                Next.None))
+                Seq(Val.Long((defnId.toLong << 32) | local.id))), Next.None)
 
     val profileLocals =
       defn.insts.collect {
-        case inst @ Let(
-              _,
-              Op.Method(Val.Local(local, _), MethodRef(_: Class, meth)))
-            if meth.isVirtual =>
-          local
-        case inst @ Let(
-              n,
-              Op.Method(Val.Local(local, _), MethodRef(_: Trait, _))) =>
+        case inst @ Let(_, Op.Method(Val.Local(local, _), sig), _) =>
           local
       }.toSet
 
@@ -59,7 +51,7 @@ class Profiling(implicit linked: linker.Result) extends Pass {
             }
         }
 
-      case inst @ Let(local, op) if profileLocals.contains(local) =>
+      case inst @ Let(local, op, _) if profileLocals.contains(local) =>
         buf += inst
         typeLog(local, Val.Local(local, op.resty))
 
@@ -77,12 +69,12 @@ object Profiling extends PassCompanion {
 
   val typeProfileMethodName = Global.Top("typeprofile_log")
   val typeProfileMethodSig =
-    Type.Function(Seq(Type.Long, Type.Ptr), Type.Void)
+    Type.Function(Seq(Type.Long, Type.Ptr), Type.Unit)
   val typeProfileMethod = Val.Global(typeProfileMethodName, Type.Ptr)
 
   val freqProfileMethodName = Global.Top("freqprofile_log")
   val freqProfileMethodSig =
-    Type.Function(Seq(Type.Long), Type.Void)
+    Type.Function(Seq(Type.Long), Type.Unit)
   val freqProfileMethod = Val.Global(freqProfileMethodName, Type.Ptr)
 
   override val injects = Seq(
