@@ -645,22 +645,32 @@ object CodeGen {
 
     def genBranchWeights(nexts: Seq[Next])(implicit cfg: CFG): Unit = {
       if (config.profileMode.isInstanceOf[build.UseProfile]) {
-        val kind = "!\"branch_weights\""
-        val values = nexts.map { next =>
-          "i32 " + cfg.find(next.name).warmth.toInt
+        val weights = nexts.map { next =>
+          val warmth = cfg.find(next.name).warmth.toInt
+          if (warmth < 0) 0 else warmth
         }
-        str(", !prof !")
-        str(genMetadata(kind +: values))
+        if (weights.exists(_ != 0)) {
+          var values = "!\"branch_weights\"" +: weights.map(w =>
+            "i32 " + w.toInt)
+          str(", !prof !")
+          str(genMetadata(values.toList))
+        }
       }
     }
 
-    val metadata = mutable.UnrolledBuffer.empty[String]
+    val metadata        = mutable.UnrolledBuffer.empty[String]
+    val emittedMetadata = mutable.Map.empty[List[String], Int]
 
-    def genMetadata(parts: Seq[String]): Int = {
-      val id    = metadata.size
-      val entry = parts.mkString("!{", ", ", "}")
-      metadata += entry
-      id
+    def genMetadata(parts: List[String]): Int = {
+      if (emittedMetadata.contains(parts)) {
+        emittedMetadata(parts)
+      } else {
+        val id    = metadata.size
+        val entry = parts.mkString("!{", ", ", "}")
+        metadata += entry
+        emittedMetadata(parts) = id
+        id
+      }
     }
 
     def genInst(inst: Inst)(implicit fresh: Fresh, cfg: CFG): Unit =
