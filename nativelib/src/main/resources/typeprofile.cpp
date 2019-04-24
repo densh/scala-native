@@ -3,11 +3,7 @@
 
 using namespace std;
 
-map<int64_t, char*> typenames;
-
 map<int64_t, map<int32_t, int64_t> > typecounters;
-
-typedef cstring char*;
 
 bool typeprofile_contains(int64_t siteId) {
     return typecounters.find(siteId) != typecounters.end();
@@ -41,7 +37,7 @@ void typeprofile_print(FILE* out) {
     for (outer_it m = typecounters.begin(); m != typecounters.end(); ++m) {
         fprintf(out, "= `%lld`:\n", m->first);
         for (inner_it n = m->second.begin(); n != m->second.end(); ++n) {
-            fprintf(out, "\t%`%s` (%lld)\n", typenames[n->first], n->second);
+            fprintf(out, "\t%d (%lld)\n", n->first, n->second);
         }
     }
 }
