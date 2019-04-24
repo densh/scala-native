@@ -1,11 +1,11 @@
 package scala.scalanative
-package pgo
-package pass
+package nir
+package parser
 
 import fastparse.WhitespaceApi
 import fastparse.all._
 
-object DispatchInfoParser {
+object DispatchInfo {
 
   private val IgnoreWhitespace = WhitespaceApi.Wrapper {
     import fastparse.all._
