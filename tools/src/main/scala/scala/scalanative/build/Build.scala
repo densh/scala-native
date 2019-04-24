@@ -70,9 +70,20 @@ object Build {
     config.logger.info(
       s"Discovered ${classCount} classes and ${methodCount} methods")
 
-    val optimized = ScalaNative.optimize(config, linked)
-    nir.Show.dump(optimized.defns, "optimized.hnir")
-    ScalaNative.check(config, optimized)
+    val optimized = {
+      val preopt = ScalaNative.optimize(config, linked)
+      nir.Show.dump(preopt.defns, "optimized.hnir")
+      ScalaNative.check(config, preopt)
+
+      if (config.profileMode == NoProfile) {
+        preopt
+      } else {
+        val postopt = ScalaNative.pgo(config, preopt)
+        nir.Show.dump(postopt.defns, "optimized-pgo.hnir")
+        ScalaNative.check(config, postopt)
+        postopt
+      }
+    }
 
     IO.getAll(config.workdir, "glob:**.ll").foreach(Files.delete)
     ScalaNative.codegen(config, optimized)

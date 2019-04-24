@@ -1,11 +1,17 @@
 package scala.scalanative
 package pgo
-package pass
 
 import nir._
 
 class DeadBlockElimination extends Pass {
-  override def onInsts(insts: Seq[Inst]) = {
+  def onDefns(defns: Seq[Defn]): Seq[Defn] = defns.map {
+    case defn: Defn.Define =>
+      defn.copy(insts = onInsts(defn.insts))
+    case defn =>
+      defn
+  }
+
+  def onInsts(insts: Seq[Inst]) = {
     val cfg = ControlFlow.Graph(insts)
     val buf = new nir.Buffer()(Fresh(insts))
 

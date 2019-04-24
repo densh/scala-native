@@ -22,6 +22,7 @@ that uses a notation inspired by
         C <name>                       // c extern name
         G <name>                       // generated name
         K <sig-name> <type-name>+ E    // duplicate name
+        O <sig-name> <number>          // deopt name
 
     <type-name> ::=
         v                              // c vararg

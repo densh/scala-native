@@ -34,12 +34,17 @@ private[scalanative] object ScalaNative {
     }
   }
 
-  /** Optimizer high-level NIR under closed-world assumption. */
+  /** Optimize high-level NIR under closed-world assumption. */
   def optimize(config: Config, linked: linker.Result): linker.Result =
     config.logger.time(s"Optimizing (${config.mode} mode)") {
-      val optimized =
-        interflow.Interflow(config, linked)
+      val optimized = interflow.Interflow(config, linked)
+      linker.Link(config, linked.entries, optimized)
+    }
 
+  /** Optimize high-level NIR based on profile data. */
+  def pgo(config: Config, linked: linker.Result): linker.Result =
+    config.logger.time(s"PGO (${config.profileMode} mode)") {
+      val optimized = scalanative.pgo.PGO(config, linked)
       linker.Link(config, linked.entries, optimized)
     }
 

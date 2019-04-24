@@ -43,6 +43,15 @@ object ScalaNativePlugin extends AutoPlugin {
     val nativeLTO =
       taskKey[String](
         "LTO variant used for release mode (either \"none\", \"thin\" or \"full\").")
+
+    val nativeProfileMode =
+      settingKey[ProfileMode]("")
+
+    type ProfileMode = build.ProfileMode
+    val NoProfile = build.NoProfile
+    def CollectProfile(file: java.io.File): ProfileMode =
+      build.CollectProfile(file)
+    def UseProfile(file: java.io.File): ProfileMode = build.UseProfile(file)
   }
 
   @deprecated("use autoImport instead", "0.3.7")

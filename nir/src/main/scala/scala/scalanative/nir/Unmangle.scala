@@ -34,6 +34,8 @@ object Unmangle {
         Sig.Generated(readIdent())
       case 'K' =>
         Sig.Duplicate(readUnmangledSig(), readTypes())
+      case 'O' =>
+        Sig.Deopt(readUnmangledSig(), readNumber())
       case ch =>
         error(s"expected sig, but got $ch")
     }
@@ -93,7 +95,7 @@ object Unmangle {
             next()
             Type.Array(ty, nullable = false)
           case n if '0' <= n && n <= '9' =>
-            val res = Type.ArrayValue(ty, readNumber())
+            val res = Type.ArrayValue(ty, readNumber().toInt)
             accept('_')
             res
           case ch =>
@@ -141,18 +143,18 @@ object Unmangle {
     def readIdent(): String = {
       val len   = readNumber()
       val start = pos
-      pos += len
+      pos += len.toInt
       s.substring(start, pos)
     }
 
-    def readNumber(): Int = {
+    def readNumber(): Long = {
       val start = pos
       var char  = peek()
       while ('0' <= char && char <= '9') {
         next()
         char = peek()
       }
-      java.lang.Integer.parseInt(s.substring(start, pos))
+      java.lang.Long.parseLong(s.substring(start, pos))
     }
 
     def peek(): Char =

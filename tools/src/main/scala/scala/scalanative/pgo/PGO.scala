@@ -4,12 +4,9 @@ package pgo
 import scala.collection.mutable
 import nir._
 
-/** Optimizer reporters can override one of the corresponding methods to
- *  get notified whenever one of the optimization events happens.
- */
-object Optimizer {
+object PGO {
 
-  /** Run all of the passes on given assembly. */
+  /** Run all pgo passes on given linker result. */
   def apply(config: build.Config,
             linked: linker.Result): Seq[Defn] = {
     val driver = Driver(config)

@@ -19,13 +19,13 @@ object Driver {
         Seq()
       case build.UseProfile(file) =>
         Seq(
-          pass.RecoverBlockWarmth,
-          pass.InlineCaching,
-          pass.PruneUntakenPaths,
-          pass.DeadBlockElimination
+          RecoverBlockWarmth,
+          InlineCaching,
+          PruneUntakenPaths,
+          DeadBlockElimination
         )
       case build.CollectProfile(file) =>
-        Seq(pass.Profiling)
+        Seq(Profiling)
     }
     new Impl(prof)
   }

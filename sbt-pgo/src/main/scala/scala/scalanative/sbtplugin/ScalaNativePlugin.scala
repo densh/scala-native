@@ -3,7 +3,6 @@ package sbtplugin
 
 import scalanative.tools
 import ScalaNativePluginInternal._
-
 import sbt._
 
 object ScalaNativePlugin extends AutoPlugin {

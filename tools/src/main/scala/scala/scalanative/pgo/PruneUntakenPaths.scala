@@ -1,6 +1,5 @@
 package scala.scalanative
 package pgo
-package pass
 
 import scala.collection.mutable
 import scalanative.nir._
@@ -183,8 +182,10 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
     val Type.Function(_, retty) = defn.ty
     val Inst.Deopt(entry, live) = deopt
 
+    val Global.Member(owner, sig) = defn.name
+
     val handlerAttrs = Attrs(inline = Attr.NoInline)
-    val handlerName  = Global.Member(defn.name, "deopt_" + entry.id)
+    val handlerName  = Global.Member(owner, Sig.Deopt(sig, entry.id))
     val handlerTy    = Type.Function(live.map(_.ty), retty)
     val handlerInsts = deoptInsts(defn.insts, entry, live)
 
@@ -195,7 +196,7 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
                     defn: Defn.Define): Seq[Inst] = {
     implicit val fresh = Fresh(defn.insts)
     val buf            = new Buffer
-    val defnId         = top.nodes(defn.name).id
+    val defnId         = linked.ids(defn.name)
 
     val deopts   = mutable.Map.empty[Local, Defn]
     val liveness = computeLiveness(defn.insts)
@@ -211,7 +212,7 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
 
     val initialCfg = ControlFlow.Graph(buf.toSeq)
     val cleanBuf   = new Buffer
-    initialCfg.foreach { b =>
+    initialCfg.all.foreach { b =>
       cleanBuf += b.label
       b.insts.foreach {
         case deopt @ Inst.Deopt(_, live) =>
@@ -230,7 +231,7 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
 
   private def onMethod(buf: mutable.UnrolledBuffer[Defn],
                        defn: Defn.Define): Unit = {
-    val defnId     = top.nodes(defn.name).id
+    val defnId     = linked.ids(defn.name)
     val entryInst  = defn.insts.head.asInstanceOf[Inst.Label]
     val entryScore = entryInst.warmth
 
@@ -255,7 +256,7 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
         } else {
           def ignore(defn: Defn): Boolean = {
             var res = false
-            (new Pass {
+            (new Transform {
               override def onNext(next: Next): Next = {
                 res = res || next.isInstanceOf[Next.Unwind] ||
                   next.isInstanceOf[Next.Case]
@@ -280,7 +281,7 @@ class PruneUntakenPaths()(implicit linked: linker.Result)
   override def onDefns(defns: Seq[Defn]): Seq[Defn] = {
     val buf = mutable.UnrolledBuffer.empty[Defn]
     defns.foreach {
-      case defn: Defn.Define if top.nodes.contains(defn.name) =>
+      case defn: Defn.Define if linked.infos.contains(defn.name) =>
         onMethod(buf, defn)
       case defn =>
         buf += defn

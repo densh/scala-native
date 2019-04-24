@@ -1,6 +1,5 @@
 package scala.scalanative
 package pgo
-package pass
 
 import java.io.File
 import scala.io.Source
@@ -23,9 +22,9 @@ class RecoverBlockWarmth(freqProfile: File)(implicit linked: linker.Result) exte
     res
   }
 
-  override def onDefn(defn: Defn): Defn = defn match {
-    case defn: Defn.Define if top.nodes.contains(defn.name) =>
-      val defnId = top.nodes(defn.name).id
+  def onDefns(defns: Seq[Defn]): Seq[Defn] = defns.map {
+    case defn: Defn.Define if linked.ids.contains(defn.name) =>
+      val defnId = linked.ids(defn.name)
       val newinsts = defn.insts.map {
         case Inst.Label(name, params, _) =>
           val warmth =
@@ -35,7 +34,7 @@ class RecoverBlockWarmth(freqProfile: File)(implicit linked: linker.Result) exte
           inst
       }
       defn.copy(insts = newinsts)
-    case _ =>
+    case defn =>
       defn
   }
 }

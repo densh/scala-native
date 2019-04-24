@@ -1,6 +1,5 @@
 package scala.scalanative
 package pgo
-package pass
 
 import scalanative.nir._, Inst.{Let, Label}
 import scalanative.util.unsupported
@@ -8,10 +7,10 @@ import scalanative.util.unsupported
 class Profiling(implicit linked: linker.Result) extends Pass {
   import Profiling._
 
-  override def onDefn(defn: Defn): Defn = defn match {
+  def onDefns(defns: Seq[Defn]): Seq[Defn] = defns.map {
     case defn: Defn.Define if linked.infos.contains(defn.name) =>
       defn.copy(insts = onMethod(defn))
-    case _ =>
+    case defn =>
       defn
   }
 
@@ -76,9 +75,4 @@ object Profiling extends PassCompanion {
   val freqProfileMethodSig =
     Type.Function(Seq(Type.Long), Type.Unit)
   val freqProfileMethod = Val.Global(freqProfileMethodName, Type.Ptr)
-
-  override val injects = Seq(
-    Defn.Declare(Attrs.None, typeProfileMethodName, typeProfileMethodSig),
-    Defn.Declare(Attrs.None, freqProfileMethodName, freqProfileMethodSig)
-  )
 }

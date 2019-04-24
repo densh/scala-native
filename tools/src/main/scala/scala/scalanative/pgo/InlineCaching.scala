@@ -1,6 +1,5 @@
 package scala.scalanative
 package pgo
-package pass
 
 import java.io.File
 import scala.io.Source
@@ -19,7 +18,7 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
 
   assert(profile.exists)
   val dispatchInfo =
-    DispatchInfo(Source.fromFile(profile).mkString).map {
+    parseDispatchInfo(profile).map {
       case (key, values) =>
         val total = values.map(_._2).sum.toDouble
         val pvalues = values.sortBy(-_._2).map {
@@ -144,7 +143,7 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
     }
   }
 
-  private def onMethod(defn: Defn.Define): Seq[Inst] = {
+  def onDefn(defn: Defn.Define): Seq[Inst] = {
     val insts  = defn.insts
 
     implicit val scope = LocalScope(insts)
@@ -169,11 +168,10 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
     buf.toSeq
   }
 
-  override def onDefn(defn: Defn): Defn = defn match {
+  def onDefns(defns: Seq[Defn]): Seq[Defn] = defns.map {
     case defn: Defn.Define if linked.infos.contains(defn.name) =>
-      defn.copy(insts = onMethod(defn))
-
-    case _ =>
+      defn.copy(insts = onDefn(defn))
+    case defn =>
       defn
   }
 }
@@ -192,4 +190,37 @@ object InlineCaching extends PassCompanion {
     val build.UseProfile(profile) = config.profileMode
     new InlineCaching(profile)(linked)
   }
+
+
+
+  // private val IgnoreWhitespace = WhitespaceApi.Wrapper {
+  //   import fastparse.all._
+  //   NoTrace(CharIn(Seq(' ', '\t', '\n')).rep)
+  // }
+  // import IgnoreWhitespace._
+
+  // val number: P[Int] = P(CharIn('0' to '9').rep(1).!.map(_.toInt))
+
+  // val dispatchHeader: P[Long] =
+  //   P("=" ~ "`" ~ CharsWhile(_ != '`').! ~ "`" ~ ":") map {
+  //     case name => name.toLong
+  //   }
+
+  // val dispatchMethod: P[(Long, Seq[(Int, Int)])] =
+  //   dispatchHeader ~ (number ~ "(" ~ number ~ ")").rep(1) map {
+  //     case (header, entries) =>
+  //       (header, entries)
+  //   }
+
+  // val dispatchInfo: P[Map[Long, Seq[(Int, Int)]]] =
+  //   dispatchMethod.rep ~ End map (_.toMap)
+
+  def parseDispatchInfo(profile: File): Map[Int, Seq[(Int, Int)]] = {
+    val in = Source.fromFile(profile).mkString
+    ???
+  }
+    // dispatchInfo.parse(in) match {
+    //   case Parsed.Success(info, _) => info
+    //   case Parsed.Failure(_, _, _) => Map.empty
+    // }
 }
