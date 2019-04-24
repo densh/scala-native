@@ -57,7 +57,7 @@ object CodeGen {
         partitionBy(assembly, procs)(_.name).par.foreach {
           case (id, defns) =>
             val sorted = defns.sortBy(_.name.show)
-            val impl   = new Impl(config.targetTriple, env, sorted)
+            val impl   = new Impl(config, env, sorted)
             val buffer = impl.gen()
             buffer.flip
             workdir.write(Paths.get(s"$id.ll"), buffer)
@@ -68,7 +68,7 @@ object CodeGen {
       // Clang's LTO is not available.
       def single(): Unit = {
         val sorted = assembly.sortBy(_.name.show)
-        val impl   = new Impl(config.targetTriple, env, sorted)
+        val impl   = new Impl(config, env, sorted)
         val buffer = impl.gen()
         buffer.flip
         workdir.write(Paths.get("out.ll"), buffer)
@@ -81,7 +81,7 @@ object CodeGen {
       }
     }
 
-  private final class Impl(targetTriple: String,
+  private final class Impl(config: build.Config,
                            env: Map[Global, Defn],
                            defns: Seq[Defn])(implicit meta: Metadata) {
     import Impl._
@@ -97,6 +97,14 @@ object CodeGen {
 
     def gen(): ByteBuffer = {
       genDefns(defns)
+      metadata.zipWithIndex.foreach {
+        case (entry, idx) =>
+          newline()
+          str("!")
+          str(idx)
+          str(" = ")
+          str(entry)
+      }
       val body = builder.toString.getBytes("UTF-8")
       builder.clear
       genPrelude()
@@ -172,9 +180,9 @@ object CodeGen {
     }
 
     def genPrelude(): Unit = {
-      if (targetTriple.nonEmpty) {
+      if (config.targetTriple.nonEmpty) {
         str("target triple = \"")
-        str(targetTriple)
+        str(config.targetTriple)
         str("\"")
         newline()
       }
@@ -339,7 +347,7 @@ object CodeGen {
     }
 
     def genBlock(block: Block)(implicit cfg: CFG, fresh: Fresh): Unit = {
-      val Block(name, params, insts, isEntry) = block
+      val Block(name, params, _, insts, isEntry) = block
       currentBlockName = name
       currentBlockSplit = 0
 
@@ -420,7 +428,8 @@ object CodeGen {
       }
     }
 
-    def genLandingPad(unwind: Next.Unwind)(implicit fresh: Fresh): Unit = {
+    def genLandingPad(unwind: Next.Unwind)(implicit fresh: Fresh,
+                                           cfg: CFG): Unit = {
       val Next.Unwind(Val.Local(excname, _), next) = unwind
 
       val excpad  = "_" + excname.id + ".landingpad"
@@ -634,80 +643,103 @@ object CodeGen {
         str(id)
     }
 
-    def genInst(inst: Inst)(implicit fresh: Fresh): Unit = inst match {
-      case inst: Inst.Let =>
-        genLet(inst)
-
-      case Inst.Unreachable(unwind) =>
-        assert(unwind eq Next.None)
-        newline()
-        str("unreachable")
-
-      case Inst.Ret(value) =>
-        newline()
-        str("ret ")
-        genVal(value)
-
-      case Inst.Jump(next) =>
-        newline()
-        str("br ")
-        genNext(next)
-
-      // LLVM Phis can not express two different if branches pointing at the
-      // same target basic block. In those cases we replace branching with
-      // select instruction.
-      case Inst.If(cond,
-                   thenNext @ Next.Label(thenName, thenArgs),
-                   elseNext @ Next.Label(elseName, elseArgs))
-          if thenName == elseName =>
-        if (thenArgs == elseArgs) {
-          genInst(Inst.Jump(thenNext))
-        } else {
-          val args = thenArgs.zip(elseArgs).map {
-            case (thenV, elseV) =>
-              val name = fresh()
-              newline()
-              str("%")
-              genLocal(name)
-              str(" = select ")
-              genVal(cond)
-              str(", ")
-              genVal(thenV)
-              str(", ")
-              genVal(elseV)
-              Val.Local(name, thenV.ty)
-          }
-          genInst(Inst.Jump(Next.Label(thenName, args)))
+    def genBranchWeights(nexts: Seq[Next])(implicit cfg: CFG): Unit = {
+      if (config.profileMode.isInstanceOf[build.UseProfile]) {
+        val kind = "!\"branch_weights\""
+        val values = nexts.map { next =>
+          "i32 " + cfg.find(next.name).warmth.toInt
         }
-
-      case Inst.If(cond, thenp, elsep) =>
-        newline()
-        str("br ")
-        genVal(cond)
-        str(", ")
-        genNext(thenp)
-        str(", ")
-        genNext(elsep)
-
-      case Inst.Switch(scrut, default, cases) =>
-        newline()
-        str("switch ")
-        genVal(scrut)
-        str(", ")
-        genNext(default)
-        str(" [")
-        indent()
-        rep(cases) { next =>
-          newline()
-          genNext(next)
-        }
-        unindent()
-        newline()
-        str("]")
-
-      case cf =>
-        unsupported(cf)
+        str(", !prof !")
+        str(genMetadata(kind +: values))
+      }
     }
+
+    val metadata = mutable.UnrolledBuffer.empty[String]
+
+    def genMetadata(parts: Seq[String]): Int = {
+      val id    = metadata.size
+      val entry = parts.mkString("!{", ", ", "}")
+      metadata += entry
+      id
+    }
+
+    def genInst(inst: Inst)(implicit fresh: Fresh, cfg: CFG): Unit =
+      inst match {
+        case inst: Inst.Let =>
+          genLet(inst)
+
+        case Inst.Unreachable(unwind) =>
+          assert(unwind eq Next.None)
+          newline()
+          str("unreachable")
+
+        case Inst.Ret(value) =>
+          newline()
+          str("ret ")
+          genVal(value)
+
+        case Inst.Jump(next) =>
+          newline()
+          str("br ")
+          genNext(next)
+
+        // LLVM Phis can not express two different if branches pointing at the
+        // same target basic block. In those cases we replace branching with
+        // select instruction.
+        case Inst.If(cond,
+                     thenNext @ Next.Label(thenName, thenArgs),
+                     elseNext @ Next.Label(elseName, elseArgs))
+            if thenName == elseName =>
+          if (thenArgs == elseArgs) {
+            genInst(Inst.Jump(thenNext))
+          } else {
+            val args = thenArgs.zip(elseArgs).map {
+              case (thenV, elseV) =>
+                val name = fresh()
+                newline()
+                str("%")
+                genLocal(name)
+                str(" = select ")
+                genVal(cond)
+                str(", ")
+                genVal(thenV)
+                str(", ")
+                genVal(elseV)
+                Val.Local(name, thenV.ty)
+            }
+            genInst(Inst.Jump(Next.Label(thenName, args)))
+          }
+
+        case Inst.If(cond, thenp, elsep) =>
+          newline()
+          str("br ")
+          genVal(cond)
+          str(", ")
+          genNext(thenp)
+          str(", ")
+          genNext(elsep)
+          genBranchWeights(Seq(thenp, elsep))
+
+        case Inst.Switch(scrut, default, cases) =>
+          newline()
+          str("switch ")
+          genVal(scrut)
+          str(", ")
+          genNext(default)
+          str(" [")
+          indent()
+          rep(cases) { next =>
+            newline()
+            genNext(next)
+          }
+          unindent()
+          newline()
+          str("]")
+          genBranchWeights(default +: cases)
+
+        case cf =>
+          unsupported(cf)
+      }
 
     def genLet(inst: Inst.Let)(implicit fresh: Fresh): Unit = {
       def isVoid(ty: Type): Boolean =

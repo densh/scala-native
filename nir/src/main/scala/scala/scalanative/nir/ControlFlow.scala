@@ -16,6 +16,7 @@ object ControlFlow {
 
   final case class Block(name: Local,
                          params: Seq[Val.Local],
+                         warmth: Long,
                          insts: Seq[Inst],
                          isEntry: Boolean) {
     val inEdges  = mutable.UnrolledBuffer.empty[Edge]
@@ -74,8 +75,8 @@ object ControlFlow {
 
       def block(local: Local): Block =
         blocks.get(local).getOrElse {
-          val k                        = locations(local)
-          val Inst.Label(n, params, _) = insts(k)
+          val k                             = locations(local)
+          val Inst.Label(n, params, warmth) = insts(k)
 
           // copy all instruction up until and including
           // first control-flow instruction after the label
@@ -86,7 +87,7 @@ object ControlFlow {
             body += insts(i)
           } while (!insts(i).isInstanceOf[Inst.Cf])
 
-          val block = new Block(n, params, body, isEntry = k == 0)
+          val block = new Block(n, params, warmth, body, isEntry = k == 0)
           blocks(local) = block
           todo.push(block)
           block

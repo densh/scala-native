@@ -544,7 +544,8 @@ lazy val sandbox =
       //   crossTarget.value),
       scalaVersion := libScalaVersion,
       nativeMode := "release",
-      nativeProfileMode := UseProfile(file("profile.data"))
+      nativeLTO := "thin",
+      nativeProfileMode := CollectProfile(file("profile.data"))
     )
     .enablePlugins(ScalaNativePlugin)
 
