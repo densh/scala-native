@@ -546,6 +546,7 @@ lazy val sandbox =
       // nativeOptimizerReporter := OptimizerReporter.toDirectory(
       //   crossTarget.value),
       scalaVersion := libScalaVersion,
+      nativeMode := "release",
       nativeProfileMode := CollectProfile(file("profile.data"))
     )
     .enablePlugins(ScalaNativePlugin)

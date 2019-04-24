@@ -38,7 +38,7 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
     }.flatten
 
   private def selectCandidates(
-      info: Seq[(Global, Double, Int)]): Seq[(Global, Double, Int)] =
+      info: Seq[(Global, Double, Long)]): Seq[(Global, Double, Long)] =
     INLINE_CACHING_MODE match {
       case NoInlineCaching =>
         Seq.empty
@@ -80,7 +80,7 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
       inst: Let,
       callop: Op.Call,
       meth: Op.Method,
-      info: Seq[(Global, Double, Int)])(implicit fresh: Fresh): Unit = {
+      info: Seq[(Global, Double, Long)])(implicit fresh: Fresh): Unit = {
     import buf._
 
     val candidates = selectCandidates(info).map {
@@ -94,20 +94,20 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
                  typeName: Global,
                  succ: Local,
                  fail: Local,
-                 warmth: Int) = {
+                 warmth: Long) = {
       label(check, Seq.empty, warmth)
       val ty = call(Rt.GetRawTypeTy, Rt.GetRawType, Seq(Val.Null, meth.obj), Next.None)
       val cond = comp(Comp.Ieq, Type.Ptr, ty, Val.Global(typeName, Type.Ptr), Next.None)
       branch(cond, Next(succ), Next(fail))
     }
 
-    def genStatic(succ: Local, impl: Val, warmth: Int) = {
+    def genStatic(succ: Local, impl: Val, warmth: Long) = {
       label(succ, Seq.empty, warmth)
       val succres = let(callop.copy(ptr = impl), Next.None)
       jump(merge, Seq(succres))
     }
 
-    def genFail(warmth: Int) = {
+    def genFail(warmth: Long) = {
       label(fail, Seq.empty, warmth)
       val failmeth = let(meth, Next.None)
       val failres  = let(callop.copy(ptr = failmeth), Next.None)
@@ -117,7 +117,7 @@ class InlineCaching(profile: File)(implicit linked: linker.Result)
     val total     = info.map(_._3).sum
     var remaining = total
 
-    def loop(candidates: Seq[(Global, Local, Local, Val, Int)]): Unit =
+    def loop(candidates: Seq[(Global, Local, Local, Val, Long)]): Unit =
       candidates match {
         case Seq() =>
           genFail(remaining)
@@ -191,36 +191,30 @@ object InlineCaching extends PassCompanion {
     new InlineCaching(profile)(linked)
   }
 
-
-
-  // private val IgnoreWhitespace = WhitespaceApi.Wrapper {
-  //   import fastparse.all._
-  //   NoTrace(CharIn(Seq(' ', '\t', '\n')).rep)
-  // }
-  // import IgnoreWhitespace._
-
-  // val number: P[Int] = P(CharIn('0' to '9').rep(1).!.map(_.toInt))
-
-  // val dispatchHeader: P[Long] =
-  //   P("=" ~ "`" ~ CharsWhile(_ != '`').! ~ "`" ~ ":") map {
-  //     case name => name.toLong
-  //   }
-
-  // val dispatchMethod: P[(Long, Seq[(Int, Int)])] =
-  //   dispatchHeader ~ (number ~ "(" ~ number ~ ")").rep(1) map {
-  //     case (header, entries) =>
-  //       (header, entries)
-  //   }
-
-  // val dispatchInfo: P[Map[Long, Seq[(Int, Int)]]] =
-  //   dispatchMethod.rep ~ End map (_.toMap)
-
-  def parseDispatchInfo(profile: File): Map[Int, Seq[(Int, Int)]] = {
+  def parseDispatchInfo(profile: File): mutable.Map[Long, Seq[(Int, Long)]] = {
     val in = Source.fromFile(profile).mkString
-    ???
+
+    val out   = mutable.Map.empty[Long, Seq[(Int, Long)]]
+    var site  = -1L
+    val types = mutable.UnrolledBuffer.empty[(Int, Long)]
+
+    in.split("\n").foreach { line =>
+      line.split(" ") match {
+        case Array("site", id) =>
+          if (site != -1) {
+            out(site) = types.clone()
+            types.clear()
+          }
+          site = id.toLong
+        case Array(tid, count) =>
+          types += ((tid.toInt, count.toLong))
+      }
+    }
+
+    if (site != -1) {
+      out(site) = types
+    }
+
+    out
   }
-    // dispatchInfo.parse(in) match {
-    //   case Parsed.Success(info, _) => info
-    //   case Parsed.Failure(_, _, _) => Map.empty
-    // }
 }
