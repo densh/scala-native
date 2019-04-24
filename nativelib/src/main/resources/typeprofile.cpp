@@ -35,9 +35,9 @@ void typeprofile_print(FILE* out) {
     typedef map<int32_t, int64_t>::iterator inner_it;
 
     for (outer_it m = typecounters.begin(); m != typecounters.end(); ++m) {
-        fprintf(out, "= `%lld`:\n", m->first);
+        fprintf(out, "= `%ld`:\n", m->first);
         for (inner_it n = m->second.begin(); n != m->second.end(); ++n) {
-            fprintf(out, "\t%d (%lld)\n", n->first, n->second);
+            fprintf(out, "\t%d (%ld)\n", n->first, n->second);
         }
     }
 }

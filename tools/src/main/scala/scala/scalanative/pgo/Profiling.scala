@@ -1,17 +1,27 @@
 package scala.scalanative
 package pgo
 
+import scala.collection.mutable
 import scalanative.nir._, Inst.{Let, Label}
 import scalanative.util.unsupported
 
 class Profiling(implicit linked: linker.Result) extends Pass {
   import Profiling._
 
-  def onDefns(defns: Seq[Defn]): Seq[Defn] = defns.map {
-    case defn: Defn.Define if linked.infos.contains(defn.name) =>
-      defn.copy(insts = onMethod(defn))
-    case defn =>
-      defn
+  def onDefns(defns: Seq[Defn]): Seq[Defn] = {
+    val out = mutable.UnrolledBuffer.empty[Defn]
+
+    defns.foreach {
+      case defn: Defn.Define if linked.infos.contains(defn.name) =>
+        out += defn.copy(insts = onMethod(defn))
+      case defn =>
+        out += defn
+    }
+
+    out += Defn.Module(ExternAttrs, profilingName, Some(Rt.Object.name), Seq.empty)
+    out += Defn.Declare(ExternAttrs, typeProfileMethodName, typeProfileMethodSig)
+    out += Defn.Declare(ExternAttrs, freqProfileMethodName, freqProfileMethodSig)
+    out
   }
 
   def onMethod(defn: Defn.Define): Seq[Inst] = {
@@ -66,13 +76,21 @@ object Profiling extends PassCompanion {
   override def apply(config: build.Config, linked: linker.Result) =
     new Profiling()(linked)
 
-  val typeProfileMethodName = Global.Top("typeprofile_log")
+  val ExternAttrs = Attrs(isExtern = true)
+
+  val profilingName = Global.Top("__profiling")
+
+  val typeProfileMethodName =
+    Global.Member(profilingName, Sig.Extern("typeprofile_log"))
   val typeProfileMethodSig =
     Type.Function(Seq(Type.Long, Type.Ptr), Type.Unit)
-  val typeProfileMethod = Val.Global(typeProfileMethodName, Type.Ptr)
+  val typeProfileMethod =
+    Val.Global(typeProfileMethodName, Type.Ptr)
 
-  val freqProfileMethodName = Global.Top("freqprofile_log")
+  val freqProfileMethodName =
+    Global.Member(profilingName, Sig.Extern("freqprofile_log"))
   val freqProfileMethodSig =
     Type.Function(Seq(Type.Long), Type.Unit)
-  val freqProfileMethod = Val.Global(freqProfileMethodName, Type.Ptr)
+  val freqProfileMethod =
+    Val.Global(freqProfileMethodName, Type.Ptr)
 }

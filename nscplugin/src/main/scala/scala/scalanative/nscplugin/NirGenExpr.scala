@@ -363,7 +363,7 @@ trait NirGenExpr { self: NirGenPhase =>
     def genTryFinally(finallyp: Tree, insts: Seq[nir.Inst]): Seq[Inst] = {
       val labels =
         insts.collect {
-          case Inst.Label(n, _) => n
+          case Inst.Label(n, _, _) => n
         }.toSet
       def internal(cf: Inst.Cf) = cf match {
         case inst @ Inst.Jump(n) =>

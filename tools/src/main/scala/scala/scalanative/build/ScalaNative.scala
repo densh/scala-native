@@ -43,9 +43,13 @@ private[scalanative] object ScalaNative {
 
   /** Optimize high-level NIR based on profile data. */
   def pgo(config: Config, linked: linker.Result): linker.Result =
-    config.logger.time(s"PGO (${config.profileMode} mode)") {
+    config.logger.time(s"PGO (${config.profileMode})") {
       val optimized = scalanative.pgo.PGO(config, linked)
-      linker.Link(config, linked.entries, optimized)
+      val newlinked = linker.Link(config, linked.entries, optimized)
+      assert(newlinked.unavailable.isEmpty,
+        "some definitions where unavailable after pgo: " +
+          newlinked.unavailable.map(_.show).mkString(", "))
+      newlinked
     }
 
   /** Given low-level assembly, emit LLVM IR for it to the buildDirectory. */

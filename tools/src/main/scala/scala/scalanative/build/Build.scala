@@ -80,7 +80,7 @@ object Build {
       } else {
         val postopt = ScalaNative.pgo(config, preopt)
         nir.Show.dump(postopt.defns, "optimized-pgo.hnir")
-        ScalaNative.check(config, postopt)
+        // ScalaNative.check(config, postopt)
         postopt
       }
     }

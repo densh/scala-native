@@ -1173,11 +1173,6 @@ object Lower {
     buf += Defn.Declare(Attrs.None, largeAllocName, allocSig)
     buf += Defn.Declare(Attrs.None, dyndispatchName, dyndispatchSig)
     buf += Defn.Declare(Attrs.None, throwName, throwSig)
-
-    import pgo.Profiling._
-    buf += Defn.Declare(Attrs.None, typeProfileMethodName, typeProfileMethodSig)
-    buf += Defn.Declare(Attrs.None, freqProfileMethodName, freqProfileMethodSig)
-
     buf
   }
 

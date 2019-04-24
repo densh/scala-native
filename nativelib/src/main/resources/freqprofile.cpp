@@ -21,7 +21,7 @@ void freqprofile_print(FILE* out) {
     typedef map<int64_t, int64_t>::iterator it;
 
     for (it m = freqcounters.begin(); m != freqcounters.end(); ++m) {
-        fprintf(out, "%lld=%lld\n", m->first, m->second);
+        fprintf(out, "%ld=%ld\n", m->first, m->second);
     }
 }
 
