@@ -13,6 +13,7 @@
 #include "Constants.h"
 #include "Settings.h"
 #include "GCThread.h"
+#include <inttypes.h>
 
 void scalanative_collect();
 
@@ -71,3 +72,12 @@ INLINE void *scalanative_alloc_atomic(void *info, size_t size) {
 }
 
 INLINE void scalanative_collect() { Heap_Collect(&heap); }
+
+NOINLINE void scalanative_write_barrier_slow(void *object) {}
+
+INLINE void scalanative_write_barrier(void *object) {
+    unsigned char *blockStart = (unsigned char*) (((uint64_t) object) & -BLOCK_TOTAL_SIZE);
+    if (blockStart == 255) {
+        scalanative_write_barrier_slow(object);
+    }
+}
