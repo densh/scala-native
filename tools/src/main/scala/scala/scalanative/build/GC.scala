@@ -24,8 +24,9 @@ sealed abstract class GC private (
 object GC {
   private[scalanative] final case object None   extends GC("none", Seq(), false)
   private[scalanative] final case object Boehm  extends GC("boehm", Seq("gc"), false)
-  private[scalanative] final case object Immix  extends GC("immix", Seq(), true)
-  private[scalanative] final case object Commix extends GC("commix", Seq(), true)
+  private[scalanative] final case object Immix  extends GC("immix", Seq(), false)
+  private[scalanative] final case object Commix extends GC("commix", Seq(), false)
+  private[scalanative] final case object WBCommix extends GC("wb-commix", Seq(), true)
 
   /** Non-freeing garbage collector.*/
   def none: GC = None
@@ -37,7 +38,10 @@ object GC {
   def immix: GC = Immix
 
   /** Mostly-precise mark-region garbage collector running concurrently. */
-  def commix: GC = Immix
+  def commix: GC = Commix
+
+  /** Mostly-precise mark-region garbage collector running concurrently with dummy wb. */
+  def commixWB: GC = WBCommix
 
   /** The default garbage collector. */
   def default: GC = Immix
@@ -52,6 +56,8 @@ object GC {
       GC.Immix
     case "commix" =>
       GC.Commix
+    case "wb-commix" =>
+      GC.WBCommix
     case value =>
       throw new IllegalArgumentException(
         "nativeGC can be either \"none\", \"boehm\", \"immix\" or \"commix\", not: " + value)
