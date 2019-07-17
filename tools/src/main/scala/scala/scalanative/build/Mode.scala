@@ -17,7 +17,8 @@ sealed abstract class Mode private (val name: String) {
   override def toString: String = name
 }
 object Mode {
-  private[scalanative] final case object Debug extends Mode("debug")
+  private[scalanative] final case object Baseline extends Mode("baseline")
+  private[scalanative] final case object Debug    extends Mode("debug")
   private[scalanative] sealed trait Release
   private[scalanative] final case object ReleaseFast
       extends Mode("release-fast")
@@ -27,7 +28,7 @@ object Mode {
       with Release
 
   /** Debug compilation mode. */
-  def debug: Mode = Debug
+  def baseline: Mode = Baseline
 
   /** Release compilation mode. */
   def release: Mode = ReleaseFull
@@ -39,10 +40,12 @@ object Mode {
   def releaseFull: Mode = ReleaseFull
 
   /** Default compilation mode. */
-  def default: Mode = Debug
+  def default: Mode = Baseline
 
   /** Get a compilation mode with given name. */
   def apply(name: String): Mode = name match {
+    case "baseline" =>
+      Baseline
     case "debug" =>
       Debug
     case "release" =>

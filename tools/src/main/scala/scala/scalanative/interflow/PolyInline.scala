@@ -40,7 +40,7 @@ trait PolyInline { self: Interflow =>
   def shallPolyInline(op: Op.Method, args: Seq[Val])(
       implicit state: State,
       linked: linker.Result): Boolean = mode match {
-    case build.Mode.Debug =>
+    case build.Mode.Baseline | build.Mode.Debug =>
       false
 
     case _: build.Mode.Release =>

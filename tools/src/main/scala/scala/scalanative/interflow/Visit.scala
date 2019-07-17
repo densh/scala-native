@@ -22,7 +22,7 @@ trait Visit { self: Interflow =>
 
   def shallDuplicate(name: Global, argtys: Seq[Type]): Boolean =
     mode match {
-      case build.Mode.Debug | build.Mode.ReleaseFast =>
+      case build.Mode.Baseline | build.Mode.Debug | build.Mode.ReleaseFast =>
         false
 
       case build.Mode.ReleaseFull =>
@@ -46,6 +46,14 @@ trait Visit { self: Interflow =>
 
   def visitEntries(): Unit =
     mode match {
+      case build.Mode.Baseline =>
+        linked.defns.foreach { defn =>
+          val ownerId = defn.name.top.id
+          if (ownerId.startsWith("scala.scalanative.runtime.")
+              || ownerId.startsWith("scala.runtime.")) {
+            visitEntry(defn.name)
+          }
+        }
       case build.Mode.Debug =>
         linked.defns.foreach(defn => visitEntry(defn.name))
       case _: build.Mode.Release =>
@@ -76,7 +84,7 @@ trait Visit { self: Interflow =>
 
   def visitDuplicate(name: Global, argtys: Seq[Type]): Option[Defn.Define] = {
     mode match {
-      case build.Mode.Debug =>
+      case build.Mode.Baseline | build.Mode.Debug =>
         None
       case _: build.Mode.Release =>
         val dup = duplicateName(name, argtys)
@@ -107,7 +115,7 @@ trait Visit { self: Interflow =>
     }
 
     mode match {
-      case build.Mode.Debug =>
+      case build.Mode.Baseline | build.Mode.Debug =>
         allTodo().par.foreach(visit)
       case _: build.Mode.Release =>
         loop()

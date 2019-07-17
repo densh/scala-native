@@ -10,7 +10,7 @@ trait Inline { self: Interflow =>
       implicit state: State,
       linked: linker.Result): Boolean = {
     val maybeDefn = mode match {
-      case build.Mode.Debug =>
+      case build.Mode.Baseline | build.Mode.Debug =>
         maybeOriginal(name)
       case _: build.Mode.Release =>
         maybeDone(name)
@@ -56,7 +56,7 @@ trait Inline { self: Interflow =>
         }
 
         val shall = mode match {
-          case build.Mode.Debug =>
+          case build.Mode.Baseline | build.Mode.Debug =>
             isCtor || alwaysInline
           case build.Mode.ReleaseFast =>
             isCtor || alwaysInline || hintInline || isSmall
@@ -124,7 +124,7 @@ trait Inline { self: Interflow =>
                                            linked: linker.Result): Val =
     in(s"inlining ${name.show}") {
       val defn = mode match {
-        case build.Mode.Debug =>
+        case build.Mode.Baseline | build.Mode.Debug =>
           getOriginal(name)
         case _: build.Mode.Release =>
           getDone(name)

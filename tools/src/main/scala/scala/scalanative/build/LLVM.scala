@@ -117,9 +117,9 @@ private[scalanative] object LLVM {
   def compile(config: Config, llPaths: Seq[Path]): Seq[Path] = {
     val optimizationOpt =
       config.mode match {
-        case Mode.Debug       => "-O0"
-        case Mode.ReleaseFast => "-O2"
-        case Mode.ReleaseFull => "-O3"
+        case Mode.Baseline | Mode.Debug => "-O0"
+        case Mode.ReleaseFast           => "-O2"
+        case Mode.ReleaseFull           => "-O3"
       }
     val opts = optimizationOpt +: config.compileOptions
 
@@ -184,9 +184,9 @@ private[scalanative] object LLVM {
 
   private def lto(config: Config): Option[String] =
     (config.mode, config.LTO) match {
-      case (Mode.Debug, _)           => None
-      case (_: Mode.Release, "none") => None
-      case (_: Mode.Release, name)   => Some(name)
+      case (Mode.Baseline | Mode.Debug, _) => None
+      case (_: Mode.Release, "none")       => None
+      case (_: Mode.Release, name)         => Some(name)
     }
 
   private def flto(config: Config): Seq[String] =
