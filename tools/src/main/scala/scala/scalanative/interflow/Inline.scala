@@ -54,6 +54,8 @@ trait Inline { self: Interflow =>
           case Inst.Unreachable(unwind) => unwind ne Next.None
           case _                        => false
         }
+        val isCold =
+          defn.attrs.weight == 0
 
         val shall = optLevel() match {
           case Opt.None =>
@@ -64,7 +66,7 @@ trait Inline { self: Interflow =>
             isCtor || alwaysInline || hintInline || isSmall || hasVirtualArgs
         }
         val shallNot =
-          noOpt || noInline || isRecursive || isBlacklisted || calleeTooBig || callerTooBig || isExtern || hasUnwind
+          noOpt || noInline || isRecursive || isBlacklisted || calleeTooBig || callerTooBig || isExtern || hasUnwind || isCold
 
         if (shall) {
           if (shallNot) {

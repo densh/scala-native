@@ -9,10 +9,9 @@ trait Opt { self: Interflow =>
     mode match {
       case build.Mode.Baseline | build.Mode.Debug =>
         Opt.None
-      case build.Mode.ReleaseFast | build.Mode.PgoInstrument |
-          build.Mode.PgoRelease =>
+      case build.Mode.ReleaseFast | build.Mode.PgoInstrument =>
         Opt.Conservative
-      case build.Mode.ReleaseFull =>
+      case build.Mode.ReleaseFull | build.Mode.PgoRelease =>
         Opt.Aggressive
     }
 
