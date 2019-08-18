@@ -35,17 +35,22 @@ object Profile {
     val methodIds = mutable.Map.empty[Global, Long]
 
     def initMethodIds(): Unit = {
-      defns.collect {
-        case defn: Defn.Define =>
-          defn.name
-      }.sortBy(_.show).zipWithIndex.foreach {
-        case (name, idx) =>
-          methodIds(name) = idx
-      }
+      defns
+        .collect {
+          case defn: Defn.Define =>
+            defn.name
+        }
+        .sortBy(_.show)
+        .zipWithIndex
+        .foreach {
+          case (name, idx) =>
+            methodIds(name) = idx
+        }
     }
 
     def readLines(): Unit = {
-      val reader = new java.io.BufferedReader(new java.io.FileReader(profile.toFile))
+      val reader =
+        new java.io.BufferedReader(new java.io.FileReader(profile.toFile))
       try {
         var line = reader.readLine()
         while (line != null) {
@@ -73,9 +78,15 @@ object Profile {
       }
 
       insts.map {
-        case Inst.If(value, Next.Label(thenName, thenArgs, _), Next.Label(elseName, elseArgs, _)) =>
-          Inst.If(value, Next(thenName, thenArgs, nextEdgeCount()), Next(elseName, elseArgs, nextEdgeCount()))
-        case Inst.Switch(value, Next.Label(defaultName, defaultArgs, _), cases) =>
+        case Inst.If(value,
+                     Next.Label(thenName, thenArgs, _),
+                     Next.Label(elseName, elseArgs, _)) =>
+          Inst.If(value,
+                  Next(thenName, thenArgs, nextEdgeCount()),
+                  Next(elseName, elseArgs, nextEdgeCount()))
+        case Inst.Switch(value,
+                         Next.Label(defaultName, defaultArgs, _),
+                         cases) =>
           val enrichedDefault =
             Next(defaultName, defaultArgs, nextEdgeCount())
           val enrichedCases = cases.map {
@@ -95,9 +106,12 @@ object Profile {
       if (entries.contains(callCountKey)) {
         val methodCallCount = entries(callCountKey)
         assert(entries(s"method$methodId.edgeCount") == countEdges(defn.insts))
-        assert(entries(s"method$methodId.callSiteCount") == countCallSites(defn.insts))
+        assert(
+          entries(s"method$methodId.callSiteCount") == countCallSites(
+            defn.insts))
 
-        defn.copy(attrs = defn.attrs.copy(weight = methodCallCount), insts = enrichInsts(methodId, defn.insts))
+        defn.copy(attrs = defn.attrs.copy(weight = methodCallCount),
+                  insts = enrichInsts(methodId, defn.insts))
       } else {
         defn.copy(attrs = defn.attrs.copy(weight = 0))
       }
