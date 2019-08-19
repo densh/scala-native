@@ -30,27 +30,22 @@ object Profile {
     count
   }
 
-  def parse(profile: java.nio.file.Path, defns: Seq[Defn]): Seq[Defn] = {
+  def parse(config: build.Config, linked: linker.Result): Seq[Defn] = {
     val entries   = mutable.Map.empty[String, Long]
-    val methodIds = mutable.Map.empty[Global, Long]
-
-    def initMethodIds(): Unit = {
-      defns
-        .collect {
-          case defn: Defn.Define =>
-            defn.name
-        }
-        .sortBy(_.show)
-        .zipWithIndex
-        .foreach {
-          case (name, idx) =>
-            methodIds(name) = idx
-        }
+    val meta      = new codegen.Metadata(linked, Seq.empty)
+    val methodIds = meta.methodIds
+    val typeNames = {
+      val out = mutable.Map.empty[Long, Global]
+      meta.classes.foreach { cls =>
+        out(meta.ids(cls)) = cls.name
+      }
+      out
     }
 
     def readLines(): Unit = {
+      val profile = config.profile.toFile
       val reader =
-        new java.io.BufferedReader(new java.io.FileReader(profile.toFile))
+        new java.io.BufferedReader(new java.io.FileReader(profile))
       try {
         var line = reader.readLine()
         while (line != null) {
@@ -64,7 +59,8 @@ object Profile {
     }
 
     def enrichInsts(methodId: Long, insts: Seq[Inst]): Seq[Inst] = {
-      var edgeId = 0L
+      var edgeId     = 0L
+      var callSiteId = 0L
 
       def nextEdgeId(): Long = {
         val result = edgeId
@@ -77,7 +73,32 @@ object Profile {
         entries.getOrElse(s"method$methodId.edge$edgeId", 0L)
       }
 
+      def nextCallSiteId(): Long = {
+        val result = callSiteId
+        callSiteId += 1L
+        result
+      }
+
+      def nextCallSiteWeights(): List[(Global, Long)] = {
+        val callSiteId = nextCallSiteId()
+        val prefix     = s"method$methodId.callSite$callSiteId.type"
+        val out        = mutable.ListBuffer.empty[(Global, Long)]
+        entries.foreach {
+          case (k, v) if k.startsWith(prefix) =>
+            val typeId   = java.lang.Long.parseLong(k.substring(prefix.length))
+            val typeName = typeNames(typeId)
+            out += ((typeName, v))
+          case _ =>
+            ()
+        }
+        out.toList
+      }
+
       insts.map {
+        case Inst.Let(n, Op.Method(obj, s, _), unwind) =>
+          Inst.Let(n, Op.Method(obj, s, nextCallSiteWeights()), unwind)
+        case Inst.Let(n, Op.Dynmethod(obj, s, _), unwind) =>
+          Inst.Let(n, Op.Dynmethod(obj, s, nextCallSiteWeights()), unwind)
         case Inst.If(value,
                      Next.Label(thenName, thenArgs, _),
                      Next.Label(elseName, elseArgs, _)) =>
@@ -118,7 +139,7 @@ object Profile {
     }
 
     def enrichDefns(): Seq[Defn] = {
-      defns.map {
+      linked.defns.map {
         case defn: Defn.Define =>
           enrichDefn(defn)
         case defn =>
@@ -127,13 +148,12 @@ object Profile {
     }
 
     try {
-      initMethodIds()
       readLines()
       enrichDefns()
     } catch {
       case exc: Exception =>
         println("failed to read profile data: " + exc.toString)
-        defns
+        linked.defns
     }
   }
 }

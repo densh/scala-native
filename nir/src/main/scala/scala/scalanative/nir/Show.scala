@@ -297,12 +297,13 @@ object Show {
         str("\"")
         if (weights.nonEmpty) {
           str(", weights [")
-          rep(weights, sep = ",") {
+          rep(weights, sep = ", ") {
             case (name, weight) =>
               global_(name)
               str(", ")
               str(weight)
           }
+          str("]")
         }
       case Op.Dynmethod(value, sig, weights) =>
         str("dynmethod ")

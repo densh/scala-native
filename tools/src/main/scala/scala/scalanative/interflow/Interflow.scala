@@ -146,27 +146,10 @@ class Interflow(val mode: build.Mode)(implicit val linked: linker.Result)
 }
 
 object Interflow {
-  private def run(mode: build.Mode, linked: linker.Result): Seq[Defn] = {
-    val interflow = new Interflow(mode)(linked)
+  def apply(config: build.Config, linked: linker.Result): Seq[Defn] = {
+    val interflow = new Interflow(config.mode)(linked)
     interflow.visitEntries()
     interflow.visitLoop()
     interflow.result()
-  }
-
-  def apply(config: build.Config, linked: linker.Result): linker.Result = {
-    def link(defns: Seq[Defn]) =
-      linker.Link(config, linked.entries, defns)
-
-    if (config.mode == build.Mode.PgoRelease) {
-      println("preoptimizing")
-      val preinstrumented = link(run(build.Mode.PgoInstrument, linked))
-      println("recovering profile data")
-      val preprocessed = link(
-        Profile.parse(config.profile, preinstrumented.defns))
-      println("optimizing with profile data")
-      link(run(build.Mode.PgoRelease, preprocessed))
-    } else {
-      link(run(config.mode, linked))
-    }
   }
 }

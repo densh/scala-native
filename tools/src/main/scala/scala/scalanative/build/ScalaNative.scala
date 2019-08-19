@@ -69,14 +69,36 @@ private[scalanative] object ScalaNative {
   }
 
   /** Optimize high-level NIR under closed-world assumption. */
-  def optimize(config: Config, linked: linker.Result): linker.Result =
-    dump(config, "optimized") {
-      check(config) {
-        config.logger.time(s"Optimizing (${config.mode} mode)") {
-          interflow.Interflow(config, linked)
+  def optimize(config: Config, linked: linker.Result): linker.Result = {
+    def link(defns: Seq[nir.Defn]) =
+      linker.Link(config, linked.entries, defns)
+    def opt(mode: Mode, linked: linker.Result) =
+      link(interflow.Interflow(config.withMode(mode), linked))
+    def decorate(stage: String, msg: String)(f: => linker.Result) =
+      dump(config, stage) {
+        check(config) {
+          config.logger.time(msg) {
+            f
+          }
         }
       }
+
+    if (config.mode == build.Mode.PgoRelease) {
+      val preoptimized = decorate("preoptimized", "Preoptimizing") {
+        opt(Mode.PgoInstrument, linked)
+      }
+      val profiled = decorate("profiled", "Recovering profile data") {
+        link(interflow.Profile.parse(config, preoptimized))
+      }
+      decorate("optimized", s"Optimizing with profile data (${config.mode} mode)") {
+        opt(build.Mode.PgoRelease, profiled)
+      }
+    } else {
+      decorate("optimized", s"Optimizing (${config.mode} mode)") {
+        opt(config.mode, linked)
+      }
     }
+  }
 
   /** Given low-level assembly, emit LLVM IR for it to the buildDirectory. */
   def codegen(config: Config, linked: linker.Result): Seq[Path] = {

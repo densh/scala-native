@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <string.h>
 #include <map>
+#include <inttypes.h>
 
 struct ProfileStorage { public:
         int64_t callCount;
@@ -63,16 +65,16 @@ extern "C" {
                 auto methId = it->first;
                 auto profileStorage = it->second;
 
-                fprintf(file, "method%lld.callCount = %lld\n", methId, profileStorage->callCount);
-                fprintf(file, "method%lld.edgeCount = %lld\n", methId, profileStorage->edgeCount);
-                fprintf(file, "method%lld.callSiteCount = %lld\n", methId, profileStorage->callSiteCount);
+                fprintf(file, "method%" PRId64 ".callCount = %" PRId64 "\n", methId, profileStorage->callCount);
+                fprintf(file, "method%" PRId64 ".edgeCount = %" PRId64 "\n", methId, profileStorage->edgeCount);
+                fprintf(file, "method%" PRId64 ".callSiteCount = %" PRId64 "\n", methId, profileStorage->callSiteCount);
 
-                for (auto edgeId = 0LL; edgeId < profileStorage->edgeCount; ++edgeId) {
+                for (int64_t edgeId = 0; edgeId < profileStorage->edgeCount; ++edgeId) {
                     auto edgeCount = (int64_t) profileStorage->slots[edgeId];
-                    fprintf(file, "method%lld.edge%lld = %lld\n", methId, edgeId, edgeCount);
+                    fprintf(file, "method%" PRId64 ".edge%" PRId64 " = %" PRId64 "\n", methId, edgeId, edgeCount);
                 }
 
-                for (auto callSiteId = 0LL; callSiteId < profileStorage->callSiteCount; ++callSiteId) {
+                for (int64_t callSiteId = 0; callSiteId < profileStorage->callSiteCount; ++callSiteId) {
                     auto typeMap = (std::map<int64_t, int64_t>*) profileStorage->slots[profileStorage->edgeCount + callSiteId];
 
                     if (typeMap != nullptr) {
@@ -80,7 +82,7 @@ extern "C" {
                             auto typeId = it->first;
                             auto typeCount = it->second;
 
-                            fprintf(file, "method%lld.callSite%lld.type%lld = %lld\n", methId, callSiteId, typeId, typeCount);
+                            fprintf(file, "method%" PRId64 ".callSite%" PRId64 ".type%" PRId64 " = %" PRId64 "\n", methId, callSiteId, typeId, typeCount);
                         }
                     }
                 }
