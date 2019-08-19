@@ -228,7 +228,7 @@ trait Eval { self: Interflow =>
             emit(Op
               .Fieldstore(ty, materialize(obj), name, materialize(eval(value))))
         }
-      case Op.Method(rawObj, sig) =>
+      case Op.Method(rawObj, sig, weights) =>
         val obj = eval(rawObj)
         val objty = obj match {
           case InstanceRef(ty) =>
@@ -248,22 +248,22 @@ trait Eval { self: Interflow =>
         }
 
         if (targets.size == 0) {
-          emit(Op.Method(materialize(obj), sig))
+          emit(Op.Method(materialize(obj), sig, weights))
           Val.Zero(Type.Nothing)
         } else if (targets.size == 1) {
           Val.Global(targets.head, Type.Ptr)
         } else {
           targets.foreach(visitRoot)
-          delay(Op.Method(materialize(obj), sig))
+          delay(Op.Method(materialize(obj), sig, weights))
         }
-      case Op.Dynmethod(obj, dynsig) =>
+      case Op.Dynmethod(obj, dynsig, weights) =>
         linked.dynimpls.foreach {
           case impl @ Global.Member(_, sig) if sig.toProxy == dynsig =>
             visitRoot(impl)
           case _ =>
             ()
         }
-        emit(Op.Dynmethod(materialize(eval(obj)), dynsig))
+        emit(Op.Dynmethod(materialize(eval(obj)), dynsig, weights))
       case Op.Module(clsName) =>
         val isPure =
           isPureModule(clsName)

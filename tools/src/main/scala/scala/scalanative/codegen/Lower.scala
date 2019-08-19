@@ -511,7 +511,7 @@ object Lower {
     def genMethodOp(buf: Buffer, n: Local, op: Op.Method) = {
       import buf._
 
-      val Op.Method(obj, sig) = op
+      val Op.Method(obj, sig, _) = op
 
       def genClassVirtualLookup(cls: Class): Unit = {
         val vindex  = vtable(cls).index(sig)
@@ -584,7 +584,7 @@ object Lower {
     def genDynmethodOp(buf: Buffer, n: Local, op: Op.Dynmethod): Unit = {
       import buf._
 
-      val Op.Dynmethod(obj, sig) = op
+      val Op.Dynmethod(obj, sig, _) = op
 
       def throwIfNull(value: Val) = {
         val notNullL = fresh()

@@ -8,7 +8,7 @@ import scalanative.linker._
 trait PolyInline { self: Interflow =>
   private def polyTargets(op: Op.Method)(
       implicit state: State): Seq[(Class, Global)] = {
-    val Op.Method(obj, sig) = op
+    val Op.Method(obj, sig, weights) = op
 
     val objty = obj match {
       case InstanceRef(ty) =>

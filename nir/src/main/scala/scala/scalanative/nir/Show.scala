@@ -289,18 +289,36 @@ object Show {
         global_(name)
         str(", ")
         val_(value)
-      case Op.Method(value, sig) =>
+      case Op.Method(value, sig, weights) =>
         str("method ")
         val_(value)
         str(", \"")
         str(escapeQuotes(sig.mangle))
         str("\"")
-      case Op.Dynmethod(value, sig) =>
+        if (weights.nonEmpty) {
+          str(", weights [")
+          rep(weights, sep = ",") {
+            case (name, weight) =>
+              global_(name)
+              str(", ")
+              str(weight)
+          }
+        }
+      case Op.Dynmethod(value, sig, weights) =>
         str("dynmethod ")
         val_(value)
         str(", \"")
         str(escapeQuotes(sig.mangle))
         str("\"")
+        if (weights.nonEmpty) {
+          str(", weights [")
+          rep(weights, sep = ",") {
+            case (name, weight) =>
+              global_(name)
+              str(", ")
+              str(weight)
+          }
+        }
       case Op.Module(name) =>
         str("module ")
         global_(name)

@@ -545,12 +545,20 @@ class Reach(config: build.Config, entries: Seq[Global], loader: ClassLoader) {
       reachVal(v1)
       reachGlobal(n)
       reachVal(v2)
-    case Op.Method(obj, sig) =>
+    case Op.Method(obj, sig, weights) =>
       reachVal(obj)
       reachMethodTargets(obj.ty, sig)
-    case Op.Dynmethod(obj, dynsig) =>
+      weights.foreach {
+        case (name, _) =>
+          reachGlobal(name)
+      }
+    case Op.Dynmethod(obj, dynsig, weights) =>
       reachVal(obj)
       reachDynamicMethodTargets(dynsig)
+      weights.foreach {
+        case (name, _) =>
+          reachGlobal(name)
+      }
     case Op.Module(n) =>
       classInfo(n).foreach(reachAllocation)
       val init = n.member(Sig.Ctor(Seq()))

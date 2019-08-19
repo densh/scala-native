@@ -76,10 +76,10 @@ trait Transform {
       Op.Fieldload(onType(ty), onVal(v), n)
     case Op.Fieldstore(ty, v1, n, v2) =>
       Op.Fieldstore(onType(ty), onVal(v1), n, onVal(v2))
-    case Op.Method(v, n) =>
-      Op.Method(onVal(v), n)
-    case Op.Dynmethod(obj, signature) =>
-      Op.Dynmethod(onVal(obj), signature)
+    case Op.Method(v, n, weights) =>
+      Op.Method(onVal(v), n, weights)
+    case Op.Dynmethod(obj, signature, weights) =>
+      Op.Dynmethod(onVal(obj), signature, weights)
     case Op.Module(n) =>
       Op.Module(n)
     case Op.As(ty, v) =>

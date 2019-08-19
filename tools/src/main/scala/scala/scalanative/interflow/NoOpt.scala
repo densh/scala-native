@@ -80,7 +80,7 @@ trait NoOpt { self: Interflow =>
       noOptVal(v1)
       noOptGlobal(n)
       noOptVal(v2)
-    case Op.Method(obj, sig) =>
+    case Op.Method(obj, sig, weights) =>
       noOptVal(obj)
       obj.ty match {
         case refty: Type.RefKind =>
@@ -90,12 +90,20 @@ trait NoOpt { self: Interflow =>
         case _ =>
           ()
       }
-    case Op.Dynmethod(obj, dynsig) =>
+      weights.foreach {
+        case (name, _) =>
+          noOptGlobal(name)
+      }
+    case Op.Dynmethod(obj, dynsig, weights) =>
       linked.dynimpls.foreach {
         case impl @ Global.Member(_, sig) if sig.toProxy == dynsig =>
           visitEntry(impl)
         case _ =>
           ()
+      }
+      weights.foreach {
+        case (name, _) =>
+          noOptGlobal(name)
       }
     case Op.Module(n) =>
       visitEntry(n)

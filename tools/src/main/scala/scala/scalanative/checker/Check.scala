@@ -192,7 +192,7 @@ final class Check(implicit linked: linker.Result) {
       checkFieldOp(ty, obj, name, None)
     case Op.Fieldstore(ty, obj, name, value) =>
       checkFieldOp(ty, obj, name, Some(value))
-    case Op.Method(obj, sig) =>
+    case Op.Method(obj, sig, _) =>
       expect(Rt.Object, obj)
       sig match {
         case sig if sig.isMethod || sig.isCtor || sig.isGenerated =>
@@ -214,7 +214,7 @@ final class Check(implicit linked: linker.Result) {
         case ty =>
           error(s"can't resolve method on ${ty.show}")
       }
-    case Op.Dynmethod(obj, sig) =>
+    case Op.Dynmethod(obj, sig, _) =>
       expect(Rt.Object, obj)
       sig match {
         case sig if sig.isProxy =>
