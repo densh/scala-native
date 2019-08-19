@@ -20,7 +20,9 @@ trait Inline { self: Interflow =>
       .fold[Boolean] {
         false
       } { defn =>
-        val isCtor = originalName(name) match {
+        val origName =
+          originalName(name)
+        val isCtor = origName match {
           case Global.Member(_, sig) if sig.isCtor || sig.isImplCtor =>
             true
           case _ =>
@@ -54,8 +56,10 @@ trait Inline { self: Interflow =>
           case Inst.Unreachable(unwind) => unwind ne Next.None
           case _                        => false
         }
+        val isHot =
+          isProfileGuided() && self.isHot(origName)
         val isCold =
-          defn.attrs.weight == 0
+          isProfileGuided() && self.isCold(origName)
 
         val shall = optLevel() match {
           case Opt.None =>

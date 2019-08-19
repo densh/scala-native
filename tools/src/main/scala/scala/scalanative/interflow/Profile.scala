@@ -5,6 +5,41 @@ import java.io.File
 import scala.collection.mutable
 import scalanative.nir._
 
+trait Profile { self: Interflow =>
+
+  def isProfileGuided(): Boolean =
+    mode == build.Mode.PgoRelease
+
+  lazy val (hotThreshold, coldThreshold) = {
+    if (!isProfileGuided()) {
+      (0L, 0L)
+    } else {
+      val ordered =
+        linked.defns
+          .collect {
+            case defn: Defn.Define if defn.attrs.weight > 0 =>
+              defn
+          }
+          .sortBy(-_.attrs.weight)
+          .toArray
+      def percentile(p: Double) =
+        ordered((ordered.size * p).toInt + 1).attrs.weight
+      val top10 =
+        percentile(0.1D)
+      val top90 =
+        percentile(0.9D)
+
+      (top10, top90)
+    }
+  }
+
+  def isHot(name: Global): Boolean =
+    linked.infos(name).attrs.weight >= hotThreshold
+
+  def isCold(name: Global): Boolean =
+    linked.infos(name).attrs.weight <= coldThreshold
+}
+
 object Profile {
   private def countEdges(insts: Seq[Inst]): Int = {
     var count = 0
