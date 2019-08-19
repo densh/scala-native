@@ -90,7 +90,7 @@ private[scalanative] object ScalaNative {
       val profiled = decorate("profiled", "Recovering profile data") {
         link(interflow.Profile.parse(config, preoptimized))
       }
-      decorate("optimized", s"Optimizing with profile data (${config.mode} mode)") {
+      decorate("optimized", s"Optimizing (${config.mode} mode)") {
         opt(build.Mode.PgoRelease, profiled)
       }
     } else {

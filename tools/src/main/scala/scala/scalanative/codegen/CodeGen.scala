@@ -274,6 +274,13 @@ object CodeGen {
         str(gxxpersonality)
       }
       if (!isDecl) {
+        if (attrs.weight != -1) {
+          str(" !prof !")
+          str(
+            genMetadata(
+              List("!\"function_entry_count\"", "i64 " + attrs.weight.toInt)))
+        }
+
         str(" {")
 
         insts.foreach {
