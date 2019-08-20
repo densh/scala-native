@@ -252,7 +252,9 @@ final class MergeProcessor(insts: Array[Inst],
     }
 
     def visitLabel(from: MergeBlock, next: Next.Label): Unit =
-      visitBlock(from, findMergeBlock(next.name))
+      if (next.weight != 0) {
+        visitBlock(from, findMergeBlock(next.name))
+      }
 
     def visitUnwind(from: MergeBlock, next: Next): Unit = next match {
       case Next.None =>
