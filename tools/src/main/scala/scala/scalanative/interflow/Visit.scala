@@ -37,10 +37,10 @@ trait Visit { self: Interflow =>
           defn.attrs.specialize != Attr.NoSpecialize
         val differentArgumentTypes =
           argumentTypes(name) != argtys
-        val notCold =
-          !(isProfileGuided() && isCold(originalName(defn.name)))
+        val isCold =
+          isProfileGuided() && self.isCold(defn.name)
 
-        canOptimize && canSpecialize && nonExtern && differentArgumentTypes && notCold
+        canOptimize && canSpecialize && nonExtern && differentArgumentTypes && !isCold
       }
     }
 

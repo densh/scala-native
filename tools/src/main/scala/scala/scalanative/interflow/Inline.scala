@@ -67,7 +67,7 @@ trait Inline { self: Interflow =>
           case Opt.Conservative =>
             isCtor || alwaysInline || hintInline || isSmall
           case Opt.Aggressive =>
-            isCtor || alwaysInline || hintInline || isSmall || hasVirtualArgs
+            isCtor || alwaysInline || hintInline || isSmall || hasVirtualArgs || isHot
         }
         val shallNot =
           noOpt || noInline || isRecursive || isBlacklisted || calleeTooBig || callerTooBig || isExtern || hasUnwind || isCold

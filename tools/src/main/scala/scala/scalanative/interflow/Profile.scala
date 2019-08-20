@@ -10,9 +10,9 @@ trait Profile { self: Interflow =>
   def isProfileGuided(): Boolean =
     mode == build.Mode.PgoRelease
 
-  lazy val (hotThreshold, coldThreshold) = {
+  lazy val hotThreshold: Long = {
     if (!isProfileGuided()) {
-      (0L, 0L)
+      0L
     } else {
       val ordered =
         linked.defns
@@ -22,14 +22,15 @@ trait Profile { self: Interflow =>
           }
           .sortBy(-_.attrs.weight)
           .toArray
-      def percentile(p: Double) =
-        ordered((ordered.size * p).toInt + 1).attrs.weight
-      val top10 =
-        percentile(0.1D)
-      val top90 =
-        percentile(0.9D)
+      var totalWeight       = ordered.map(_.attrs.weight).sum
+      var accumulatedWeight = 0L
+      val top80 =
+        ordered.takeWhile { defn =>
+          accumulatedWeight += defn.attrs.weight
+          accumulatedWeight < totalWeight * 0.8
+        }
 
-      (top10, top90)
+      top80.last.attrs.weight
     }
   }
 
@@ -37,7 +38,7 @@ trait Profile { self: Interflow =>
     linked.infos(name).attrs.weight >= hotThreshold
 
   def isCold(name: Global): Boolean =
-    linked.infos(name).attrs.weight <= coldThreshold
+    linked.infos(name).attrs.weight == 0
 }
 
 object Profile {

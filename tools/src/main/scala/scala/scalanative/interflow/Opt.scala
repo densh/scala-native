@@ -7,9 +7,9 @@ import scalanative.linker._
 trait Opt { self: Interflow =>
   def optLevel(): Opt.Level =
     mode match {
-      case build.Mode.Baseline | build.Mode.Debug =>
+      case build.Mode.Baseline | build.Mode.Debug | build.Mode.PgoInstrument =>
         Opt.None
-      case build.Mode.ReleaseFast | build.Mode.PgoInstrument =>
+      case build.Mode.ReleaseFast =>
         Opt.Conservative
       case build.Mode.ReleaseFull | build.Mode.PgoRelease =>
         Opt.Aggressive

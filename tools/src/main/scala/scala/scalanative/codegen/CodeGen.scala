@@ -21,7 +21,7 @@ object CodeGen {
 
     implicit val meta = new Metadata(linked, proxies)
 
-    val generated = Generate(Global.Top(config.mainClass), defns ++ proxies)
+    val generated = Generate(config, defns ++ proxies)
     val lowered   = lower(config, generated)
     nir.Show.dump(lowered, "lowered.hnir")
     emit(config, lowered)
