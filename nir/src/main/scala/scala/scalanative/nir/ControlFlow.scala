@@ -32,6 +32,21 @@ object ControlFlow {
       count
     }
 
+    lazy val inLoop: Boolean = {
+      val visited = mutable.Set.empty[Local]
+
+      def visit(block: Block): Unit = {
+        if (!visited.contains(block.name)) {
+          visited += block.name
+          block.outEdges.foreach(e => visit(e.to))
+        }
+      }
+
+      outEdges.foreach(e => visit(e.to))
+
+      visited.contains(name)
+    }
+
     def pred  = inEdges.map(_.from)
     def succ  = outEdges.map(_.to)
     def label = Inst.Label(name, params)
