@@ -76,9 +76,9 @@ object CodeGen {
       }
 
       (config.mode, config.LTO) match {
-        case (build.Mode.Baseline | build.Mode.Debug, _) => separate()
-        case (_, "none")                                 => single()
-        case (_, _)                                      => separate()
+        case (build.Mode.Debug, _) => separate()
+        case (_, "none")           => single()
+        case (_, _)                => separate()
       }
     }
 
