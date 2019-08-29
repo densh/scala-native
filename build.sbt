@@ -557,6 +557,7 @@ lazy val sandbox =
       //   crossTarget.value),
       scalaVersion := libScalaVersion,
       nativeMode := "pgo-instrument",
+      nativeGC := "immix",
       nativeLTO := "thin"
     )
     .enablePlugins(ScalaNativePlugin)

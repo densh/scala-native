@@ -161,12 +161,22 @@ private[scalanative] object LLVM {
            nativelib: Path,
            outpath: Path): Path = {
     val links = {
+      val os       = Option(sys props "os.name").getOrElse("")
+      val arch     = config.targetTriple.split("-").head
       val srclinks = linkerResult.links.map(_.name)
       val gclinks  = config.gc.links
+      val librt = os match {
+        case "Linux" => Seq("rt")
+        case _       => Seq.empty
+      }
+      val libunwind = os match {
+        case "Mac OS X" => Seq.empty
+        case _          => Seq("unwind", "unwind-" + arch)
+      }
       // We need extra linking dependencies for:
       // * libdl for our vendored libunwind implementation.
       // * libpthread for process APIs and parallel garbage collection.
-      "pthread" +: "dl" +: srclinks ++: gclinks
+      "pthread" +: "dl" +: srclinks ++: (librt ++ libunwind ++ gclinks)
     }
     val linkopts  = config.linkingOptions ++ links.map("-l" + _)
     val targetopt = Seq("-target", config.targetTriple)

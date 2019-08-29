@@ -13,7 +13,7 @@
 // Allow read and write
 #define DUMMY_GC_PROT (PROT_READ | PROT_WRITE)
 // Map private anonymous memory, and prevent from reserving swap
-#define DUMMY_GC_FLAGS (MAP_NORESERVE | MAP_PRIVATE | MAP_ANONYMOUS)
+#define DUMMY_GC_FLAGS (MAP_NORESERVE | MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE)
 // Map anonymous memory (not a file)
 #define DUMMY_GC_FD -1
 #define DUMMY_GC_FD_OFFSET 0
@@ -33,6 +33,7 @@ void *scalanative_alloc(void *info, size_t size) {
         void **alloc = current;
         *alloc = info;
         current += size;
+        __builtin_prefetch(alloc + 36, 0, 3);
         return alloc;
     } else {
         scalanative_init();

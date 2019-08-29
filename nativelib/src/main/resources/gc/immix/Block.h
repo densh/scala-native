@@ -1,9 +1,12 @@
 #ifndef IMMIX_BLOCK_H
 #define IMMIX_BLOCK_H
 
-#include "metadata/BlockMeta.h"
+#include "headers/BlockHeader.h"
 #include "Heap.h"
+#include "Line.h"
 
-void Block_Recycle(Allocator *allocator, BlockMeta *block, word_t *blockStart,
-                   LineMeta *lineMetas);
+#define LAST_HOLE -1
+
+void Block_Recycle(Allocator *, BlockHeader *);
+void Block_Print(BlockHeader *block);
 #endif // IMMIX_BLOCK_H
