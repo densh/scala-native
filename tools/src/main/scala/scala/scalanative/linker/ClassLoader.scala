@@ -19,8 +19,11 @@ object ClassLoader {
     new FromDisk(classpath)
   }
 
-  def fromMemory(defns: Seq[Defn]): ClassLoader =
+  def fromMemory(defns: Seq[Defn]): ClassLoader = {
+    assert(defns != null)
+    assert(defns.forall(_ != null))
     new FromMemory(defns)
+  }
 
   final class FromDisk(classpath: Seq[ClassPath]) extends ClassLoader {
     def load(global: Global) =

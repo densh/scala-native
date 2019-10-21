@@ -16,7 +16,8 @@ abstract class NirGenPhase
     with NirGenUtil
     with NirGenFile
     with NirGenType
-    with NirGenName {
+    with NirGenName
+    with NirCompat {
   val nirAddons: NirGlobalAddons {
     val global: NirGenPhase.this.global.type
   }
@@ -28,6 +29,7 @@ abstract class NirGenPhase
   val phaseName = "nir"
 
   protected val curClassSym       = new util.ScopedVar[Symbol]
+  protected val curClassFresh     = new util.ScopedVar[nir.Fresh]
   protected val curMethodSym      = new util.ScopedVar[Symbol]
   protected val curMethodSig      = new util.ScopedVar[nir.Type]
   protected val curMethodInfo     = new util.ScopedVar[CollectMethodInfo]
@@ -56,7 +58,6 @@ abstract class NirGenPhase
 
     override def apply(cunit: CompilationUnit): Unit = {
       val classDefs = mutable.UnrolledBuffer.empty[ClassDef]
-      val files     = mutable.UnrolledBuffer.empty[(Path, Seq[nir.Defn])]
 
       def collectClassDefs(tree: Tree): Unit = tree match {
         case EmptyTree =>
@@ -72,20 +73,21 @@ abstract class NirGenPhase
           }
       }
 
-      def genClass(cd: ClassDef): Unit = {
-        val path   = genPathFor(cunit, cd.symbol)
-        val buffer = new StatBuffer
+      collectClassDefs(cunit.body)
 
-        scoped(
-          curStatBuffer := buffer
-        ) {
-          buffer.genClass(cd)
-          files += ((path, buffer.toSeq))
-        }
+      val statBuffer = new StatBuffer
+
+      scoped(
+        curStatBuffer := statBuffer
+      ) {
+        classDefs.foreach(cd => statBuffer.genClass(cd))
       }
 
-      collectClassDefs(cunit.body)
-      classDefs.foreach(genClass)
+      val files = statBuffer.toSeq.groupBy(defn => defn.name.top).map {
+        case (ownerName, defns) =>
+          (genPathFor(cunit, ownerName), defns)
+      }
+
       files.par.foreach {
         case (path, stats) =>
           genIRFile(path, stats)

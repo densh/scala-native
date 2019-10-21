@@ -62,12 +62,17 @@ trait NirGenStat { self: NirGenPhase =>
   }
 
   class StatBuffer {
-    private val buf          = mutable.UnrolledBuffer.empty[nir.Defn]
+    val buf          = mutable.UnrolledBuffer.empty[nir.Defn]
     def toSeq: Seq[nir.Defn] = buf
+
+    def +=(defn: nir.Defn): Unit = {
+      buf += defn
+    }
 
     def genClass(cd: ClassDef): Unit = {
       scoped(
-        curClassSym := cd.symbol
+        curClassSym := cd.symbol,
+        curClassFresh := nir.Fresh()
       ) {
         if (cd.symbol.isStruct) genStruct(cd)
         else genNormalClass(cd)
@@ -165,7 +170,7 @@ trait NirGenStat { self: NirGenPhase =>
       buf += {
         if (sym.isScalaModule) {
           Defn.Module(attrs, name, parent, traits)
-        } else if (sym.isInterface) {
+        } else if (sym.isTraitOrInterface) {
           Defn.Trait(attrs, name, traits)
         } else {
           Defn.Class(attrs, name, parent, traits)
@@ -202,7 +207,7 @@ trait NirGenStat { self: NirGenPhase =>
     def genClassInterfaces(sym: Symbol) =
       for {
         parent <- sym.info.parents
-        psym = parent.typeSymbol if psym.isInterface
+        psym = parent.typeSymbol if psym.isTraitOrInterface
       } yield {
         genTypeName(psym)
       }
@@ -210,7 +215,10 @@ trait NirGenStat { self: NirGenPhase =>
     def genClassFields(sym: Symbol): Unit = {
       val attrs = nir.Attrs(isExtern = sym.isExternModule)
 
-      for (f <- sym.info.decls if f.isField) {
+      for (
+        f <- sym.info.decls
+        if !f.isMethod && f.isTerm && !f.isModule
+      ) {
         val ty   = genType(f.tpe)
         val name = genFieldName(f)
 
@@ -231,10 +239,10 @@ trait NirGenStat { self: NirGenPhase =>
       val env   = new MethodEnv(fresh)
 
       scoped(
-        curMethodSym := dd.symbol,
-        curMethodEnv := env,
-        curMethodInfo := (new CollectMethodInfo).collect(dd.rhs),
-        curFresh := fresh,
+        curMethodSym     := dd.symbol,
+        curMethodEnv     := env,
+        curMethodInfo    := (new CollectMethodInfo).collect(dd.rhs),
+        curFresh         := fresh,
         curUnwindHandler := None
       ) {
         val sym      = dd.symbol

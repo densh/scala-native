@@ -6,9 +6,9 @@ import scalanative.io.packageNameFromPath
 val sbt13Version          = "0.13.18"
 val sbt13ScalaVersion     = "2.10.7"
 val sbt10Version          = "1.2.8"
-val sbt10ScalaVersion     = "2.12.8"
-val libScalaVersion       = "2.11.12"
-val libCrossScalaVersions = Seq("2.11.8", "2.11.11", libScalaVersion)
+val sbt10ScalaVersion     = "2.12.10"
+val libScalaVersion       = "2.12.10"
+val libCrossScalaVersions = Seq("2.12.10")
 
 // Convert "SomeName" to "some-name".
 def convertCamelKebab(name: String): String = {
@@ -555,7 +555,8 @@ lazy val sandbox =
     .settings(
       // nativeOptimizerReporter := OptimizerReporter.toDirectory(
       //   crossTarget.value),
-      scalaVersion := libScalaVersion
+      scalaVersion := libScalaVersion,
+      nativeLinkStubs := true
     )
     .enablePlugins(ScalaNativePlugin)
 

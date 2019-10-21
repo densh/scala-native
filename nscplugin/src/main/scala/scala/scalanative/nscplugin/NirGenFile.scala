@@ -11,11 +11,11 @@ import scalanative.io.VirtualDirectory
 trait NirGenFile { self: NirGenPhase =>
   import global._
 
-  def genPathFor(cunit: CompilationUnit, sym: Symbol): Path = {
+  def genPathFor(cunit: CompilationUnit, ownerName: nir.Global): Path = {
     val baseDir: AbstractFile =
       settings.outputDirs.outputDirFor(cunit.source.file)
 
-    val nir.Global.Top(id) = genTypeName(sym)
+    val nir.Global.Top(id) = ownerName
 
     val pathParts = id.split("[./]")
     val dir       = (baseDir /: pathParts.init)(_.subdirectoryNamed(_))
